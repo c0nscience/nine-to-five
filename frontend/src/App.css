@@ -22,3 +22,13 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.nine-to-five-app {
+  padding-top: 20px;
+  display: inline-block;
+  text-align: left;
+}
+
+input {
+  font-size: 20px
+}
