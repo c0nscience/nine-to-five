@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import ActivityForm from "./activity/ActivityForm";
+import ActivityList from "./activity/ActivityList";
 
 class App extends Component {
   render() {
@@ -13,6 +14,7 @@ class App extends Component {
         </div>
         <div className="nine-to-five-app">
           <ActivityForm />
+          <ActivityList />
         </div>
       </div>
     );
