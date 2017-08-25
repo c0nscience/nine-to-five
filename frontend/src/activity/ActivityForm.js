@@ -1,9 +1,9 @@
 import React from 'react'
-import { startActivity, updateCurrent } from "../reducers/activity"
-import { connect } from "react-redux"
+import { startActivity, updateCurrent } from '../reducers/activity'
+import { connect } from 'react-redux'
 
 const ActivityForm = (props) => {
-  const {currentActivity, updateCurrent, startActivity} = props
+  const { currentActivity, updateCurrent, startActivity } = props
   const handleInputChange = (event) => {
     const value = event.target.value
     updateCurrent(value)
@@ -24,7 +24,7 @@ const ActivityForm = (props) => {
 }
 
 export default connect(
-  state => ({currentActivity: state.currentActivity}),
+  state => ({ currentActivity: state.currentActivity }),
   {
     updateCurrent,
     startActivity

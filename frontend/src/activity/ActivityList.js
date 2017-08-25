@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import { connect } from "react-redux"
-import ActivityItem from "./ActivityItem"
-import { loadActivities } from "../reducers/activity"
+import { connect } from 'react-redux'
+import ActivityItem from './ActivityItem'
+import { loadActivities } from '../reducers/activity'
 
 class ActivityList extends Component {
 
@@ -10,7 +10,7 @@ class ActivityList extends Component {
   }
 
   render() {
-    const {activities} = this.props
+    const { activities } = this.props
     return (
       <ul>
         {activities.map(activity => <ActivityItem key={activity.id}
@@ -28,4 +28,4 @@ export default connect(
   {
     loadActivities
   }
-  )(ActivityList)
+)(ActivityList)
