@@ -34,8 +34,13 @@ const ActivityForm = (props) => {
                onChange={handleInputChange}/>
       </div>
       <div>
-        <input type="submit" value="Start"/>
-        <input type="button" onClick={handleStopButtonClick} value="Stop"/>
+        <input type="submit"
+               value="Start"
+               disabled={currentActivity.length === 0}/>
+
+        <input type="button"
+               onClick={handleStopButtonClick}
+               value="Stop"/>
       </div>
     </form>
   )
