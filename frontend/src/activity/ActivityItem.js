@@ -1,9 +1,9 @@
 import React from 'react'
 
 const ActivityItem = (props) => {
-  const { name } = props
+  const { name, isRunning } = props
   return (
-    <li>{name}</li>
+    <li className={isRunning ? 'running' : ''}>{name}</li>
   )
 }
 

@@ -32,3 +32,15 @@
 input {
   font-size: 20px
 }
+
+ul {
+  padding: 0px;
+}
+
+li {
+  list-style-type: none;
+}
+
+li.running {
+  color: #a5c261;
+}

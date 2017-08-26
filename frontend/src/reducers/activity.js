@@ -7,33 +7,51 @@ const CURRENT_UPDATE = 'CURRENT_UPDATE'
 const RESET_CURRENT = 'RESET_CURRENT'
 const APPEND_STARTED = 'APPEND_STARTED'
 const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
+const UPDATE_STOPPED_ACTIVITY = 'UPDATE_STOPPED_ACTIVITY'
 
-export const updateCurrent = (value) =>
-  ({type: CURRENT_UPDATE, payload: value})
+export const updateCurrent = value =>
+  ({ type: CURRENT_UPDATE, payload: value })
 
 export const resetCurrent = () =>
-  ({type: RESET_CURRENT})
+  ({ type: RESET_CURRENT })
 
-export const appendStarted = (started) =>
-  ({type: APPEND_STARTED, payload: started})
+export const appendStarted = started =>
+  ({ type: APPEND_STARTED, payload: started })
 
-export const activitiesLoaded = (activities) =>
-  ({type: ACTIVITIES_LOADED, payload: activities})
+export const activitiesLoaded = activities =>
+  ({ type: ACTIVITIES_LOADED, payload: activities })
 
-export const startActivity = (currentActivity) => (dispatch) => (
+export const updateStoppedActivity = stopped =>
+  ({ type: UPDATE_STOPPED_ACTIVITY, payload: stopped })
+
+export const startActivity = currentActivity => dispatch => (
   fetch('http://localhost:9000/activity', {
     method: 'post',
     mode: 'cors',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({name: currentActivity})
+    body: JSON.stringify({ name: currentActivity })
   }).then(response => (response.json()))
     .then(started => {
         dispatch(resetCurrent())
         dispatch(appendStarted(started))
       }
-    ).catch(error => console.log(error))
+    ).catch(error => console.error(error))
+)
+
+export const stopActivity = () => (dispatch) => (
+  fetch('http://localhost:9000/activity/stop', {
+    method: 'post'
+  }).then(response => {
+    console.log('response', response)
+    if (response.ok) {
+      return response.json()
+    }
+  }).then(stoppedActivity => {
+    console.log('stoppedActivity', stoppedActivity)
+    dispatch(updateStoppedActivity(stoppedActivity))
+  }).catch(error => console.error(error))
 )
 
 export const loadActivities = () => (dispatch) => (
@@ -69,6 +87,15 @@ export default (state = initialState, action) => {
       return {
         ...state,
         activities: action.payload
+      }
+    case UPDATE_STOPPED_ACTIVITY:
+      return {
+        ...state,
+        activities: state.activities.map(activity => (
+          activity.id === action.payload.id ?
+            action.payload :
+            activity
+        ))
       }
     default:
       return state

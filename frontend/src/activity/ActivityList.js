@@ -14,7 +14,8 @@ class ActivityList extends Component {
     return (
       <ul>
         {activities.map(activity => <ActivityItem key={activity.id}
-                                                  name={activity.name}/>)}
+                                                  name={activity.name}
+                                                  isRunning={activity.end === undefined}/>)}
       </ul>
     )
   }
