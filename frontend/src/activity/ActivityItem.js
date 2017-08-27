@@ -11,17 +11,13 @@ const ActivityItem = (props) => {
   const endTime = moment(end).format(format)
   const duration = moment.duration(moment(end).diff(moment(start))).humanize()
   const period = `${duration} from ${startTime} to ${end === undefined ? '' : endTime}`
+  const icon = isRunning ? <Update/> : <Done/>
+
   return (
     <ListItem>
-      {
-        isRunning ?
-          <ListItemIcon>
-            <Update/>
-          </ListItemIcon> :
-          <ListItemIcon>
-            <Done/>
-          </ListItemIcon>
-      }
+      <ListItemIcon>
+        {icon}
+      </ListItemIcon>
       <ListItemText primary={name} secondary={period}/>
     </ListItem>
   )
