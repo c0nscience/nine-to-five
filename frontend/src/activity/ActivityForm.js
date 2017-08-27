@@ -1,13 +1,28 @@
 import React from 'react'
 import { startActivity, stopActivity, updateCurrent } from '../reducers/activity'
 import { connect } from 'react-redux'
+import TextField from 'material-ui/TextField'
+import Button from 'material-ui/Button'
+import { withStyles } from 'material-ui/styles'
+
+const styles = theme => ({
+  textField: {
+    marginLeft: theme.spacing.unit,
+    marginRight: theme.spacing.unit,
+    width: 200,
+  },
+  button: {
+    margin: theme.spacing.unit,
+  },
+})
 
 const ActivityForm = (props) => {
   const {
     currentActivity,
     updateCurrent,
     startActivity,
-    stopActivity
+    stopActivity,
+    classes
   } = props
 
   const handleInputChange = (event) => {
@@ -27,22 +42,29 @@ const ActivityForm = (props) => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <input type="text"
-               value={currentActivity}
-               onChange={handleInputChange}/>
-      </div>
-      <div>
-        <input type="submit"
-               value="Start"
-               disabled={currentActivity.length === 0}/>
-
-        <input type="button"
-               onClick={handleStopButtonClick}
-               value="Stop"/>
-      </div>
-    </form>
+    <div>
+      <TextField
+        id="name"
+        label="Name"
+        className={classes.textField}
+        value={currentActivity}
+        onChange={handleInputChange}
+        margin="normal"
+      />
+      <Button raised
+              color="primary"
+              className={classes.button}
+              disabled={currentActivity.length === 0}
+              onClick={handleSubmit}>
+        Start
+      </Button>
+      <Button raised
+              color="accent"
+              className={classes.button}
+              onClick={handleStopButtonClick}>
+        Stop
+      </Button>
+    </div>
   )
 }
 
@@ -53,4 +75,4 @@ export default connect(
     startActivity,
     stopActivity
   }
-)(ActivityForm)
+)(withStyles(styles)(ActivityForm))

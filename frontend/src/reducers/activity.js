@@ -44,12 +44,10 @@ export const stopActivity = () => (dispatch) => (
   fetch('http://localhost:9000/activity/stop', {
     method: 'post'
   }).then(response => {
-    console.log('response', response)
     if (response.ok) {
       return response.json()
     }
   }).then(stoppedActivity => {
-    console.log('stoppedActivity', stoppedActivity)
     dispatch(updateStoppedActivity(stoppedActivity))
   }).catch(error => console.error(error))
 )

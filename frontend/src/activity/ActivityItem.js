@@ -1,9 +1,14 @@
 import React from 'react'
+import { ListItem, ListItemText } from 'material-ui/List'
+import moment from 'moment'
 
 const ActivityItem = (props) => {
-  const { name, isRunning } = props
+  const { name, start, end, isRunning } = props
+  const duration = `${moment(start).format('HH:mm')} - ${end === undefined ? '' : moment(end).format('HH:mm')}`
   return (
-    <li className={isRunning ? 'running' : ''}>{name}</li>
+    <ListItem className={isRunning ? 'running' : ''}>
+      <ListItemText primary={name} secondary={duration}/>
+    </ListItem>
   )
 }
 

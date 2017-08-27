@@ -1,24 +1,26 @@
-import React, { Component } from 'react'
-import logo from './logo.svg'
+import React from 'react'
 import './App.css'
+import { withStyles } from 'material-ui/styles'
 import ActivityForm from './activity/ActivityForm'
 import ActivityList from './activity/ActivityList'
+import Paper from 'material-ui/Paper'
+import withRoot from './component/withRoot'
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo"/>
-          <h2>Welcome to React</h2>
-        </div>
-        <div className="nine-to-five-app">
-          <ActivityForm/>
-          <ActivityList/>
-        </div>
-      </div>
-    )
-  }
+const styles = theme => ({
+  root: theme.mixins.gutters({
+    paddingTop: 16,
+    paddingBottom: 16,
+    margin: theme.spacing.unit * 3,
+  }),
+})
+
+const App = (props) => {
+  const { classes } = props
+  return (
+    <Paper className={classes.root} elevation={4}>
+      <ActivityForm/>
+      <ActivityList/>
+    </Paper>
+  )
 }
-
-export default App
+export default withRoot(withStyles(styles)(App))

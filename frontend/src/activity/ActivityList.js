@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import ActivityItem from './ActivityItem'
 import { loadActivities } from '../reducers/activity'
+import List from 'material-ui/List'
+import Divider from 'material-ui/Divider'
 
 class ActivityList extends Component {
 
@@ -12,11 +14,15 @@ class ActivityList extends Component {
   render() {
     const { activities } = this.props
     return (
-      <ul>
-        {activities.map(activity => <ActivityItem key={activity.id}
-                                                  name={activity.name}
-                                                  isRunning={activity.end === undefined}/>)}
-      </ul>
+      <List>
+        {activities.map(activity => (
+          <div key={activity.id}>
+            <ActivityItem {...activity}
+                          isRunning={activity.end === undefined}/>
+            <Divider light/>
+          </div>
+        ))}
+      </List>
     )
   }
 }
