@@ -5,12 +5,14 @@ import Done from 'material-ui-icons/Done'
 import Update from 'material-ui-icons/Update'
 
 const ActivityItem = (props) => {
-  const { name, start, end, isRunning } = props
-  const format = 'HH:mm'
-  const startTime = moment(start).format(format)
-  const endTime = moment(end).format(format)
-  const duration = moment.duration(moment(end).diff(moment(start))).humanize()
-  const period = `${duration} from ${startTime} to ${end === undefined ? '' : endTime}`
+  const timeFormat = 'HH:mm'
+  const { name, start: startUtc, end: endUtc, isRunning } = props
+
+  const localStart = moment.utc(startUtc).local()
+  const localEnd = moment.utc(endUtc).local()
+
+  const duration = moment.duration(moment(localEnd).diff(moment(localStart))).humanize()
+  const period = `${duration} from ${localStart.format(timeFormat)} ${endUtc === undefined ? '' : `to ${localEnd.format(timeFormat)}`}`
   const icon = isRunning ? <Update/> : <Done/>
 
   return (
