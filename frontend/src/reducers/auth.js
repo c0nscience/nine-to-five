@@ -19,9 +19,9 @@ const auth = new auth0.WebAuth({
   domain: AUTH_CONFIG.domain,
   clientID: AUTH_CONFIG.clientId,
   redirectUri: AUTH_CONFIG.callbackUrl,
-  audience: `https://${AUTH_CONFIG.domain}/userinfo`,
+  audience: 'https://api.ntf.io',
   responseType: 'token',
-  scope: 'openid'
+  scope: 'openid read:activities'
 })
 
 export const login = () => (dispatch) => {
@@ -31,6 +31,7 @@ export const login = () => (dispatch) => {
 
 export const handleAuthentication = () => (dispatch) => (
   auth.parseHash((err, authResult) => {
+    console.log(authResult)
     if (authResult && authResult.accessToken) {
       setSession(authResult)
       dispatch(receiveLogin(authResult))

@@ -1,8 +1,13 @@
+import { CALL_API } from '../middleware/api'
+
 const CURRENT_UPDATE = 'CURRENT_UPDATE'
 const RESET_CURRENT = 'RESET_CURRENT'
 const APPEND_STARTED = 'APPEND_STARTED'
-const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
 const UPDATE_STOPPED_ACTIVITY = 'UPDATE_STOPPED_ACTIVITY'
+
+const ACTIVITIES_REQUEST = 'ACTIVITIES_REQUEST'
+const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
+const ACTIVITIES_FAILURE = 'ACTIVITIES_FAILURE'
 
 export const updateCurrent = value =>
   ({ type: CURRENT_UPDATE, payload: value })
@@ -47,13 +52,14 @@ export const stopActivity = () => (dispatch) => (
   }).catch(error => console.error(error))
 )
 
-export const loadActivities = () => (dispatch) => (
-  fetch('http://localhost:9000/activities')
-    .then(response => (response.json()))
-    .then(activities => {
-      dispatch(activitiesLoaded(activities))
-    })
-)
+export const loadActivities = () =>
+  ({
+    [CALL_API]: {
+      endpoint: 'activities',
+      authenticated: true,
+      types: [ACTIVITIES_REQUEST, ACTIVITIES_LOADED, ACTIVITIES_FAILURE]
+    }
+  })
 
 export default (state = {
   currentActivity: '',
@@ -82,7 +88,7 @@ export default (state = {
     case ACTIVITIES_LOADED:
       return {
         ...state,
-        activities: action.payload
+        activities: action.response
       }
     case UPDATE_STOPPED_ACTIVITY:
       return {

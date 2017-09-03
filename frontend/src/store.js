@@ -4,6 +4,7 @@ import activity from './reducers/activity'
 import auth from './reducers/auth'
 import thunkMiddleware from 'redux-thunk'
 import { connectRouter, routerMiddleware } from 'connected-react-router'
+import api from './middleware/api'
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 
@@ -18,7 +19,8 @@ export default createStore(
   composeEnhancers(
     applyMiddleware(
       thunkMiddleware,
-      routerMiddleware(history)
+      routerMiddleware(history),
+      api
     )
   )
 )
