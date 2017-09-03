@@ -34,11 +34,12 @@ function withRoot(BaseComponent) {
     }
 
     render() {
+      const props = this.props
       return (
         <JssProvider registry={context.sheetsRegistry} jss={context.jss}>
           <MuiThemeProvider theme={context.theme} sheetsManager={context.sheetsManager}>
             <AppWrapper>
-              <BaseComponent/>
+              <BaseComponent {...props} />
             </AppWrapper>
           </MuiThemeProvider>
         </JssProvider>
