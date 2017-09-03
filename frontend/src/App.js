@@ -6,6 +6,7 @@ import ActivityList from './activity/ActivityList'
 import Paper from 'material-ui/Paper'
 import withRoot from './component/withRoot'
 import Grid from 'material-ui/Grid'
+import NavBar from './NavBar/NavBar'
 
 const styles = theme => ({
   root: {
@@ -21,14 +22,17 @@ const styles = theme => ({
 const App = (props) => {
   const { classes } = props
   return (
-    <Grid container justify="center" className={classes.root}>
-      <Grid item xs={9} sm={6} md={6}>
-        <Paper className={classes.paper} elevation={4}>
-          <ActivityForm/>
-          <ActivityList/>
-        </Paper>
+    <div>
+      <NavBar/>
+      <Grid container justify="center" className={classes.root}>
+        <Grid item xs={9} sm={6} md={6}>
+          <Paper className={classes.paper} elevation={4}>
+            <ActivityForm/>
+            <ActivityList/>
+          </Paper>
+        </Grid>
       </Grid>
-    </Grid>
+    </div>
   )
 }
 export default withRoot(withStyles(styles)(App))
