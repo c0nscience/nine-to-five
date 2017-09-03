@@ -69,7 +69,7 @@ const ActivityForm = (props) => {
 }
 
 export default connect(
-  state => ({ currentActivity: state.currentActivity }),
+  state => ({ currentActivity: state.activity.currentActivity }),
   {
     updateCurrent,
     startActivity,

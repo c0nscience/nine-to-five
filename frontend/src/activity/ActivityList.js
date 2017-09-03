@@ -28,7 +28,7 @@ class ActivityList extends Component {
 }
 
 const mapStateToProps = state => ({
-  activities: state.activities
+  activities: state.activity.activities
 })
 export default connect(
   mapStateToProps,
