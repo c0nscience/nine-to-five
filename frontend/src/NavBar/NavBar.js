@@ -6,6 +6,8 @@ import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
 import MenuIcon from 'material-ui-icons/Menu'
+import { connect } from 'react-redux'
+import { login, logout } from '../reducers/auth'
 
 const styles = {
   root: {
@@ -20,23 +22,41 @@ const styles = {
   },
 }
 
-const NavBar = (props) => {
-  const { classes } = props
-  return (
-    <div className={classes.root}>
-      <AppBar position="static">
-        <Toolbar disableGutters>
-          <IconButton className={classes.menuButton} color="contrast" aria-label="Menu">
-            <MenuIcon/>
-          </IconButton>
-          <Typography type="title" color="inherit" className={classes.flex}>
-            Nine <span role="img" aria-label="two">✌</span>️ Five
-          </Typography>
-          <Button color="contrast">Login</Button>
-        </Toolbar>
-      </AppBar>
-    </div>
-  )
+const NavBar = ({
+                  login,
+                  logout,
+                  isAuthenticated,
+                  classes
+                }) => (
+  <div className={classes.root}>
+    <AppBar position="static">
+      <Toolbar disableGutters>
+        <IconButton className={classes.menuButton} color="contrast" aria-label="Menu">
+          <MenuIcon/>
+        </IconButton>
+        <Typography type="title" color="inherit" className={classes.flex}>
+          Nine <span role="img" aria-label="two">✌</span>️ Five
+        </Typography>
+        {
+          !isAuthenticated && <Button color="contrast" onClick={login}>Login</Button>
+        }
+        {
+          isAuthenticated && <Button color="contrast" onClick={logout}>Logout</Button>
+        }
+      </Toolbar>
+    </AppBar>
+  </div>
+)
+
+
+const mapDispatchToProps = {
+  login,
+  logout
 }
 
-export default withStyles(styles)(NavBar)
+export default connect(
+  state => ({
+    isAuthenticated: state.auth.isAuthenticated
+  }),
+  mapDispatchToProps
+)(withStyles(styles)(NavBar))

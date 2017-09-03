@@ -1,8 +1,3 @@
-const initialState = {
-  currentActivity: '',
-  activities: []
-}
-
 const CURRENT_UPDATE = 'CURRENT_UPDATE'
 const RESET_CURRENT = 'RESET_CURRENT'
 const APPEND_STARTED = 'APPEND_STARTED'
@@ -60,7 +55,10 @@ export const loadActivities = () => (dispatch) => (
     })
 )
 
-export default (state = initialState, action) => {
+export default (state = {
+  currentActivity: '',
+  activities: []
+}, action) => {
 
   switch (action.type) {
     case CURRENT_UPDATE:
