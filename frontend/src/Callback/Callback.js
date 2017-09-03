@@ -1,7 +1,12 @@
-import React, { Component } from 'react';
-import loading from './loading.svg';
+import React, { Component } from 'react'
+import loading from './loading.svg'
 
 class Callback extends Component {
+  componentDidMount() {
+    const { handleCallback } = this.props
+    handleCallback(this.props)
+  }
+
   render() {
     const style = {
       position: 'absolute',
@@ -20,8 +25,8 @@ class Callback extends Component {
       <div style={style}>
         <img src={loading} alt="loading"/>
       </div>
-    );
+    )
   }
 }
 
-export default Callback;
+export default Callback

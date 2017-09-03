@@ -22,8 +22,7 @@ const App = ({ history, handleAuthentication }) => {
         <Switch>
           <Route exact path="/" component={Activity}/>
           <Route path="/callback" render={(props) => {
-            handleCallback(props)
-            return <Callback {...props}/>
+            return <Callback {...props} handleCallback={handleCallback}/>
           }}/>
         </Switch>
       </ConnectedRouter>

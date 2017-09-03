@@ -29,19 +29,20 @@ export const login = () => (dispatch) => {
   auth.authorize()
 }
 
-export const handleAuthentication = () => (dispatch) => {
+export const handleAuthentication = () => (dispatch) => (
   auth.parseHash((err, authResult) => {
-    console.log("authResult", authResult)
     if (authResult && authResult.accessToken) {
       setSession(authResult)
       dispatch(receiveLogin(authResult))
       dispatch(push('/'))
+      return Promise.resolve()
     } else if (err) {
       dispatch(loginError(err.error))
       dispatch(push('/'))
+      return Promise.reject()
     }
   })
-}
+)
 
 const setSession = (authResult) => {
   // Set the time that the access token will expire at
@@ -71,14 +72,16 @@ export const logout = () => (dispatch) => {
 
 export default (state = {
   isFetching: false,
-  isAuthenticated: !!localStorage.getItem('access_token')
+  isAuthenticated: !!localStorage.getItem('access_token'),
+  accessToken: localStorage.getItem('access_token') || ''
 }, action) => {
   switch (action.type) {
     case LOGIN_REQUEST:
       return {
         ...state,
         isFetching: true,
-        isAuthenticated: false
+        isAuthenticated: false,
+        accessToken: ''
       }
     case LOGIN_SUCCESS:
       return {
@@ -92,6 +95,7 @@ export default (state = {
         ...state,
         isFetching: false,
         isAuthenticated: false,
+        accessToken: '',
         errorMessage: action.payload
       }
     case LOGOUT_REQUEST:
@@ -104,7 +108,8 @@ export default (state = {
       return {
         ...state,
         isFetching: false,
-        isAuthenticated: false
+        isAuthenticated: false,
+        accessToken: ''
       }
     default:
       return state
