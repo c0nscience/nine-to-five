@@ -16,16 +16,8 @@ const callApi = (endpoint, authenticated) => {
   }
 
   return fetch(BASE_URL + endpoint, config)
-    .then(response =>
-      response.json()
-        .then(text => ({ text, response }))
-    ).then(({ text, response }) => {
-      if (!response.ok) {
-        return Promise.reject(text)
-      }
-
-      return text
-    }).catch(err => console.log(err))
+    .then(response => response.ok ? response : Promise.reject(response.statusText))
+    .then(response => response.json())
 }
 
 export const CALL_API = Symbol('Call API')
@@ -41,12 +33,12 @@ export default store => next => action => {
 
   let { endpoint, types, authenticated } = callAPI
 
+  // eslint-disable-next-line
   const [requestType, successType, errorType] = types
 
   // Passing the authenticated boolean back in our data will let us distinguish between normal and secret quotes
   return callApi(endpoint, authenticated).then(
-    response =>
-      next({
+    response => next({
         response,
         authenticated,
         type: successType

@@ -24,11 +24,14 @@ export const activitiesLoaded = activities =>
 export const updateStoppedActivity = stopped =>
   ({ type: UPDATE_STOPPED_ACTIVITY, payload: stopped })
 
-export const startActivity = currentActivity => dispatch => (
+export const startActivity = currentActivity => dispatch => {
+  let token = localStorage.getItem('access_token') || null
+
   fetch('http://localhost:9000/activity', {
     method: 'post',
     mode: 'cors',
     headers: {
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ name: currentActivity })
@@ -38,11 +41,14 @@ export const startActivity = currentActivity => dispatch => (
         dispatch(appendStarted(started))
       }
     ).catch(error => console.error(error))
-)
+}
 
-export const stopActivity = () => (dispatch) => (
+export const stopActivity = () => (dispatch) => {
+  let token = localStorage.getItem('access_token') || null
+
   fetch('http://localhost:9000/activity/stop', {
-    method: 'post'
+    method: 'post',
+    headers: { 'Authorization': `Bearer ${token}` }
   }).then(response => {
     if (response.ok) {
       return response.json()
@@ -50,7 +56,8 @@ export const stopActivity = () => (dispatch) => (
   }).then(stoppedActivity => {
     dispatch(updateStoppedActivity(stoppedActivity))
   }).catch(error => console.error(error))
-)
+}
+
 
 export const loadActivities = () =>
   ({

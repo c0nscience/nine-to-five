@@ -21,7 +21,7 @@ const auth = new auth0.WebAuth({
   redirectUri: AUTH_CONFIG.callbackUrl,
   audience: 'https://api.ntf.io',
   responseType: 'token',
-  scope: 'openid read:activities'
+  scope: 'openid read:activities start:activity stop:activity'
 })
 
 export const login = () => (dispatch) => {
@@ -47,6 +47,7 @@ export const handleAuthentication = () => (dispatch) => (
 
 const setSession = (authResult) => {
   // Set the time that the access token will expire at
+  console.log('authResult.accessToken', authResult.accessToken)
   let expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime())
   localStorage.setItem('access_token', authResult.accessToken)
   localStorage.setItem('expires_at', expiresAt)
