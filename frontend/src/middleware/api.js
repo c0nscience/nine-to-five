@@ -14,7 +14,7 @@ const callApi = (endpoint, config = {}, data, authenticated) => {
         }
       }
     } else {
-      return Promise.reject()
+      return Promise.reject(UNAUTHENTICATED)
     }
   }
 
@@ -30,10 +30,19 @@ const callApi = (endpoint, config = {}, data, authenticated) => {
   }
 
   return fetch(BASE_URL + endpoint, config)
-    .then(response => response.ok ? response : Promise.reject(response))
-    .then(response => response.json())
+    .then(response => {
+      if (response.ok) {
+        return response.json()
+      } else if (response.status === 401) {
+        return Promise.reject(UNAUTHORIZED)
+      } else {
+        return Promise.reject(response)
+      }
+    })
 }
 
+export const UNAUTHORIZED = Symbol('UNAUTHORIZED')
+export const UNAUTHENTICATED = Symbol('UNAUTHENTICATED')
 export const CALL_API = Symbol('Call API')
 
 export default store => next => action => {
@@ -68,9 +77,21 @@ export default store => next => action => {
         authenticated,
         type: successType
       }),
-      error => next({
-        error: error.message || 'There was an error.',
-        type: errorType
-      })
+      error => {
+        if (error === UNAUTHORIZED) {
+          next({
+            type: 'LOGOUT_SUCCESS'
+          })
+        } else if (error === UNAUTHENTICATED) {
+          next({
+            type: 'LOGOUT_SUCCESS'
+          })
+        } else {
+          next({
+            error: error.message || 'There was an error.',
+            type: errorType
+          })
+        }
+      }
     )
 }

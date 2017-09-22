@@ -31,7 +31,6 @@ export const login = () => (dispatch) => {
 
 export const handleAuthentication = () => (dispatch) => (
   auth.parseHash((err, authResult) => {
-    console.log(authResult)
     if (authResult && authResult.accessToken) {
       setSession(authResult)
       dispatch(receiveLogin(authResult))
@@ -47,7 +46,6 @@ export const handleAuthentication = () => (dispatch) => (
 
 const setSession = (authResult) => {
   // Set the time that the access token will expire at
-  console.log('authResult.accessToken', authResult.accessToken)
   let expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime())
   localStorage.setItem('access_token', authResult.accessToken)
   localStorage.setItem('expires_at', expiresAt)

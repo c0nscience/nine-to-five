@@ -92,6 +92,11 @@ export default (state = {
             activity
         ))
       }
+    case 'LOGOUT_SUCCESS':
+      return {
+        currentActivity: '',
+        activities: []
+      }
     default:
       return state
   }
