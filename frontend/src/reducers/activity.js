@@ -2,62 +2,48 @@ import { CALL_API } from '../middleware/api'
 
 const CURRENT_UPDATE = 'CURRENT_UPDATE'
 const RESET_CURRENT = 'RESET_CURRENT'
-const APPEND_STARTED = 'APPEND_STARTED'
-const UPDATE_STOPPED_ACTIVITY = 'UPDATE_STOPPED_ACTIVITY'
 
 const ACTIVITIES_REQUEST = 'ACTIVITIES_REQUEST'
 const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
 const ACTIVITIES_FAILURE = 'ACTIVITIES_FAILURE'
 
+const ACTIVITY_START_REQUEST = 'ACTIVITY_START_REQUEST'
+const ACTIVITY_STARTED = 'ACTIVITY_STARTED'
+const ACTIVITY_START_FAILURE = 'ACTIVITY_START_FAILURE'
+
+const ACTIVITY_STOP_REQUEST = 'ACTIVITY_STOP_REQUEST'
+const ACTIVITY_STOPPED = 'ACTIVITY_STOPPED'
+const ACTIVITY_STOP_FAILURE = 'ACTIVITY_STOP_FAILURE'
+
 export const updateCurrent = value =>
   ({ type: CURRENT_UPDATE, payload: value })
 
-export const resetCurrent = () =>
-  ({ type: RESET_CURRENT })
-
-export const appendStarted = started =>
-  ({ type: APPEND_STARTED, payload: started })
-
-export const activitiesLoaded = activities =>
-  ({ type: ACTIVITIES_LOADED, payload: activities })
-
-export const updateStoppedActivity = stopped =>
-  ({ type: UPDATE_STOPPED_ACTIVITY, payload: stopped })
-
-export const startActivity = currentActivity => dispatch => {
-  let token = localStorage.getItem('access_token') || null
-
-  fetch('http://localhost:9000/activity', {
-    method: 'post',
-    mode: 'cors',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+export const startActivity = (currentActivity) => ({
+  [CALL_API]: {
+    endpoint: 'activity',
+    config: {
+      method: 'post',
+      mode: 'cors'
     },
-    body: JSON.stringify({ name: currentActivity })
-  }).then(response => (response.json()))
-    .then(started => {
-        dispatch(resetCurrent())
-        dispatch(appendStarted(started))
-      }
-    ).catch(error => console.error(error))
-}
+    authenticated: true,
+    data: { name: currentActivity },
+    additionalSuccessTypes: [RESET_CURRENT],
+    types: [ACTIVITY_START_REQUEST, ACTIVITY_STARTED, ACTIVITY_START_FAILURE]
+  }
+})
 
-export const stopActivity = () => (dispatch) => {
-  let token = localStorage.getItem('access_token') || null
-
-  fetch('http://localhost:9000/activity/stop', {
-    method: 'post',
-    headers: { 'Authorization': `Bearer ${token}` }
-  }).then(response => {
-    if (response.ok) {
-      return response.json()
-    }
-  }).then(stoppedActivity => {
-    dispatch(updateStoppedActivity(stoppedActivity))
-  }).catch(error => console.error(error))
-}
-
+export const stopActivity = () => ({
+  [CALL_API]: {
+    endpoint: 'activity/stop',
+    config: {
+      method: 'post',
+      mode: 'cors'
+    },
+    authenticated: true,
+    additionalSuccessTypes: [RESET_CURRENT],
+    types: [ACTIVITY_STOP_REQUEST, ACTIVITY_STOPPED, ACTIVITY_STOP_FAILURE]
+  }
+})
 
 export const loadActivities = () =>
   ({
@@ -84,25 +70,25 @@ export default (state = {
         ...state,
         currentActivity: ''
       }
-    case APPEND_STARTED:
-      return {
-        ...state,
-        activities: [
-          action.payload,
-          ...state.activities
-        ]
-      }
     case ACTIVITIES_LOADED:
       return {
         ...state,
         activities: action.response
       }
-    case UPDATE_STOPPED_ACTIVITY:
+    case ACTIVITY_STARTED:
+      return {
+        ...state,
+        activities: [
+          action.response,
+          ...state.activities
+        ]
+      }
+    case ACTIVITY_STOPPED:
       return {
         ...state,
         activities: state.activities.map(activity => (
-          activity.id === action.payload.id ?
-            action.payload :
+          activity.id === action.response.id ?
+            action.response :
             activity
         ))
       }
