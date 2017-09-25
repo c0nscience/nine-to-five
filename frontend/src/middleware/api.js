@@ -18,7 +18,7 @@ const callApi = (endpoint, config = {}, data, authenticated) => {
     }
   }
 
-  if (config.method && config.method.toLocaleLowerCase() === 'post') {
+  if (config.method && config.method.toLocaleLowerCase() === 'post' && typeof data !== 'undefined') {
     config = {
       ...config,
       headers: {
