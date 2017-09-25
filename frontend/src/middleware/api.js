@@ -35,6 +35,8 @@ const callApi = (endpoint, config = {}, data, authenticated) => {
         return response.json()
       } else if (response.status === 401) {
         return Promise.reject(UNAUTHORIZED)
+      } else if (response.status === 403) {
+        return Promise.reject(UNAUTHORIZED)
       } else {
         return Promise.reject(response)
       }
