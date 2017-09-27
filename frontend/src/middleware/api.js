@@ -1,4 +1,4 @@
-const BASE_URL = 'https://ntf-api.herokuapp.com//'
+const BASE_URL = 'https://ntf-api.herokuapp.com/'
 
 const callApi = (endpoint, config = {}, data, authenticated) => {
 
