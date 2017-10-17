@@ -1,29 +1,30 @@
 import React from 'react'
 import Grid from 'material-ui/Grid'
-import Paper from 'material-ui/Paper'
 import { withStyles } from 'material-ui/styles'
 import ActivityForm from './ActivityForm'
 import ActivityList from './ActivityList'
+import { Card, CardContent } from 'material-ui'
 
 const styles = theme => ({
   root: {
     flexGrow: 1
   },
-  paper: theme.mixins.gutters({
-    paddingTop: 16,
-    paddingBottom: 16,
+  card: theme.mixins.gutters({
     marginTop: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit * 3,
   }),
 })
 
 
-const Activity = ({classes}) => (
+const Activity = ({ classes }) => (
   <Grid container justify="center" className={classes.root}>
     <Grid item xs={9} sm={6} md={6}>
-      <Paper className={classes.paper} elevation={4}>
-        <ActivityForm/>
-        <ActivityList/>
-      </Paper>
+      <Card className={classes.card}>
+        <CardContent>
+          <ActivityForm/>
+        </CardContent>
+      </Card>
+      <ActivityList/>
     </Grid>
   </Grid>
 )
