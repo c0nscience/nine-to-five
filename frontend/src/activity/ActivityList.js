@@ -64,7 +64,7 @@ class ActivityList extends Component {
 
     return (
       <div>
-        {Object.entries(byWeek).map(v => {
+        {Object.entries(byWeek).sort((a, b) => b[0] - a[0]).map(v => {
           const [weekNumber, weeks] = v
 
           const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(2)
