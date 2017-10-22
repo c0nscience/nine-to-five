@@ -8,16 +8,19 @@ import moment from 'moment'
 import { Card, CardContent, Typography } from 'material-ui'
 
 const styles = theme => ({
-  weekSummaryCard: theme.mixins.gutters({
+  weekSummaryCard: {
     marginTop: theme.spacing.unit,
     marginBottom: theme.spacing.unit * 2,
-  }),
-  card: theme.mixins.gutters({
+  },
+  card: {
     marginTop: theme.spacing.unit,
     marginBottom: theme.spacing.unit,
-  }),
+  },
   dayHeadline: {
     paddingLeft: theme.spacing.unit * 2
+  },
+  cardContent: {
+    padding: 0
   }
 })
 
@@ -72,7 +75,7 @@ class ActivityList extends Component {
             <div key={weekNumber}>
               <Card className={classes.weekSummaryCard}>
                 <CardContent>
-                  <Typography type="display1">
+                  <Typography type="headline">
                     Worked {totalWeekDurationAsHours} hrs in week {weekNumber}
                   </Typography>
                 </CardContent>
@@ -95,13 +98,12 @@ class ActivityList extends Component {
                       {totalDurationAsHours} hrs on {day}
                     </Typography>
                     <Card className={classes.card}>
-                      <CardContent>
+                      <CardContent className={classes.cardContent}>
                         <List>
                           {activities.map(activity => (
-                            <div key={activity.id}>
-                              <ActivityItem {...activity}
-                                            isRunning={activity.end === undefined}/>
-                            </div>
+                            <ActivityItem {...activity}
+                                          isRunning={activity.end === undefined}
+                                          key={activity.id}/>
                           ))}
                         </List>
                       </CardContent>
