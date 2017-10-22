@@ -5,7 +5,7 @@ import Toolbar from 'material-ui/Toolbar'
 import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
-import MenuIcon from 'material-ui-icons/Menu'
+import RefreshIcon from 'material-ui-icons/Refresh'
 import { connect } from 'react-redux'
 import { login, logout } from '../reducers/auth'
 
@@ -31,8 +31,13 @@ const NavBar = ({
   <div className={classes.root}>
     <AppBar position="static">
       <Toolbar disableGutters>
-        <IconButton className={classes.menuButton} color="contrast" aria-label="Menu">
-          <MenuIcon/>
+        <IconButton className={classes.menuButton}
+                    color="contrast"
+                    aria-label="Menu"
+                    onClick={() => {
+                      window.location.reload()
+                    }}>
+          <RefreshIcon/>
         </IconButton>
         <Typography type="title" color="inherit" className={classes.flex}>
           Nine <span role="img" aria-label="two">✌️</span> Five
