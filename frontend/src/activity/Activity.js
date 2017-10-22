@@ -16,7 +16,7 @@ const styles = theme => ({
 
 
 const Activity = ({ classes }) => (
-  <Grid container justify="center" className={classes.root}>
+  <Grid container justify="center" spacing={0} className={classes.root}>
     <Grid item xs={12} sm={10}>
       <Card className={classes.card}>
         <CardContent>

@@ -1,16 +1,12 @@
 import React from 'react'
 import { startActivity, stopActivity, updateCurrent } from '../reducers/activity'
 import { connect } from 'react-redux'
-import TextField from 'material-ui/TextField'
+import Input from 'material-ui/Input'
 import Button from 'material-ui/Button'
+import Grid from 'material-ui/Grid'
 import { withStyles } from 'material-ui/styles'
 
 const styles = theme => ({
-  textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-    width: 200,
-  },
   button: {
     margin: theme.spacing.unit,
   },
@@ -43,27 +39,31 @@ const ActivityForm = (props) => {
 
   return (
     <div>
-      <TextField
-        id="name"
-        label="Name"
-        className={classes.textField}
-        value={currentActivity}
-        onChange={handleInputChange}
-        margin="normal"
-      />
-      <Button raised
-              color="primary"
-              className={classes.button}
-              disabled={currentActivity.length === 0}
-              onClick={handleSubmit}>
-        Start
-      </Button>
-      <Button raised
-              color="accent"
-              className={classes.button}
-              onClick={handleStopButtonClick}>
-        Stop
-      </Button>
+      <Grid item xs={12}>
+        <Input
+          id="name"
+          placeholder="Placeholder"
+          value={currentActivity}
+          onChange={handleInputChange}
+          margin="normal"
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Button raised
+                color="primary"
+                className={classes.button}
+                disabled={currentActivity.length === 0}
+                onClick={handleSubmit}>
+          Start
+        </Button>
+        <Button raised
+                color="accent"
+                className={classes.button}
+                onClick={handleStopButtonClick}>
+          Stop
+        </Button>
+      </Grid>
     </div>
   )
 }
