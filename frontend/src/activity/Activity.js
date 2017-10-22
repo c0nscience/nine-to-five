@@ -9,9 +9,9 @@ const styles = theme => ({
   root: {
     flexGrow: 1
   },
-  card: theme.mixins.gutters({
+  card: {
     marginBottom: theme.spacing.unit * 3,
-  }),
+  },
 })
 
 
