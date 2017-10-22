@@ -10,7 +10,6 @@ const styles = theme => ({
     flexGrow: 1
   },
   card: theme.mixins.gutters({
-    marginTop: theme.spacing.unit * 3,
     marginBottom: theme.spacing.unit * 3,
   }),
 })
@@ -18,7 +17,7 @@ const styles = theme => ({
 
 const Activity = ({ classes }) => (
   <Grid container justify="center" className={classes.root}>
-    <Grid item xs={9} sm={6} md={6}>
+    <Grid item xs={12} sm={10}>
       <Card className={classes.card}>
         <CardContent>
           <ActivityForm/>
