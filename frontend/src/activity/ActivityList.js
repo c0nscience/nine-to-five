@@ -81,7 +81,7 @@ class ActivityList extends Component {
                 </CardContent>
               </Card>
 
-              {Object.entries(weeks.days).map(value => {
+              {Object.entries(weeks.days).sort((a, b) => moment(a[0], 'll').isSameOrBefore(moment(b[0], 'll'))).map(value => {
                 const [day, activities] = value
                 const totalDiff = activities.reduce((result, activity) => {
                   const localStart = moment.utc(activity.start).local()
