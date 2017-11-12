@@ -19,6 +19,8 @@ const SELECT_ACTIVITY = 'SELECT_ACTIVITY'
 const DESELECT_ACTIVITY = 'DESELECT_ACTIVITY'
 
 const UPDATE_SELECTED_ACTIVITY_NAME = 'UPDATE_SELECTED_ACTIVITY_NAME'
+const UPDATE_SELECTED_ACTIVITY_START = 'UPDATE_SELECTED_ACTIVITY_START'
+const UPDATE_SELECTED_ACTIVITY_END = 'UPDATE_SELECTED_ACTIVITY_END'
 
 const SAVE_ACTIVITY_REQUEST = 'SAVE_ACTIVITY_REQUEST'
 const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
@@ -71,6 +73,12 @@ export const deselectActivity = () =>
 
 export const updateSelectedActivityName = name =>
   ({ type: UPDATE_SELECTED_ACTIVITY_NAME, payload: name })
+
+export const updateSelectedActivityStart = start =>
+  ({ type: UPDATE_SELECTED_ACTIVITY_START, payload: start })
+
+export const updateSelectedActivityEnd = end =>
+  ({ type: UPDATE_SELECTED_ACTIVITY_END, payload: end })
 
 export const saveSelectedActivity = selectedActivity => ({
   [CALL_API]: {
@@ -146,6 +154,22 @@ export default (state = {
         selectedActivity: {
           ...state.selectedActivity,
           name: action.payload
+        }
+      }
+    case UPDATE_SELECTED_ACTIVITY_START:
+      return {
+        ...state,
+        selectedActivity: {
+          ...state.selectedActivity,
+          start: action.payload
+        }
+      }
+    case UPDATE_SELECTED_ACTIVITY_END:
+      return {
+        ...state,
+        selectedActivity: {
+          ...state.selectedActivity,
+          end: action.payload
         }
       }
     default:

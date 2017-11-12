@@ -42,7 +42,9 @@ const ActivityItem = (props) => {
                     onClick={() => {
                       props.selectActivity({
                         id,
-                        name
+                        name,
+                        start: localStart,
+                        end: endUtc && localEnd
                       })
                     }}>
           <Edit/>
