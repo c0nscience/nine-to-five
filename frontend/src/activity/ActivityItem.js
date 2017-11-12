@@ -1,11 +1,15 @@
 import React from 'react'
-import { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
+import { connect } from 'react-redux'
+import { ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText } from 'material-ui/List'
+import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
 import { withStyles } from 'material-ui/styles'
 import green from 'material-ui/colors/green'
 import amber from 'material-ui/colors/amber'
 import Done from 'material-ui-icons/Done'
 import Update from 'material-ui-icons/Update'
+import Edit from 'material-ui-icons/Edit'
+import { selectActivity } from '../reducers/activity'
 
 const styles = theme => ({
   done: {
@@ -18,7 +22,7 @@ const styles = theme => ({
 
 const ActivityItem = (props) => {
   const timeFormat = 'HH:mm'
-  const { name, start: startUtc, end: endUtc, isRunning, classes } = props
+  const { id, name, start: startUtc, end: endUtc, isRunning, classes } = props
 
   const localStart = moment.utc(startUtc).local()
   const localEnd = moment.utc(endUtc).local()
@@ -33,8 +37,27 @@ const ActivityItem = (props) => {
         {icon}
       </ListItemIcon>
       <ListItemText primary={name} secondary={period}/>
+      <ListItemSecondaryAction>
+        <IconButton aria-label="Edit"
+                    onClick={() => {
+                      props.selectActivity({
+                        id,
+                        name
+                      })
+                    }}>
+          <Edit/>
+        </IconButton>
+      </ListItemSecondaryAction>
     </ListItem>
   )
 }
 
-export default withStyles(styles)(ActivityItem)
+const mapStateToProps = state => ({})
+const mapDispatchToProps = {
+  selectActivity
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(withStyles(styles)(ActivityItem))
