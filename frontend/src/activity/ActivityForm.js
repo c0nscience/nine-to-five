@@ -42,7 +42,7 @@ const ActivityForm = (props) => {
       <Grid item xs={12}>
         <Input
           id="name"
-          placeholder="Placeholder"
+          placeholder="Name"
           value={currentActivity}
           onChange={handleInputChange}
           margin="normal"
