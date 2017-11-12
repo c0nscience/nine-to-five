@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Button from 'material-ui/Button'
 import TextField from 'material-ui/TextField'
-import Dialog, { DialogActions, DialogContent, DialogTitle } from 'material-ui/Dialog'
-import { deselectActivity, updateSelectedActivityName, saveSelectedActivity } from '../reducers/activity'
+import Dialog, { DialogActions, DialogContent, DialogTitle,withMobileDialog } from 'material-ui/Dialog'
+import { deselectActivity, saveSelectedActivity, updateSelectedActivityName } from '../reducers/activity'
 
 class ActivityEditDialog extends Component {
 
@@ -21,8 +21,11 @@ class ActivityEditDialog extends Component {
 
   render() {
 
+    const { fullScreen } = this.props
+
     return (
-      <Dialog open={this.props.open}
+      <Dialog fullScreen={fullScreen}
+              open={this.props.open}
               onRequestClose={this.props.deselectActivity}>
         <DialogTitle>Edit</DialogTitle>
         <DialogContent>
@@ -64,4 +67,4 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(ActivityEditDialog)
+)(withMobileDialog()(ActivityEditDialog))
