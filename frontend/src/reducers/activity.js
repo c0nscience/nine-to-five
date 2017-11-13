@@ -172,6 +172,15 @@ export default (state = {
           end: action.payload
         }
       }
+    case ACTIVITY_SAVED:
+      return {
+        ...state,
+        activities: state.activities.map(activity => (
+          activity.id === action.response.id ?
+            action.response :
+            activity
+        ))
+      }
     default:
       return state
   }
