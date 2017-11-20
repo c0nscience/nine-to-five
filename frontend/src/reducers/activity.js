@@ -1,17 +1,16 @@
-import { CALL_API } from '../middleware/api'
+import { CALL_API, API_REQUEST_ENDED } from '../middleware/api'
+
+const API_REQUEST = 'API_REQUEST'
 
 const CURRENT_UPDATE = 'CURRENT_UPDATE'
 const RESET_CURRENT = 'RESET_CURRENT'
 
-const ACTIVITIES_REQUEST = 'ACTIVITIES_REQUEST'
 const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
 const ACTIVITIES_FAILURE = 'ACTIVITIES_FAILURE'
 
-const ACTIVITY_START_REQUEST = 'ACTIVITY_START_REQUEST'
 const ACTIVITY_STARTED = 'ACTIVITY_STARTED'
 const ACTIVITY_START_FAILURE = 'ACTIVITY_START_FAILURE'
 
-const ACTIVITY_STOP_REQUEST = 'ACTIVITY_STOP_REQUEST'
 const ACTIVITY_STOPPED = 'ACTIVITY_STOPPED'
 const ACTIVITY_STOP_FAILURE = 'ACTIVITY_STOP_FAILURE'
 
@@ -22,7 +21,6 @@ const UPDATE_SELECTED_ACTIVITY_NAME = 'UPDATE_SELECTED_ACTIVITY_NAME'
 const UPDATE_SELECTED_ACTIVITY_START = 'UPDATE_SELECTED_ACTIVITY_START'
 const UPDATE_SELECTED_ACTIVITY_END = 'UPDATE_SELECTED_ACTIVITY_END'
 
-const SAVE_ACTIVITY_REQUEST = 'SAVE_ACTIVITY_REQUEST'
 const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
 const UPDATE_ACTIVITY_FAILED = 'UPDATE_ACTIVITY_FAILED'
 
@@ -39,7 +37,7 @@ export const startActivity = (currentActivity) => ({
     authenticated: true,
     data: { name: currentActivity },
     additionalSuccessTypes: [RESET_CURRENT],
-    types: [ACTIVITY_START_REQUEST, ACTIVITY_STARTED, ACTIVITY_START_FAILURE]
+    types: [API_REQUEST, ACTIVITY_STARTED, ACTIVITY_START_FAILURE]
   }
 })
 
@@ -52,7 +50,7 @@ export const stopActivity = () => ({
     },
     authenticated: true,
     additionalSuccessTypes: [RESET_CURRENT],
-    types: [ACTIVITY_STOP_REQUEST, ACTIVITY_STOPPED, ACTIVITY_STOP_FAILURE]
+    types: [API_REQUEST, ACTIVITY_STOPPED, ACTIVITY_STOP_FAILURE]
   }
 })
 
@@ -61,7 +59,7 @@ export const loadActivities = () =>
     [CALL_API]: {
       endpoint: 'activities',
       authenticated: true,
-      types: [ACTIVITIES_REQUEST, ACTIVITIES_LOADED, ACTIVITIES_FAILURE]
+      types: [API_REQUEST, ACTIVITIES_LOADED, ACTIVITIES_FAILURE]
     }
   })
 
@@ -90,17 +88,28 @@ export const saveSelectedActivity = selectedActivity => ({
     data: {...selectedActivity},
     authenticated: true,
     additionalSuccessTypes: [DESELECT_ACTIVITY],
-    types: [SAVE_ACTIVITY_REQUEST, ACTIVITY_SAVED, UPDATE_ACTIVITY_FAILED]
+    types: [API_REQUEST, ACTIVITY_SAVED, UPDATE_ACTIVITY_FAILED]
   }
 })
 
 export default (state = {
+  loading: false,
   currentActivity: '',
   selectedActivity: undefined,
   activities: []
 }, action) => {
 
   switch (action.type) {
+    case API_REQUEST:
+      return {
+        ...state,
+        loading: true
+      }
+    case API_REQUEST_ENDED:
+      return {
+        ...state,
+        loading: false
+      }
     case CURRENT_UPDATE:
       return {
         ...state,

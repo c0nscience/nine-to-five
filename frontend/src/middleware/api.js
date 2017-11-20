@@ -43,8 +43,9 @@ const callApi = (endpoint, config = {}, data, authenticated) => {
     })
 }
 
-export const UNAUTHORIZED = Symbol('UNAUTHORIZED')
-export const UNAUTHENTICATED = Symbol('UNAUTHENTICATED')
+const UNAUTHORIZED = Symbol('UNAUTHORIZED')
+const UNAUTHENTICATED = Symbol('UNAUTHENTICATED')
+export const API_REQUEST_ENDED = 'API_REQUEST_ENDED'
 export const CALL_API = Symbol('Call API')
 
 export default store => next => action => {
@@ -59,27 +60,30 @@ export default store => next => action => {
   let { endpoint, types, authenticated, additionalSuccessTypes = [], config, data } = callAPI
 
   // eslint-disable-next-line
-  const [requestType, successType, errorType] = types
+  const [requestType, successType, errorType, endedType = API_REQUEST_ENDED] = types
 
+  next({type: requestType})
   // Passing the authenticated boolean back in our data will let us distinguish between normal and secret quotes
   return callApi(endpoint, config, data, authenticated)
     .then(response => {
-      if (typeof additionalSuccessTypes !== 'undefined') {
-        additionalSuccessTypes.forEach(type => next({
-          response,
-          authenticated,
-          type
-        }))
-      }
+      additionalSuccessTypes.forEach(type => next({
+        response,
+        authenticated,
+        type
+      }))
       return response
     })
     .then(
-      response => next({
-        response,
-        authenticated,
-        type: successType
-      }),
+      response => {
+        next({
+          response,
+          authenticated,
+          type: successType
+        })
+        next({type: endedType})
+      },
       error => {
+        next({type: endedType})
         if (error === UNAUTHORIZED) {
           next({
             type: 'LOGOUT_SUCCESS'
