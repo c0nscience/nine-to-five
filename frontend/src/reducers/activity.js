@@ -17,10 +17,6 @@ const ACTIVITY_STOP_FAILURE = 'ACTIVITY_STOP_FAILURE'
 const SELECT_ACTIVITY = 'SELECT_ACTIVITY'
 const DESELECT_ACTIVITY = 'DESELECT_ACTIVITY'
 
-const UPDATE_SELECTED_ACTIVITY_NAME = 'UPDATE_SELECTED_ACTIVITY_NAME'
-const UPDATE_SELECTED_ACTIVITY_START = 'UPDATE_SELECTED_ACTIVITY_START'
-const UPDATE_SELECTED_ACTIVITY_END = 'UPDATE_SELECTED_ACTIVITY_END'
-
 const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
 const UPDATE_ACTIVITY_FAILED = 'UPDATE_ACTIVITY_FAILED'
 
@@ -69,15 +65,6 @@ export const selectActivity = activity =>
 export const deselectActivity = () =>
   ({ type: DESELECT_ACTIVITY })
 
-export const updateSelectedActivityName = name =>
-  ({ type: UPDATE_SELECTED_ACTIVITY_NAME, payload: name })
-
-export const updateSelectedActivityStart = start =>
-  ({ type: UPDATE_SELECTED_ACTIVITY_START, payload: start })
-
-export const updateSelectedActivityEnd = end =>
-  ({ type: UPDATE_SELECTED_ACTIVITY_END, payload: end })
-
 export const saveSelectedActivity = selectedActivity => ({
   [CALL_API]: {
     endpoint: 'activity/' + selectedActivity.id,
@@ -93,9 +80,10 @@ export const saveSelectedActivity = selectedActivity => ({
 })
 
 export default (state = {
-  loading: true,
+  loading: false,
+  openEditDialog: false,
   currentActivity: '',
-  selectedActivity: undefined,
+  selectedActivity: {},
   activities: []
 }, action) => {
 
@@ -150,36 +138,13 @@ export default (state = {
     case SELECT_ACTIVITY:
       return {
         ...state,
+        openEditDialog: true,
         selectedActivity: action.payload
       }
     case DESELECT_ACTIVITY:
       return {
         ...state,
-        selectedActivity: undefined
-      }
-    case UPDATE_SELECTED_ACTIVITY_NAME:
-      return {
-        ...state,
-        selectedActivity: {
-          ...state.selectedActivity,
-          name: action.payload
-        }
-      }
-    case UPDATE_SELECTED_ACTIVITY_START:
-      return {
-        ...state,
-        selectedActivity: {
-          ...state.selectedActivity,
-          start: action.payload
-        }
-      }
-    case UPDATE_SELECTED_ACTIVITY_END:
-      return {
-        ...state,
-        selectedActivity: {
-          ...state.selectedActivity,
-          end: action.payload
-        }
+        openEditDialog: false
       }
     case ACTIVITY_SAVED:
       return {
