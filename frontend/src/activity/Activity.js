@@ -5,6 +5,7 @@ import ActivityForm from './ActivityForm'
 import ActivityList from './ActivityList'
 import { Card, CardContent } from 'material-ui'
 import ActivityEditDialog from './ActivityEditDialog'
+import ControlButton from './ActivityControllButton'
 
 const styles = theme => ({
   root: {
@@ -26,6 +27,7 @@ const Activity = ({ classes }) => (
       </Card>
       <ActivityEditDialog />
       <ActivityList/>
+      <ControlButton/>
     </Grid>
   </Grid>
 )

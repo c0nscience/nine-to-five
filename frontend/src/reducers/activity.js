@@ -93,7 +93,7 @@ export const saveSelectedActivity = selectedActivity => ({
 })
 
 export default (state = {
-  loading: false,
+  loading: true,
   currentActivity: '',
   selectedActivity: undefined,
   activities: []
