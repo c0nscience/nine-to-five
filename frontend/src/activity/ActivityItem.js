@@ -29,13 +29,9 @@ const ActivityItem = (props) => {
 
   const duration = moment.duration(moment(localEnd).diff(moment(localStart))).humanize()
   const period = `${duration} from ${localStart.format(timeFormat)} ${endUtc === undefined ? '' : `to ${localEnd.format(timeFormat)}`}`
-  const icon = isRunning ? <Update className={classes.running}/> : <Done className={classes.done}/>
 
   return (
     <ListItem>
-      <ListItemIcon>
-        {icon}
-      </ListItemIcon>
       <ListItemText primary={name} secondary={period}/>
       <ListItemSecondaryAction>
         <IconButton aria-label="Edit"

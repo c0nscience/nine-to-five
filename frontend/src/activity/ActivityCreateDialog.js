@@ -24,6 +24,7 @@ class ActivityEditDialog extends Component {
 
   handleRequestSave(event) {
     event.preventDefault()
+    this.setState({ name: '' })
     this.props.startActivity(this.state.name)
   }
 
@@ -45,6 +46,7 @@ class ActivityEditDialog extends Component {
         <DialogContent>
           <TextField
             id="name"
+            autoFocus
             label="Name"
             margin="dense"
             type="text"

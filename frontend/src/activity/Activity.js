@@ -5,6 +5,7 @@ import ActivityList from './ActivityList'
 import ActivityEditDialog from './ActivityEditDialog'
 import ControlButton from './ActivityControllButton'
 import ActivityCreateDialog from './ActivityCreateDialog'
+import RunningActivityItem from './RunningActivityItem'
 
 const styles = theme => ({
   root: {
@@ -19,6 +20,7 @@ const styles = theme => ({
 const Activity = ({ classes }) => (
   <Grid container justify="center" spacing={0} className={classes.root}>
     <Grid item xs={12} sm={10}>
+      <RunningActivityItem/>
       <ActivityList/>
       <ControlButton/>
       <ActivityEditDialog />

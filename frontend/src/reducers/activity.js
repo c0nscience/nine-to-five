@@ -2,9 +2,6 @@ import { CALL_API, API_REQUEST_ENDED } from '../middleware/api'
 
 const API_REQUEST = 'API_REQUEST'
 
-const CURRENT_UPDATE = 'CURRENT_UPDATE'
-const RESET_CURRENT = 'RESET_CURRENT'
-
 const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
 const ACTIVITIES_FAILURE = 'ACTIVITIES_FAILURE'
 
@@ -22,9 +19,6 @@ const UPDATE_ACTIVITY_FAILED = 'UPDATE_ACTIVITY_FAILED'
 
 const OPEN_CREATE_DIALOG = 'OPEN_CREATE_DIALOG'
 const CLOSE_CREATE_DIALOG = 'CLOSE_CREATE_DIALOG'
-
-export const updateCurrent = value =>
-  ({ type: CURRENT_UPDATE, payload: value })
 
 export const startActivity = (currentActivity) => ({
   [CALL_API]: {
@@ -48,7 +42,6 @@ export const stopActivity = () => ({
       mode: 'cors'
     },
     authenticated: true,
-    additionalSuccessTypes: [RESET_CURRENT],
     types: [API_REQUEST, ACTIVITY_STOPPED, ACTIVITY_STOP_FAILURE]
   }
 })
@@ -92,7 +85,6 @@ export default (state = {
   loading: false,
   openEditDialog: false,
   openCreateDialog: false,
-  currentActivity: '',
   selectedActivity: {},
   activities: []
 }, action) => {
@@ -107,16 +99,6 @@ export default (state = {
       return {
         ...state,
         loading: false
-      }
-    case CURRENT_UPDATE:
-      return {
-        ...state,
-        currentActivity: action.payload
-      }
-    case RESET_CURRENT:
-      return {
-        ...state,
-        currentActivity: ''
       }
     case ACTIVITIES_LOADED:
       return {

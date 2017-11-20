@@ -100,9 +100,8 @@ class ActivityList extends Component {
                     <Card className={classes.card}>
                       <CardContent className={classes.cardContent}>
                         <List>
-                          {activities.map(activity => (
+                          {activities.filter(activity => activity.end !== undefined).map(activity => (
                             <ActivityItem {...activity}
-                                          isRunning={activity.end === undefined}
                                           key={activity.id}/>
                           ))}
                         </List>
