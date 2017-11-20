@@ -33,7 +33,7 @@ const RunningActivityItem = (props) => {
         const period = `${duration} from ${localStart.format(timeFormat)}`
 
         return (
-          <div>
+          <div key={id}>
             <Typography type="subheading" className={classes.subHeadline}>
               Running
             </Typography>

@@ -1,13 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText } from 'material-ui/List'
+import { ListItem, ListItemSecondaryAction, ListItemText } from 'material-ui/List'
 import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
 import { withStyles } from 'material-ui/styles'
 import green from 'material-ui/colors/green'
 import amber from 'material-ui/colors/amber'
-import Done from 'material-ui-icons/Done'
-import Update from 'material-ui-icons/Update'
 import Edit from 'material-ui-icons/Edit'
 import { selectActivity } from '../reducers/activity'
 
@@ -22,7 +20,7 @@ const styles = theme => ({
 
 const ActivityItem = (props) => {
   const timeFormat = 'HH:mm'
-  const { id, name, start: startUtc, end: endUtc, isRunning, classes } = props
+  const { id, name, start: startUtc, end: endUtc } = props
 
   const localStart = moment.utc(startUtc).local()
   const localEnd = moment.utc(endUtc).local()
