@@ -4,7 +4,7 @@ import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 import AddIcon from 'material-ui-icons/Add'
 import { CircularProgress } from 'material-ui/Progress'
-import yellow from 'material-ui/colors/yellow'
+import { openCreateDialog } from '../reducers/activity'
 
 const styles = theme => ({
   button: {
@@ -23,12 +23,13 @@ const styles = theme => ({
   }
 })
 
-const ControlButton = ({ classes, loading }) => (
+const ControlButton = ({ classes, loading, openCreateDialog }) => (
   <div className={classes.button}>
     <Button fab
             disabled={loading}
             color="primary"
-            aria-label="add">
+            aria-label="add"
+            onClick={openCreateDialog}>
       <AddIcon/>
     </Button>
     {loading && <CircularProgress size={68} className={classes.fabProgress} />}
@@ -39,7 +40,9 @@ const mapStateToProps = state => ({
   loading: state.activity.loading
 })
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  openCreateDialog
+}
 
 export default connect(
   mapStateToProps,

@@ -20,6 +20,9 @@ const DESELECT_ACTIVITY = 'DESELECT_ACTIVITY'
 const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
 const UPDATE_ACTIVITY_FAILED = 'UPDATE_ACTIVITY_FAILED'
 
+const OPEN_CREATE_DIALOG = 'OPEN_CREATE_DIALOG'
+const CLOSE_CREATE_DIALOG = 'CLOSE_CREATE_DIALOG'
+
 export const updateCurrent = value =>
   ({ type: CURRENT_UPDATE, payload: value })
 
@@ -32,7 +35,7 @@ export const startActivity = (currentActivity) => ({
     },
     authenticated: true,
     data: { name: currentActivity },
-    additionalSuccessTypes: [RESET_CURRENT],
+    additionalSuccessTypes: [CLOSE_CREATE_DIALOG],
     types: [API_REQUEST, ACTIVITY_STARTED, ACTIVITY_START_FAILURE]
   }
 })
@@ -65,6 +68,12 @@ export const selectActivity = activity =>
 export const deselectActivity = () =>
   ({ type: DESELECT_ACTIVITY })
 
+export const openCreateDialog = () =>
+  ({ type: OPEN_CREATE_DIALOG })
+
+export const closeCreateDialog = () =>
+  ({ type: CLOSE_CREATE_DIALOG })
+
 export const saveSelectedActivity = selectedActivity => ({
   [CALL_API]: {
     endpoint: 'activity/' + selectedActivity.id,
@@ -82,6 +91,7 @@ export const saveSelectedActivity = selectedActivity => ({
 export default (state = {
   loading: false,
   openEditDialog: false,
+  openCreateDialog: false,
   currentActivity: '',
   selectedActivity: {},
   activities: []
@@ -154,6 +164,16 @@ export default (state = {
             action.response :
             activity
         ))
+      }
+    case OPEN_CREATE_DIALOG:
+      return {
+        ...state,
+        openCreateDialog: true,
+      }
+    case CLOSE_CREATE_DIALOG:
+      return {
+        ...state,
+        openCreateDialog: false,
       }
     default:
       return state
