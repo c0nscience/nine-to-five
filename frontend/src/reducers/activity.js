@@ -124,7 +124,10 @@ export default (state = {
       }
     case 'LOGOUT_SUCCESS':
       return {
-        currentActivity: '',
+        loading: false,
+        openEditDialog: false,
+        openCreateDialog: false,
+        selectedActivity: {},
         activities: []
       }
     case SELECT_ACTIVITY:
