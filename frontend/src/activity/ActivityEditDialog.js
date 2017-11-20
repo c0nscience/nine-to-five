@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import Button from 'material-ui/Button'
 import TextField from 'material-ui/TextField'
 import Dialog, { DialogActions, DialogContent, DialogTitle, withMobileDialog } from 'material-ui/Dialog'
-import { deselectActivity, saveSelectedActivity, } from '../reducers/activity'
+import { deselectActivity, saveSelectedActivity, deleteActivity } from '../reducers/activity'
 import moment from 'moment'
 
 const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
@@ -24,6 +24,7 @@ class ActivityEditDialog extends Component {
     this.handleEndChange = this.handleEndChange.bind(this)
     this.handleRequestSave = this.handleRequestSave.bind(this)
     this.handleClose = this.handleClose.bind(this)
+    this.handleRequestDelete = this.handleRequestDelete.bind(this)
   }
 
   componentWillReceiveProps({ id, name, start, end }) {
@@ -59,6 +60,11 @@ class ActivityEditDialog extends Component {
       start: moment(this.state.start, dateTimeFormat).utc(false).toISOString(),
       end: moment(this.state.end, dateTimeFormat).utc(false).toISOString()
     })
+  }
+
+  handleRequestDelete(event) {
+    event.preventDefault()
+    this.props.deleteActivity(this.state.id)
   }
 
   handleClose(event) {
@@ -112,7 +118,10 @@ class ActivityEditDialog extends Component {
           />}
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClose} color="primary">
+          <Button onClick={this.handleRequestDelete} color="accent">
+            Delete
+          </Button>
+          <Button onClick={this.handleClose}>
             Cancel
           </Button>
           <Button onClick={this.handleRequestSave} color="primary">
@@ -133,7 +142,8 @@ const mapStateToProps = state => ({
 })
 const mapDispatchToProps = {
   deselectActivity,
-  saveSelectedActivity
+  saveSelectedActivity,
+  deleteActivity
 }
 
 export default connect(

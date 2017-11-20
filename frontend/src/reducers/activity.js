@@ -20,6 +20,9 @@ const UPDATE_ACTIVITY_FAILED = 'UPDATE_ACTIVITY_FAILED'
 const OPEN_CREATE_DIALOG = 'OPEN_CREATE_DIALOG'
 const CLOSE_CREATE_DIALOG = 'CLOSE_CREATE_DIALOG'
 
+const ACTIVITY_DELETED = 'ACTIVITY_DELETED'
+const DELETE_ACTIVITY_FAILED = 'DELETE_ACTIVITY_FAILED'
+
 export const startActivity = (currentActivity) => ({
   [CALL_API]: {
     endpoint: 'activity',
@@ -78,6 +81,19 @@ export const saveSelectedActivity = selectedActivity => ({
     authenticated: true,
     additionalSuccessTypes: [DESELECT_ACTIVITY],
     types: [API_REQUEST, ACTIVITY_SAVED, UPDATE_ACTIVITY_FAILED]
+  }
+})
+
+export const deleteActivity = id => ({
+  [CALL_API]: {
+    endpoint: 'activity/' + id,
+    config: {
+      method: 'delete',
+      mode: 'cors'
+    },
+    authenticated: true,
+    additionalSuccessTypes: [DESELECT_ACTIVITY],
+    types: [API_REQUEST, ACTIVITY_DELETED, DELETE_ACTIVITY_FAILED]
   }
 })
 
@@ -149,6 +165,16 @@ export default (state = {
             action.response :
             activity
         ))
+      }
+    case ACTIVITY_DELETED:
+      const deletedActivityIndex = state.activities.findIndex(activity => activity.id === action.response.id)
+
+      return {
+        ...state,
+        activities: [
+          ...state.activities.slice(0, deletedActivityIndex),
+          ...state.activities.slice(deletedActivityIndex + 1)
+        ]
       }
     case OPEN_CREATE_DIALOG:
       return {
