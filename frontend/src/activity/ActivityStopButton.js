@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 import StopIcon from 'material-ui-icons/Stop'
+import { CircularProgress } from 'material-ui/Progress'
 import { stopActivity } from '../reducers/activity'
 
 const styles = theme => ({
@@ -13,6 +14,12 @@ const styles = theme => ({
     right: theme.spacing.unit * 3,
     bottom: - theme.spacing.unit * 3,
     position: 'absolute'
+  },
+  fabProgress: {
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    zIndex: 1,
   }
 })
 
@@ -26,6 +33,7 @@ const StopButton = ({ classes, loading, stopActivity }) => {
               onClick={stopActivity}>
         <StopIcon/>
       </Button>
+      {loading && <CircularProgress size={68} className={classes.fabProgress}/>}
     </div>
   )
 }
