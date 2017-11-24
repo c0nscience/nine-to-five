@@ -19,7 +19,8 @@ const styles = theme => ({
     position: 'relative'
   },
   name: {
-    paddingTop: theme.spacing.unit
+    paddingTop: theme.spacing.unit,
+    paddingLeft: theme.spacing.unit,
   }
 })
 
