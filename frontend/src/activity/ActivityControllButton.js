@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 import AddIcon from 'material-ui-icons/Add'
+import { CircularProgress } from 'material-ui/Progress'
 import { openCreateDialog } from '../reducers/activity'
 
 const styles = theme => ({
@@ -33,6 +34,8 @@ const ControlButton = ({ classes, loading, activities, openCreateDialog }) => {
                 onClick={openCreateDialog}>
           <AddIcon/>
         </Button>
+
+      {loading && <CircularProgress size={68} className={classes.fabProgress}/>}
     </div>
   )
 }
