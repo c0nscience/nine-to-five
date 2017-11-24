@@ -3,9 +3,7 @@ import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 import AddIcon from 'material-ui-icons/Add'
-import StopIcon from 'material-ui-icons/Stop'
-import { CircularProgress } from 'material-ui/Progress'
-import { openCreateDialog, stopActivity } from '../reducers/activity'
+import { openCreateDialog } from '../reducers/activity'
 
 const styles = theme => ({
   button: {
@@ -24,22 +22,10 @@ const styles = theme => ({
   }
 })
 
-const ControlButton = ({ classes, loading, activities, openCreateDialog, stopActivity }) => {
+const ControlButton = ({ classes, loading, activities, openCreateDialog }) => {
   const runningActivity = activities.find(activity => activity.end === undefined)
   return (
-    <div className={classes.button}>
-      {
-        runningActivity &&
-        <Button fab
-                disabled={loading}
-                color="accent"
-                aria-label="stop"
-                onClick={stopActivity}>
-          <StopIcon/>
-        </Button>
-      }
-      {
-        !runningActivity &&
+    !runningActivity && <div className={classes.button}>
         <Button fab
                 disabled={loading}
                 color="primary"
@@ -47,9 +33,6 @@ const ControlButton = ({ classes, loading, activities, openCreateDialog, stopAct
                 onClick={openCreateDialog}>
           <AddIcon/>
         </Button>
-      }
-
-      {loading && <CircularProgress size={68} className={classes.fabProgress}/>}
     </div>
   )
 }
@@ -61,7 +44,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   openCreateDialog,
-  stopActivity
 }
 
 export default connect(
