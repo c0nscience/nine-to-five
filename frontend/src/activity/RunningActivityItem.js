@@ -12,13 +12,13 @@ import StopButton from './ActivityStopButton'
 
 const styles = theme => ({
   paper: {
-    paddingTop: theme.spacing.unit,
+    paddingTop: theme.spacing.unit * 2,
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
+    paddingBottom: theme.spacing.unit * 3,
     position: 'relative'
   },
   name: {
-    paddingTop: theme.spacing.unit,
     paddingLeft: theme.spacing.unit,
   }
 })
@@ -43,22 +43,24 @@ const RunningActivityItem = (props) => {
               since {localStart.format(timeFormat)}
             </Typography>
           </Grid>
-          <Grid item xs={8}>
+          <Grid item xs={7}>
             <Typography type="title" className={classes.name}>
               {name.slice(0, 40)}{name.length >= 40 ? ' ...' : ''}
             </Typography>
           </Grid>
+          <Grid item xs={1}>
+            <IconButton aria-label="Edit"
+                        onClick={() => {
+                          props.selectActivity({
+                            id,
+                            name,
+                            start: localStart
+                          })
+                        }}>
+              <Edit/>
+            </IconButton>
+          </Grid>
         </Grid>
-        <IconButton aria-label="Edit"
-                    onClick={() => {
-                      props.selectActivity({
-                        id,
-                        name,
-                        start: localStart
-                      })
-                    }}>
-          <Edit style={{ fontSize: 20 }}/>
-        </IconButton>
         <StopButton/>
       </Paper>
     </div>
