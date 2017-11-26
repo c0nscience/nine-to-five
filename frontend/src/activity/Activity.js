@@ -22,7 +22,7 @@ const Activity = ({ classes, activities }) => {
   return (
   <Grid container justify="center" spacing={0} className={classes.root}>
     <Grid item xs={12} sm={10}>
-      {runningActivity && <RunningActivityItem runningActivity={runningActivity}/>}
+      {runningActivity && <RunningActivityItem {...runningActivity}/>}
       {!runningActivity && <CreateActivityForm />}
       <ActivityList/>
       <ActivityEditDialog />

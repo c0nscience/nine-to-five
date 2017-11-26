@@ -26,8 +26,7 @@ const styles = theme => ({
 const timeFormat = 'HH:mm'
 
 const RunningActivityItem = (props) => {
-  const { classes, runningActivity } = props
-  const { id, name, start: startUtc } = runningActivity
+  const { classes, id, name, start: startUtc } = props
 
   const localStart = moment.utc(startUtc).local()
 
