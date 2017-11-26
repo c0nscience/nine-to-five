@@ -1,11 +1,11 @@
 import React from 'react'
 import Grid from 'material-ui/Grid'
+import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import ActivityList from './ActivityList'
 import ActivityEditDialog from './ActivityEditDialog'
-import ControlButton from './ActivityControllButton'
-import ActivityCreateDialog from './ActivityCreateDialog'
 import RunningActivityItem from './RunningActivityItem'
+import CreateActivityForm from './CreateActivityFrom'
 
 const styles = theme => ({
   root: {
@@ -17,16 +17,21 @@ const styles = theme => ({
 })
 
 
-const Activity = ({ classes }) => (
+const Activity = ({ classes, activities }) => {
+  const runningActivity = activities.find(activity => activity.end === undefined)
+  return (
   <Grid container justify="center" spacing={0} className={classes.root}>
     <Grid item xs={12} sm={10}>
-      <RunningActivityItem/>
+      {runningActivity && <RunningActivityItem runningActivity={runningActivity}/>}
+      {!runningActivity && <CreateActivityForm />}
       <ActivityList/>
-      <ControlButton/>
       <ActivityEditDialog />
-      <ActivityCreateDialog />
     </Grid>
   </Grid>
 )
+}
+const mapStateToProps = state => ({
+  activities: state.activity.activities
+})
 
-export default withStyles(styles)(Activity)
+export default connect(mapStateToProps)(withStyles(styles)(Activity))
