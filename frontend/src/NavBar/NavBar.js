@@ -40,7 +40,7 @@ const NavBar = ({
           <RefreshIcon/>
         </IconButton>
         <Typography type="title" color="inherit" className={classes.flex}>
-          Nine <span role="img" aria-label="two">✌️</span> Five
+          Nine 2 Five
         </Typography>
         {
           !isAuthenticated && <Button color="contrast" onClick={login}>Login</Button>
