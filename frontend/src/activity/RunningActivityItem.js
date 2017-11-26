@@ -15,7 +15,8 @@ const styles = theme => ({
     paddingTop: theme.spacing.unit * 2,
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 3,
+    paddingBottom: theme.spacing.unit * 5,
+    marginBottom: theme.spacing.unit * 3,
     position: 'relative'
   },
   name: {
@@ -38,37 +39,35 @@ const RunningActivityItem = (props) => {
 
   const durationAsMilliseconds = moment.duration(moment().diff(moment(localStart))).asMilliseconds()
   return (
-    <div key={id}>
-      <Paper className={classes.paper}>
-        <Grid container spacing={0}>
-          <Grid item xs={4}>
-            <Typography type="display2">
-              {moment.utc(durationAsMilliseconds).format(timeFormat)}
-            </Typography>
-            <Typography type="caption">
-              since {localStart.format(timeFormat)}
-            </Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <Typography type="title" className={classes.name}>
-              {name.slice(0, 40)}{name.length >= 40 ? ' ...' : ''}
-            </Typography>
-          </Grid>
+    <Paper className={classes.paper}>
+      <Grid container spacing={0}>
+        <Grid item xs={4}>
+          <Typography type="display2">
+            {moment.utc(durationAsMilliseconds).format(timeFormat)}
+          </Typography>
+          <Typography type="caption">
+            since {localStart.format(timeFormat)}
+          </Typography>
         </Grid>
-        <IconButton className={classes.editButton}
-                    aria-label="Edit"
-                    onClick={() => {
-                      props.selectActivity({
-                        id,
-                        name,
-                        start: localStart
-                      })
-                    }}>
-          <Edit/>
-        </IconButton>
-        <StopButton/>
-      </Paper>
-    </div>
+        <Grid item xs={7}>
+          <Typography type="title" className={classes.name}>
+            {name.slice(0, 57)}{name.length >= 57 ? ' ...' : ''}
+          </Typography>
+        </Grid>
+      </Grid>
+      <IconButton className={classes.editButton}
+                  aria-label="Edit"
+                  onClick={() => {
+                    props.selectActivity({
+                      id,
+                      name,
+                      start: localStart
+                    })
+                  }}>
+        <Edit/>
+      </IconButton>
+      <StopButton/>
+    </Paper>
   )
 }
 

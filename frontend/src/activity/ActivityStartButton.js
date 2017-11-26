@@ -9,8 +9,8 @@ const styles = theme => ({
   button: {
     margin: 0,
     top: 'auto',
-    left: 'auto',
-    right: theme.spacing.unit * 3,
+    right: 'auto',
+    left: theme.spacing.unit * 3,
     bottom: - theme.spacing.unit * 3,
     position: 'absolute'
   },
