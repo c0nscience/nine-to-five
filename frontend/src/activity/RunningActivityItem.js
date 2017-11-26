@@ -20,6 +20,12 @@ const styles = theme => ({
   },
   name: {
     paddingLeft: theme.spacing.unit,
+  },
+  editButton: {
+    right: '4px',
+    position: 'absolute',
+    top: '50%',
+    marginTop: -theme.spacing.unit * 4
   }
 })
 
@@ -48,19 +54,18 @@ const RunningActivityItem = (props) => {
               {name.slice(0, 40)}{name.length >= 40 ? ' ...' : ''}
             </Typography>
           </Grid>
-          <Grid item xs={1}>
-            <IconButton aria-label="Edit"
-                        onClick={() => {
-                          props.selectActivity({
-                            id,
-                            name,
-                            start: localStart
-                          })
-                        }}>
-              <Edit/>
-            </IconButton>
-          </Grid>
         </Grid>
+        <IconButton className={classes.editButton}
+                    aria-label="Edit"
+                    onClick={() => {
+                      props.selectActivity({
+                        id,
+                        name,
+                        start: localStart
+                      })
+                    }}>
+          <Edit/>
+        </IconButton>
         <StopButton/>
       </Paper>
     </div>
