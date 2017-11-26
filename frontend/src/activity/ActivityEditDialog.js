@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import Button from 'material-ui/Button'
 import TextField from 'material-ui/TextField'
 import Dialog, { DialogActions, DialogContent, DialogTitle, withMobileDialog } from 'material-ui/Dialog'
-import { deselectActivity, saveSelectedActivity, deleteActivity } from '../reducers/activity'
+import { deleteActivity, deselectActivity, saveSelectedActivity } from '../reducers/activity'
 import moment from 'moment'
 
 const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
@@ -11,7 +11,8 @@ const initState = {
   id: '',
   name: '',
   start: '',
-  end: ''
+  end: '',
+  confirmDialogOpen: false
 }
 
 class ActivityEditDialog extends Component {
@@ -25,6 +26,8 @@ class ActivityEditDialog extends Component {
     this.handleRequestSave = this.handleRequestSave.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleRequestDelete = this.handleRequestDelete.bind(this)
+    this.handleOpenConfirmDialog = this.handleOpenConfirmDialog.bind(this)
+    this.handleCloseConfirmDialog = this.handleCloseConfirmDialog.bind(this)
   }
 
   componentWillReceiveProps({ id, name, start, end }) {
@@ -64,6 +67,9 @@ class ActivityEditDialog extends Component {
 
   handleRequestDelete(event) {
     event.preventDefault()
+    this.setState({
+      confirmDialogOpen: false
+    })
     this.props.deleteActivity(this.state.id)
   }
 
@@ -73,62 +79,93 @@ class ActivityEditDialog extends Component {
     this.props.deselectActivity()
   }
 
+  handleOpenConfirmDialog() {
+    this.setState({
+      confirmDialogOpen: true
+    })
+  }
+
+  handleCloseConfirmDialog() {
+    this.setState({
+      confirmDialogOpen: false
+    })
+  }
+
   render() {
 
     const { fullScreen } = this.props
 
-    return (
-      <Dialog fullScreen={fullScreen}
-              open={this.props.open}
-              onRequestClose={this.props.deselectActivity}>
-        <DialogTitle>Edit</DialogTitle>
-        <DialogContent>
-          <TextField
-            id="name"
-            label="Name"
-            margin="dense"
-            type="text"
-            fullWidth
-            value={this.state.name}
-            onChange={this.handleNameChange}
-          />
-          <TextField
-            id="start"
-            label="Start"
-            margin="dense"
-            type="datetime-local"
-            fullWidth
-            value={moment(this.state.start).format(dateTimeFormat)}
-            onChange={this.handleStartChange}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-          {this.props.end && <TextField
-            id="end"
-            label="End"
-            margin="dense"
-            type="datetime-local"
-            fullWidth
-            value={moment(this.state.end).format(dateTimeFormat)}
-            onChange={this.handleEndChange}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />}
-        </DialogContent>
+    const ConfirmDialog = () => (
+      <Dialog open={this.state.confirmDialogOpen}
+              onRequestClose={this.handleCloseConfirmDialog}>
+        <DialogTitle>Are you sure?</DialogTitle>
         <DialogActions>
+
+          <Button onClick={this.handleCloseConfirmDialog}>
+            No, close!
+          </Button>
           <Button onClick={this.handleRequestDelete} color="accent">
-            Delete
-          </Button>
-          <Button onClick={this.handleClose}>
-            Cancel
-          </Button>
-          <Button onClick={this.handleRequestSave} color="primary">
-            Save
+            Yes, delete!
           </Button>
         </DialogActions>
       </Dialog>
+    )
+
+    return (
+      <div>
+        <ConfirmDialog/>
+        <Dialog fullScreen={fullScreen}
+                open={this.props.open}
+                onRequestClose={this.props.deselectActivity}>
+          <DialogTitle>Edit</DialogTitle>
+          <DialogContent>
+            <TextField
+              id="name"
+              label="Name"
+              margin="dense"
+              type="text"
+              fullWidth
+              value={this.state.name}
+              onChange={this.handleNameChange}
+            />
+            <TextField
+              id="start"
+              label="Start"
+              margin="dense"
+              type="datetime-local"
+              fullWidth
+              value={moment(this.state.start).format(dateTimeFormat)}
+              onChange={this.handleStartChange}
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            {this.props.end && <TextField
+              id="end"
+              label="End"
+              margin="dense"
+              type="datetime-local"
+              fullWidth
+              value={moment(this.state.end).format(dateTimeFormat)}
+              onChange={this.handleEndChange}
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleOpenConfirmDialog} color="accent">
+              Delete
+            </Button>
+            <Button onClick={this.handleClose}>
+              Cancel
+            </Button>
+            <Button onClick={this.handleRequestSave} color="primary">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
     )
   }
 }
