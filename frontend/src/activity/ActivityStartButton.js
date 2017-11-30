@@ -22,11 +22,11 @@ const styles = theme => ({
   }
 })
 
-const StartButton = ({ classes, loading, onClick }) => {
+const StartButton = ({ classes, loading, onClick, disabled }) => {
   return (
     <div className={classes.button}>
         <Button fab
-                disabled={loading}
+                disabled={loading || disabled}
                 color="primary"
                 aria-label="add"
                 onClick={onClick}>

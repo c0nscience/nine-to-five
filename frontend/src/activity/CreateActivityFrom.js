@@ -60,7 +60,7 @@ class CreateActivityForm extends Component {
               />
             </Grid>
           </Grid>
-          <StartButton onClick={this.handleRequestSave}/>
+          <StartButton disabled={this.state.name.length < 3} onClick={this.handleRequestSave}/>
         </Paper>
       </div>
     )
