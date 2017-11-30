@@ -17,21 +17,25 @@ const styles = theme => ({
 })
 
 
-const Activity = ({ classes, activities }) => {
+const Activity = ({ classes, activities, isAuthenticated }) => {
   const runningActivity = activities.find(activity => activity.end === undefined)
   return (
-  <Grid container justify="center" spacing={0} className={classes.root}>
-    <Grid item xs={12} sm={10}>
-      {runningActivity && <RunningActivityItem {...runningActivity}/>}
-      {!runningActivity && <CreateActivityForm />}
-      <ActivityList/>
-      <ActivityEditDialog />
+    <Grid container justify="center" spacing={0} className={classes.root}>
+      {
+        isAuthenticated &&
+        <Grid item xs={12} sm={10}>
+          {runningActivity && <RunningActivityItem {...runningActivity}/>}
+          {!runningActivity && <CreateActivityForm/>}
+          <ActivityList/>
+          <ActivityEditDialog/>
+        </Grid>
+      }
     </Grid>
-  </Grid>
-)
+  )
 }
 const mapStateToProps = state => ({
-  activities: state.activity.activities
+  activities: state.activity.activities,
+  isAuthenticated: state.auth.isAuthenticated
 })
 
 export default connect(mapStateToProps)(withStyles(styles)(Activity))

@@ -101,7 +101,6 @@ class ActivityEditDialog extends Component {
               onRequestClose={this.handleCloseConfirmDialog}>
         <DialogTitle>Are you sure?</DialogTitle>
         <DialogActions>
-
           <Button onClick={this.handleCloseConfirmDialog}>
             No, close!
           </Button>
@@ -161,7 +160,7 @@ class ActivityEditDialog extends Component {
             <Button onClick={this.handleClose}>
               Cancel
             </Button>
-            <Button onClick={this.handleRequestSave} disabled={this.state.name.length < 3} color="primary">
+            <Button onClick={this.handleRequestSave} disabled={this.state.name && this.state.name.length < 3} color="primary">
               Save
             </Button>
           </DialogActions>

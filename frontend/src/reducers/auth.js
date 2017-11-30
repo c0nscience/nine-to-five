@@ -70,9 +70,13 @@ export const logout = () => (dispatch) => {
   dispatch(push('/'))
 }
 
+const isAuthenticated =
+  !!localStorage.getItem('access_token')
+  && localStorage.getItem('expires_at') > new Date().getTime()
+
 export default (state = {
   isFetching: false,
-  isAuthenticated: !!localStorage.getItem('access_token'),
+  isAuthenticated,
   accessToken: localStorage.getItem('access_token') || ''
 }, action) => {
   switch (action.type) {
