@@ -42,6 +42,7 @@ class ActivityEditDialog extends Component {
 
   handleNameChange(event) {
     const name = event.target.value
+    console.log('name', name)
     this.setState({ name })
   }
 
@@ -160,7 +161,7 @@ class ActivityEditDialog extends Component {
             <Button onClick={this.handleClose}>
               Cancel
             </Button>
-            <Button onClick={this.handleRequestSave} color="primary">
+            <Button onClick={this.handleRequestSave} disabled={this.state.name.length < 3} color="primary">
               Save
             </Button>
           </DialogActions>
