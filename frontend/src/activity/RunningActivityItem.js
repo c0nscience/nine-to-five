@@ -37,7 +37,7 @@ const RunningActivityItem = (props) => {
 
   const localStart = moment.utc(startUtc).local()
 
-  const durationAsMilliseconds = moment.duration(moment().diff(moment(localStart))).asMilliseconds()
+  const durationAsMilliseconds = moment.duration(moment().diff(localStart)).asMilliseconds()
   return (
     <Paper className={classes.paper}>
       <Grid container spacing={0}>
