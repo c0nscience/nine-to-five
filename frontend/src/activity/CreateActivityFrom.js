@@ -47,20 +47,22 @@ class CreateActivityForm extends Component {
     return (
       <div>
         <Paper className={classes.paper}>
-          <Grid container spacing={0}>
-            <Grid item xs={12}>
-              <TextField
-                id="name"
-                autoFocus
-                label="Name"
-                type="text"
-                fullWidth
-                value={this.state.name}
-                onChange={this.handleNameChange}
-              />
+          <form onSubmit={this.handleRequestSave}>
+            <Grid container spacing={0}>
+              <Grid item xs={12}>
+                <TextField
+                  id="name"
+                  autoFocus
+                  label="Name"
+                  type="text"
+                  fullWidth
+                  value={this.state.name}
+                  onChange={this.handleNameChange}
+                />
+              </Grid>
             </Grid>
-          </Grid>
-          <StartButton disabled={this.state.name.length < 3} onClick={this.handleRequestSave}/>
+            <StartButton disabled={this.state.name.length < 3} onClick={this.handleRequestSave}/>
+          </form>
         </Paper>
       </div>
     )
