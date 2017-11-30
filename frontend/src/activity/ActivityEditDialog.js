@@ -42,7 +42,6 @@ class ActivityEditDialog extends Component {
 
   handleNameChange(event) {
     const name = event.target.value
-    console.log('name', name)
     this.setState({ name })
   }
 
@@ -119,39 +118,41 @@ class ActivityEditDialog extends Component {
                 onRequestClose={this.props.deselectActivity}>
           <DialogTitle>Edit</DialogTitle>
           <DialogContent>
-            <TextField
-              id="name"
-              label="Name"
-              margin="dense"
-              type="text"
-              fullWidth
-              value={this.state.name}
-              onChange={this.handleNameChange}
-            />
-            <TextField
-              id="start"
-              label="Start"
-              margin="dense"
-              type="datetime-local"
-              fullWidth
-              value={moment(this.state.start).format(dateTimeFormat)}
-              onChange={this.handleStartChange}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            {this.props.end && <TextField
-              id="end"
-              label="End"
-              margin="dense"
-              type="datetime-local"
-              fullWidth
-              value={moment(this.state.end).format(dateTimeFormat)}
-              onChange={this.handleEndChange}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />}
+            <form onSubmit={this.handleRequestSave}>
+              <TextField
+                id="name"
+                label="Name"
+                margin="dense"
+                type="text"
+                fullWidth
+                value={this.state.name}
+                onChange={this.handleNameChange}
+              />
+              <TextField
+                id="start"
+                label="Start"
+                margin="dense"
+                type="datetime-local"
+                fullWidth
+                value={moment(this.state.start).format(dateTimeFormat)}
+                onChange={this.handleStartChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              {this.props.end && <TextField
+                id="end"
+                label="End"
+                margin="dense"
+                type="datetime-local"
+                fullWidth
+                value={moment(this.state.end).format(dateTimeFormat)}
+                onChange={this.handleEndChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />}
+            </form>
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleOpenConfirmDialog} color="accent">
@@ -160,7 +161,8 @@ class ActivityEditDialog extends Component {
             <Button onClick={this.handleClose}>
               Cancel
             </Button>
-            <Button onClick={this.handleRequestSave} disabled={this.state.name && this.state.name.length < 3} color="primary">
+            <Button onClick={this.handleRequestSave} disabled={this.state.name && this.state.name.length < 3}
+                    color="primary">
               Save
             </Button>
           </DialogActions>
