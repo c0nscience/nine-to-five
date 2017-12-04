@@ -2,7 +2,7 @@ const BASE_URL = process.env.REACT_APP_API_HOST
 
 const callApi = (endpoint, config = {}, data, authenticated) => {
 
-  let token = localStorage.getItem('access_token') || null
+  const token = localStorage.getItem('access_token') || null
 
   if (authenticated) {
     if (token) {
