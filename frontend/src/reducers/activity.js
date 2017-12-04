@@ -29,7 +29,6 @@ export const startActivity = (currentActivity) => ({
     },
     authenticated: true,
     data: { name: currentActivity },
-    additionalSuccessTypes: [CLOSE_CREATE_DIALOG],
     types: [API_REQUEST, ACTIVITY_STARTED, ACTIVITY_START_FAILURE]
   }
 })
