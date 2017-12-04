@@ -42,7 +42,7 @@ class ActivityList extends Component {
 
     const byWeek = Object.keys(byDay)
       .reduce((weeks, date) => {
-        const week = moment(date, 'll').week()
+        const week = moment(date, 'll').isoWeek()
 
         weeks[week] = weeks[week] || {
           totalDuration: 0,
