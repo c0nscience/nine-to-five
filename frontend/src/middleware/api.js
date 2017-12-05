@@ -29,7 +29,7 @@ const callApi = (endpoint, config = {}, data, authenticated) => {
     }
   }
 
-  return fetch(BASE_URL + endpoint, config)
+  return fetch(`${BASE_URL}/${endpoint}`, config)
     .then(response => {
       if (response.ok) {
         return response.json()
