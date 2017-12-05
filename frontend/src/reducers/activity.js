@@ -7,6 +7,7 @@ import {
   ACTIVITY_STOPPED,
   API_REQUEST,
   DESELECT_ACTIVITY,
+  LOAD_ACTIVITIES, LOAD_ACTIVITIES_FAILED,
   SELECT_ACTIVITY
 } from '../actions'
 
@@ -31,10 +32,21 @@ export default (state = initialState, action) => {
         ...state,
         loading: false
       }
+    case LOAD_ACTIVITIES:
+      return {
+        ...state,
+        loading: true
+      }
     case ACTIVITIES_LOADED:
       return {
         ...state,
-        activities: action.response
+        activities: action.payload,
+        loading: false
+      }
+    case LOAD_ACTIVITIES_FAILED:
+      return {
+        ...state,
+        loading: false
       }
     case ACTIVITY_STARTED:
       return {

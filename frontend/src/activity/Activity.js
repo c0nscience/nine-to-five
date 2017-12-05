@@ -6,7 +6,8 @@ import ActivityList from './ActivityList'
 import ActivityEditDialog from './ActivityEditDialog'
 import RunningActivityItem from './RunningActivityItem'
 import CreateActivityForm from './CreateActivityFrom'
-import { logout } from "../reducers/auth"
+import { logout } from '../reducers/auth'
+import ErrorMessage from '../component/ErrorMessage'
 
 const styles = theme => ({
   root: {
@@ -21,7 +22,7 @@ const styles = theme => ({
 class Activity extends Component {
 
   componentDidMount() {
-    const {isAuthenticated, logout} = this.props
+    const { isAuthenticated, logout } = this.props
 
     if (!isAuthenticated) {
       logout()
@@ -29,21 +30,24 @@ class Activity extends Component {
   }
 
   render() {
-    const {classes, activities, isAuthenticated} = this.props
+    const { classes, activities, isAuthenticated } = this.props
 
     const runningActivity = activities.find(activity => activity.end === undefined)
     return (
-      <Grid container justify="center" spacing={0} className={classes.root}>
-        {
-          isAuthenticated &&
-          <Grid item xs={12} sm={10}>
-            {runningActivity && <RunningActivityItem {...runningActivity}/>}
-            {!runningActivity && <CreateActivityForm/>}
-            <ActivityList/>
-            <ActivityEditDialog/>
-          </Grid>
-        }
-      </Grid>
+      <div>
+        <ErrorMessage/>
+        <Grid container justify="center" spacing={0} className={classes.root}>
+          {
+            isAuthenticated &&
+            <Grid item xs={12} sm={10}>
+              {runningActivity && <RunningActivityItem {...runningActivity}/>}
+              {!runningActivity && <CreateActivityForm/>}
+              <ActivityList/>
+              <ActivityEditDialog/>
+            </Grid>
+          }
+        </Grid>
+      </div>
     )
   }
 }
