@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import ActivityItem from './ActivityItem'
-import { loadActivities } from '../reducers/activity'
+import { loadActivities } from '../actions'
 import { withStyles } from 'material-ui/styles'
 import List from 'material-ui/List'
 import moment from 'moment'

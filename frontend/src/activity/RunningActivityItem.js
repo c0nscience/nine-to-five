@@ -6,7 +6,7 @@ import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
 import { withStyles } from 'material-ui/styles'
 import Edit from 'material-ui-icons/Edit'
-import { selectActivity } from '../reducers/activity'
+import { selectActivity } from '../actions'
 import Grid from 'material-ui/Grid'
 import StopButton from './ActivityStopButton'
 

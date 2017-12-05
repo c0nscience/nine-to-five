@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import Button from 'material-ui/Button'
 import TextField from 'material-ui/TextField'
 import Dialog, { DialogActions, DialogContent, DialogTitle, withMobileDialog } from 'material-ui/Dialog'
-import { deleteActivity, deselectActivity, saveSelectedActivity } from '../reducers/activity'
+import { deleteActivity, deselectActivity, saveSelectedActivity } from '../actions'
 import moment from 'moment'
 
 const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
