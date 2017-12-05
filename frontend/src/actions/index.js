@@ -6,8 +6,9 @@ export const LOAD_ACTIVITIES = 'LOAD_ACTIVITIES'
 export const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
 export const LOAD_ACTIVITIES_FAILED = 'LOAD_ACTIVITIES_FAILED'
 
+export const START_ACTIVITY = 'START_ACTIVITY'
 export const ACTIVITY_STARTED = 'ACTIVITY_STARTED'
-export const ACTIVITY_START_FAILURE = 'ACTIVITY_START_FAILURE'
+export const START_ACTIVITY_FAILED = 'START_ACTIVITY_FAILED'
 
 export const ACTIVITY_STOPPED = 'ACTIVITY_STOPPED'
 export const ACTIVITY_STOP_FAILURE = 'ACTIVITY_STOP_FAILURE'
@@ -33,18 +34,14 @@ export const activitiesLoaded = activities =>
 export const loadActivitiesFailed = () =>
   ({ type: LOAD_ACTIVITIES_FAILED })
 
-export const startActivity = (currentActivity) => ({
-  [CALL_API]: {
-    endpoint: 'activity',
-    config: {
-      method: 'post',
-      mode: 'cors'
-    },
-    authenticated: true,
-    data: { name: currentActivity },
-    types: [API_REQUEST, ACTIVITY_STARTED, ACTIVITY_START_FAILURE]
-  }
-})
+export const startActivity = (currentActivity) =>
+  ({ type: START_ACTIVITY, payload: currentActivity })
+
+export const activityStarted = (startedActivity) =>
+  ({ type: ACTIVITY_STARTED, payload: startedActivity })
+
+export const startActivityFailed = () =>
+  ({ type: START_ACTIVITY_FAILED })
 
 export const stopActivity = () => ({
   [CALL_API]: {
@@ -57,12 +54,6 @@ export const stopActivity = () => ({
     types: [API_REQUEST, ACTIVITY_STOPPED, ACTIVITY_STOP_FAILURE]
   }
 })
-
-export const selectActivity = activity =>
-  ({ type: SELECT_ACTIVITY, payload: activity })
-
-export const deselectActivity = () =>
-  ({ type: DESELECT_ACTIVITY })
 
 export const saveSelectedActivity = selectedActivity => ({
   [CALL_API]: {
@@ -90,6 +81,12 @@ export const deleteActivity = id => ({
     types: [API_REQUEST, ACTIVITY_DELETED, DELETE_ACTIVITY_FAILED]
   }
 })
+
+export const selectActivity = activity =>
+  ({ type: SELECT_ACTIVITY, payload: activity })
+
+export const deselectActivity = () =>
+  ({ type: DESELECT_ACTIVITY })
 
 export const clearErrorMessage = () =>
   ({ type: CLEAR_ERROR_MESSAGE })

@@ -7,8 +7,11 @@ import {
   ACTIVITY_STOPPED,
   API_REQUEST,
   DESELECT_ACTIVITY,
-  LOAD_ACTIVITIES, LOAD_ACTIVITIES_FAILED,
-  SELECT_ACTIVITY
+  LOAD_ACTIVITIES,
+  LOAD_ACTIVITIES_FAILED,
+  SELECT_ACTIVITY,
+  START_ACTIVITY,
+  START_ACTIVITY_FAILED
 } from '../actions'
 
 const initialState = {
@@ -22,16 +25,6 @@ const initialState = {
 export default (state = initialState, action) => {
 
   switch (action.type) {
-    case API_REQUEST:
-      return {
-        ...state,
-        loading: true
-      }
-    case API_REQUEST_ENDED:
-      return {
-        ...state,
-        loading: false
-      }
     case LOAD_ACTIVITIES:
       return {
         ...state,
@@ -48,13 +41,24 @@ export default (state = initialState, action) => {
         ...state,
         loading: false
       }
+    case START_ACTIVITY:
+      return {
+        ...state,
+        loading: true
+      }
     case ACTIVITY_STARTED:
       return {
         ...state,
+        loading: false,
         activities: [
-          action.response,
+          action.payload,
           ...state.activities
         ]
+      }
+    case START_ACTIVITY_FAILED:
+      return {
+        ...state,
+        loading: false
       }
     case ACTIVITY_STOPPED:
       return {
@@ -96,6 +100,16 @@ export default (state = initialState, action) => {
           ...state.activities.slice(0, deletedActivityIndex),
           ...state.activities.slice(deletedActivityIndex + 1)
         ]
+      }
+    case API_REQUEST:
+      return {
+        ...state,
+        loading: true
+      }
+    case API_REQUEST_ENDED:
+      return {
+        ...state,
+        loading: false
       }
     default:
       return state
