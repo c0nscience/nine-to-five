@@ -1,11 +1,9 @@
 import { createBrowserHistory } from 'history'
-import { applyMiddleware, compose, combineReducers, createStore } from 'redux'
+import { applyMiddleware, combineReducers, compose, createStore } from 'redux'
 import activity from './reducers/activity'
 import auth from './reducers/auth'
 import error from './reducers/error'
-import thunkMiddleware from 'redux-thunk'
 import { connectRouter, routerMiddleware } from 'connected-react-router'
-import api from './middleware/api'
 import { createEpicMiddleware } from 'redux-observable'
 import { rootEpic } from './epics'
 
@@ -26,9 +24,7 @@ export default createStore(
   composeEnhancers(
     applyMiddleware(
       epicMiddleware,
-      thunkMiddleware,
-      routerMiddleware(history),
-      api
+      routerMiddleware(history)
     )
   )
 )

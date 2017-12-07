@@ -1,7 +1,9 @@
 import { Observable } from 'rxjs'
 import { combineEpics } from 'redux-observable'
 import {
-  activitiesLoaded, activitySaved, activityStarted, activityStopped, deselectActivity, LOAD_ACTIVITIES,
+  activitiesLoaded, activityDeleted, activitySaved, activityStarted, activityStopped, DELETE_ACTIVITY,
+  deleteActivityFailed, deselectActivity,
+  LOAD_ACTIVITIES,
   loadActivitiesFailed,
   SAVE_ACTIVITY, saveActivityFailed,
   showErrorMessage,
@@ -46,6 +48,15 @@ const put = (endpoint, body) => {
   })
 }
 
+const del = (endpoint) => {
+  return Observable.ajax({
+    method: 'DELETE',
+    url: url(endpoint),
+    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    crossDomain: true
+  })
+}
+
 const loadActivitiesEpic = action$ => (
   action$.ofType(LOAD_ACTIVITIES)
     .switchMap(() => get('activities')
@@ -80,14 +91,25 @@ const saveActivityEpic = action$ => (
     .switchMap(({payload}) => Observable.concat(
       Observable.of(deselectActivity()),
       put(`activity/${payload.id}`, payload)
-        .map(result => {
-          return result.response;
-        })
+        .map(result => result.response)
         .map(response => activitySaved(response))
-      )
-    ).catch(error => {
-    return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), saveActivityFailed())
-  })
+    ))
+    .catch(error => {
+      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), saveActivityFailed())
+    })
 )
 
-export const rootEpic = combineEpics(loadActivitiesEpic, startActivityEpic, stopActivityEpic, saveActivityEpic)
+const deleteActivityEpic = action$ => (
+  action$.ofType(DELETE_ACTIVITY)
+    .switchMap(({payload}) => Observable.concat(
+      Observable.of(deselectActivity()),
+      del(`activity/${payload}`)
+        .map(result => result.response)
+        .map(response => activityDeleted(response))
+    ))
+    .catch(error => {
+      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), deleteActivityFailed())
+    })
+)
+
+export const rootEpic = combineEpics(loadActivitiesEpic, startActivityEpic, stopActivityEpic, saveActivityEpic, deleteActivityEpic)

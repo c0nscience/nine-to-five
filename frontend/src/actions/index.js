@@ -1,7 +1,3 @@
-import { CALL_API } from '../middleware/api'
-
-export const API_REQUEST = 'API_REQUEST'
-
 export const LOAD_ACTIVITIES = 'LOAD_ACTIVITIES'
 export const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
 export const LOAD_ACTIVITIES_FAILED = 'LOAD_ACTIVITIES_FAILED'
@@ -21,6 +17,7 @@ export const SAVE_ACTIVITY = 'SAVE_ACTIVITY'
 export const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
 export const SAVE_ACTIVITY_FAILED = 'SAVE_ACTIVITY_FAILED'
 
+export const DELETE_ACTIVITY = 'DELETE_ACTIVITY'
 export const ACTIVITY_DELETED = 'ACTIVITY_DELETED'
 export const DELETE_ACTIVITY_FAILED = 'DELETE_ACTIVITY_FAILED'
 
@@ -63,32 +60,14 @@ export const activitySaved = activity =>
 export const saveActivityFailed = () =>
   ({ type: SAVE_ACTIVITY_FAILED })
 
-// export const saveSelectedActivity = selectedActivity => ({
-//   [CALL_API]: {
-//     endpoint: 'activity/' + selectedActivity.id,
-//     config: {
-//       method: 'put',
-//       mode: 'cors'
-//     },
-//     data: {...selectedActivity},
-//     authenticated: true,
-//     additionalSuccessTypes: [DESELECT_ACTIVITY],
-//     types: [API_REQUEST, ACTIVITY_SAVED, UPDATE_ACTIVITY_FAILED]
-//   }
-// })
+export const deleteActivity = id =>
+  ({ type: DELETE_ACTIVITY, payload: id })
 
-export const deleteActivity = id => ({
-  [CALL_API]: {
-    endpoint: 'activity/' + id,
-    config: {
-      method: 'delete',
-      mode: 'cors'
-    },
-    authenticated: true,
-    additionalSuccessTypes: [DESELECT_ACTIVITY],
-    types: [API_REQUEST, ACTIVITY_DELETED, DELETE_ACTIVITY_FAILED]
-  }
-})
+export const activityDeleted = deletedActivity =>
+  ({ type: ACTIVITY_DELETED, payload: deletedActivity })
+
+export const deleteActivityFailed = () =>
+  ({ type: DELETE_ACTIVITY_FAILED })
 
 export const selectActivity = activity =>
   ({ type: SELECT_ACTIVITY, payload: activity })
