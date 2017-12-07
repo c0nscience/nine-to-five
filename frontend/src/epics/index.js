@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs'
 import { combineEpics } from 'redux-observable'
 import {
-  activitiesLoaded, activityStarted, LOAD_ACTIVITIES, loadActivitiesFailed, showErrorMessage,
-  START_ACTIVITY, startActivityFailed
+  activitiesLoaded, activityStarted, activityStopped, LOAD_ACTIVITIES, loadActivitiesFailed, showErrorMessage,
+  START_ACTIVITY, startActivityFailed, STOP_ACTIVITY, stoppingActivityFailed
 } from '../actions'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
@@ -46,4 +46,14 @@ const startActivityEpic = action$ => (
     })
 )
 
-export const rootEpic = combineEpics(loadActivitiesEpic, startActivityEpic)
+const stopActivityEpic = action$ => (
+  action$.ofType(STOP_ACTIVITY)
+    .switchMap(() => post('activity/stop')
+      .map(result => result.response)
+      .map(response => activityStopped(response)))
+    .catch(error => {
+      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), stoppingActivityFailed())
+    })
+)
+
+export const rootEpic = combineEpics(loadActivitiesEpic, startActivityEpic, stopActivityEpic)

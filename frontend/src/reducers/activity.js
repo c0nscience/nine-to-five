@@ -3,7 +3,7 @@ import {
   ACTIVITIES_LOADED,
   ACTIVITY_DELETED,
   ACTIVITY_SAVED,
-  ACTIVITY_STARTED,
+  ACTIVITY_STARTED, ACTIVITY_STOP_FAILURE,
   ACTIVITY_STOPPED,
   API_REQUEST,
   DESELECT_ACTIVITY,
@@ -11,7 +11,7 @@ import {
   LOAD_ACTIVITIES_FAILED,
   SELECT_ACTIVITY,
   START_ACTIVITY,
-  START_ACTIVITY_FAILED
+  START_ACTIVITY_FAILED, STOP_ACTIVITY
 } from '../actions'
 
 const initialState = {
@@ -60,14 +60,25 @@ export default (state = initialState, action) => {
         ...state,
         loading: false
       }
+    case STOP_ACTIVITY:
+      return {
+        ...state,
+        loading: true
+      }
     case ACTIVITY_STOPPED:
       return {
         ...state,
+        loading: false,
         activities: state.activities.map(activity => (
-          activity.id === action.response.id ?
-            action.response :
+          activity.id === action.payload.id ?
+            action.payload :
             activity
         ))
+      }
+    case ACTIVITY_STOP_FAILURE:
+      return {
+        ...state,
+        loading: false
       }
     case 'LOGOUT_SUCCESS':
       return initialState

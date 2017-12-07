@@ -10,6 +10,7 @@ export const START_ACTIVITY = 'START_ACTIVITY'
 export const ACTIVITY_STARTED = 'ACTIVITY_STARTED'
 export const START_ACTIVITY_FAILED = 'START_ACTIVITY_FAILED'
 
+export const STOP_ACTIVITY = 'STOP_ACTIVITY'
 export const ACTIVITY_STOPPED = 'ACTIVITY_STOPPED'
 export const ACTIVITY_STOP_FAILURE = 'ACTIVITY_STOP_FAILURE'
 
@@ -43,17 +44,14 @@ export const activityStarted = (startedActivity) =>
 export const startActivityFailed = () =>
   ({ type: START_ACTIVITY_FAILED })
 
-export const stopActivity = () => ({
-  [CALL_API]: {
-    endpoint: 'activity/stop',
-    config: {
-      method: 'post',
-      mode: 'cors'
-    },
-    authenticated: true,
-    types: [API_REQUEST, ACTIVITY_STOPPED, ACTIVITY_STOP_FAILURE]
-  }
-})
+export const stopActivity = () =>
+  ({ type: STOP_ACTIVITY })
+
+export const activityStopped = stoppedActivity =>
+  ({ type: ACTIVITY_STOPPED, payload: stoppedActivity })
+
+export const stoppingActivityFailed = () =>
+  ({ type: ACTIVITY_STOP_FAILURE })
 
 export const saveSelectedActivity = selectedActivity => ({
   [CALL_API]: {
