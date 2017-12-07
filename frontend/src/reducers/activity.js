@@ -8,7 +8,7 @@ import {
   API_REQUEST,
   DESELECT_ACTIVITY,
   LOAD_ACTIVITIES,
-  LOAD_ACTIVITIES_FAILED,
+  LOAD_ACTIVITIES_FAILED, SAVE_ACTIVITY, SAVE_ACTIVITY_FAILED,
   SELECT_ACTIVITY,
   START_ACTIVITY,
   START_ACTIVITY_FAILED, STOP_ACTIVITY
@@ -93,14 +93,25 @@ export default (state = initialState, action) => {
         ...state,
         openEditDialog: false
       }
+    case SAVE_ACTIVITY:
+      return {
+        ...state,
+        loading: true
+      }
     case ACTIVITY_SAVED:
       return {
         ...state,
+        loading: false,
         activities: state.activities.map(activity => (
-          activity.id === action.response.id ?
-            action.response :
+          activity.id === action.payload.id ?
+            action.payload :
             activity
         ))
+      }
+    case SAVE_ACTIVITY_FAILED:
+      return {
+        ...state,
+        loading: false
       }
     case ACTIVITY_DELETED:
       const deletedActivityIndex = state.activities.findIndex(activity => activity.id === action.response.id)

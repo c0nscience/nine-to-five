@@ -17,8 +17,9 @@ export const ACTIVITY_STOP_FAILURE = 'ACTIVITY_STOP_FAILURE'
 export const SELECT_ACTIVITY = 'SELECT_ACTIVITY'
 export const DESELECT_ACTIVITY = 'DESELECT_ACTIVITY'
 
+export const SAVE_ACTIVITY = 'SAVE_ACTIVITY'
 export const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
-export const UPDATE_ACTIVITY_FAILED = 'UPDATE_ACTIVITY_FAILED'
+export const SAVE_ACTIVITY_FAILED = 'SAVE_ACTIVITY_FAILED'
 
 export const ACTIVITY_DELETED = 'ACTIVITY_DELETED'
 export const DELETE_ACTIVITY_FAILED = 'DELETE_ACTIVITY_FAILED'
@@ -53,19 +54,28 @@ export const activityStopped = stoppedActivity =>
 export const stoppingActivityFailed = () =>
   ({ type: ACTIVITY_STOP_FAILURE })
 
-export const saveSelectedActivity = selectedActivity => ({
-  [CALL_API]: {
-    endpoint: 'activity/' + selectedActivity.id,
-    config: {
-      method: 'put',
-      mode: 'cors'
-    },
-    data: {...selectedActivity},
-    authenticated: true,
-    additionalSuccessTypes: [DESELECT_ACTIVITY],
-    types: [API_REQUEST, ACTIVITY_SAVED, UPDATE_ACTIVITY_FAILED]
-  }
-})
+export const saveActivity = activity =>
+  ({ type: SAVE_ACTIVITY, payload: activity })
+
+export const activitySaved = activity =>
+  ({ type: ACTIVITY_SAVED, payload: activity })
+
+export const saveActivityFailed = () =>
+  ({ type: SAVE_ACTIVITY_FAILED })
+
+// export const saveSelectedActivity = selectedActivity => ({
+//   [CALL_API]: {
+//     endpoint: 'activity/' + selectedActivity.id,
+//     config: {
+//       method: 'put',
+//       mode: 'cors'
+//     },
+//     data: {...selectedActivity},
+//     authenticated: true,
+//     additionalSuccessTypes: [DESELECT_ACTIVITY],
+//     types: [API_REQUEST, ACTIVITY_SAVED, UPDATE_ACTIVITY_FAILED]
+//   }
+// })
 
 export const deleteActivity = id => ({
   [CALL_API]: {

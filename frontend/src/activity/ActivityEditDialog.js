@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import Button from 'material-ui/Button'
 import TextField from 'material-ui/TextField'
 import Dialog, { DialogActions, DialogContent, DialogTitle, withMobileDialog } from 'material-ui/Dialog'
-import { deleteActivity, deselectActivity, saveSelectedActivity } from '../actions'
+import { deleteActivity, deselectActivity, saveActivity } from '../actions'
 import moment from 'moment'
 
 const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
@@ -57,7 +57,7 @@ class ActivityEditDialog extends Component {
 
   handleRequestSave(event) {
     event.preventDefault()
-    this.props.saveSelectedActivity({
+    this.props.saveActivity({
       id: this.state.id,
       name: this.state.name,
       start: moment(this.state.start, dateTimeFormat).utc(false).toISOString(),
@@ -181,7 +181,7 @@ const mapStateToProps = state => ({
 })
 const mapDispatchToProps = {
   deselectActivity,
-  saveSelectedActivity,
+  saveActivity,
   deleteActivity
 }
 

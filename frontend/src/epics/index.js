@@ -1,7 +1,10 @@
 import { Observable } from 'rxjs'
 import { combineEpics } from 'redux-observable'
 import {
-  activitiesLoaded, activityStarted, activityStopped, LOAD_ACTIVITIES, loadActivitiesFailed, showErrorMessage,
+  activitiesLoaded, activitySaved, activityStarted, activityStopped, deselectActivity, LOAD_ACTIVITIES,
+  loadActivitiesFailed,
+  SAVE_ACTIVITY, saveActivityFailed,
+  showErrorMessage,
   START_ACTIVITY, startActivityFailed, STOP_ACTIVITY, stoppingActivityFailed
 } from '../actions'
 
@@ -24,7 +27,23 @@ const get = (endpoint) => {
 }
 
 const post = (endpoint, body) => {
-  return Observable.ajax({ method: 'POST', url: url(endpoint), body, headers: {...authenticationHeader(), 'Content-Type': 'application/json'}, crossDomain: true })
+  return Observable.ajax({
+    method: 'POST',
+    url: url(endpoint),
+    body,
+    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    crossDomain: true
+  })
+}
+
+const put = (endpoint, body) => {
+  return Observable.ajax({
+    method: 'PUT',
+    url: url(endpoint),
+    body,
+    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    crossDomain: true
+  })
 }
 
 const loadActivitiesEpic = action$ => (
@@ -38,7 +57,7 @@ const loadActivitiesEpic = action$ => (
 
 const startActivityEpic = action$ => (
   action$.ofType(START_ACTIVITY)
-    .switchMap(({ payload }) => post('activity', { name: payload })
+    .switchMap(({payload}) => post('activity', {name: payload})
       .map(result => result.response)
       .map(response => activityStarted(response)))
     .catch(error => {
@@ -56,4 +75,19 @@ const stopActivityEpic = action$ => (
     })
 )
 
-export const rootEpic = combineEpics(loadActivitiesEpic, startActivityEpic, stopActivityEpic)
+const saveActivityEpic = action$ => (
+  action$.ofType(SAVE_ACTIVITY)
+    .switchMap(({payload}) => Observable.concat(
+      Observable.of(deselectActivity()),
+      put(`activity/${payload.id}`, payload)
+        .map(result => {
+          return result.response;
+        })
+        .map(response => activitySaved(response))
+      )
+    ).catch(error => {
+    return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), saveActivityFailed())
+  })
+)
+
+export const rootEpic = combineEpics(loadActivitiesEpic, startActivityEpic, stopActivityEpic, saveActivityEpic)
