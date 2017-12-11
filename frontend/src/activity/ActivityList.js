@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import ActivityItem from './ActivityItem'
-import { loadActivities } from '../actions'
+import { loadActivities, loadOvertime } from '../actions'
 import { withStyles } from 'material-ui/styles'
 import List from 'material-ui/List'
 import moment from 'moment'
@@ -28,10 +28,11 @@ class ActivityList extends Component {
 
   componentDidMount() {
     this.props.loadActivities()
+    this.props.loadOvertime()
   }
 
   render() {
-    const { activities, classes } = this.props
+    const { activities, classes, overtimes } = this.props
     const byDay = activities.reduce((groups, item) => {
       const start = item['start']
       const localStart = moment.utc(start).local().format('ll')
@@ -42,7 +43,7 @@ class ActivityList extends Component {
 
     const byWeek = Object.keys(byDay)
       .reduce((weeks, date) => {
-        const week = moment(date, 'll').isoWeek()
+        const week = moment(date, 'll').format('GGGG-WW')
 
         weeks[week] = weeks[week] || {
           totalDuration: 0,
@@ -71,13 +72,33 @@ class ActivityList extends Component {
           const [weekNumber, weeks] = v
 
           const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(2)
+          const currentWeekDate = moment(weekNumber, 'GGGG-WW')
+          const overtime = overtimes.find(o => {
+            const weekDate = moment(o.week)
+            const week = weekDate.isoWeek()
+            const year = weekDate.isoWeekYear()
+
+            const currentWeek = currentWeekDate.isoWeek()
+            const currentYear = currentWeekDate.isoWeekYear()
+
+            console.log(`week: ${currentWeek} === ${week}`)
+            console.log(`year: ${currentYear} === ${year}`)
+
+            return currentWeek === week && currentYear === year
+          })
+          console.log(overtime)
           return (
             <div key={weekNumber}>
               <Card className={classes.weekSummaryCard}>
                 <CardContent>
                   <Typography type="headline">
-                    Worked {totalWeekDurationAsHours} hrs in week {weekNumber}
+                    Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, 'GGGG-WW').isoWeek()}
                   </Typography>
+                  {
+                    overtime && <Typography type="caption">
+                      Overtime - Current: {overtime.overtime} - Total: {overtime.totalOvertime}
+                    </Typography>
+                  }
                 </CardContent>
               </Card>
 
@@ -122,11 +143,13 @@ class ActivityList extends Component {
 }
 
 const mapStateToProps = state => ({
-  activities: state.activity.activities
+  activities: state.activity.activities,
+  overtimes: state.activity.overtimes
 })
 export default connect(
   mapStateToProps,
   {
-    loadActivities
+    loadActivities,
+    loadOvertime
   }
 )(withStyles(styles)(ActivityList))

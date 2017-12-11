@@ -1,13 +1,25 @@
 import { Observable } from 'rxjs'
 import { combineEpics } from 'redux-observable'
 import {
-  activitiesLoaded, activityDeleted, activitySaved, activityStarted, activityStopped, DELETE_ACTIVITY,
-  deleteActivityFailed, deselectActivity,
+  activitiesLoaded,
+  activityDeleted,
+  activitySaved,
+  activityStarted,
+  activityStopped,
+  DELETE_ACTIVITY,
+  deleteActivityFailed,
+  deselectActivity,
   LOAD_ACTIVITIES,
+  LOAD_OVERTIME,
   loadActivitiesFailed,
-  SAVE_ACTIVITY, saveActivityFailed,
+  overtimeLoaded,
+  SAVE_ACTIVITY,
+  saveActivityFailed,
   showErrorMessage,
-  START_ACTIVITY, startActivityFailed, STOP_ACTIVITY, stoppingActivityFailed
+  START_ACTIVITY,
+  startActivityFailed,
+  STOP_ACTIVITY,
+  stoppingActivityFailed
 } from '../actions'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
@@ -33,7 +45,7 @@ const post = (endpoint, body) => {
     method: 'POST',
     url: url(endpoint),
     body,
-    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authenticationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -43,7 +55,7 @@ const put = (endpoint, body) => {
     method: 'PUT',
     url: url(endpoint),
     body,
-    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authenticationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -52,7 +64,7 @@ const del = (endpoint) => {
   return Observable.ajax({
     method: 'DELETE',
     url: url(endpoint),
-    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authenticationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -68,7 +80,7 @@ const loadActivitiesEpic = action$ => (
 
 const startActivityEpic = action$ => (
   action$.ofType(START_ACTIVITY)
-    .switchMap(({payload}) => post('activity', {name: payload})
+    .switchMap(({ payload }) => post('activity', { name: payload })
       .map(result => result.response)
       .map(response => activityStarted(response)))
     .catch(error => {
@@ -88,7 +100,7 @@ const stopActivityEpic = action$ => (
 
 const saveActivityEpic = action$ => (
   action$.ofType(SAVE_ACTIVITY)
-    .switchMap(({payload}) => Observable.concat(
+    .switchMap(({ payload }) => Observable.concat(
       Observable.of(deselectActivity()),
       put(`activity/${payload.id}`, payload)
         .map(result => result.response)
@@ -101,7 +113,7 @@ const saveActivityEpic = action$ => (
 
 const deleteActivityEpic = action$ => (
   action$.ofType(DELETE_ACTIVITY)
-    .switchMap(({payload}) => Observable.concat(
+    .switchMap(({ payload }) => Observable.concat(
       Observable.of(deselectActivity()),
       del(`activity/${payload}`)
         .map(result => result.response)
@@ -112,4 +124,17 @@ const deleteActivityEpic = action$ => (
     })
 )
 
-export const rootEpic = combineEpics(loadActivitiesEpic, startActivityEpic, stopActivityEpic, saveActivityEpic, deleteActivityEpic)
+const loadOvertimeEpic = action$ => (
+  action$.ofType(LOAD_OVERTIME)
+    .switchMap(() => get('statistics/overtime')
+      .map(overtime => overtimeLoaded(overtime)))
+)
+
+export const rootEpic = combineEpics(
+  loadActivitiesEpic,
+  startActivityEpic,
+  stopActivityEpic,
+  saveActivityEpic,
+  deleteActivityEpic,
+  loadOvertimeEpic
+)

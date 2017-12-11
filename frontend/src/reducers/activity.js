@@ -9,7 +9,7 @@ import {
   DELETE_ACTIVITY_FAILED,
   DESELECT_ACTIVITY,
   LOAD_ACTIVITIES,
-  LOAD_ACTIVITIES_FAILED,
+  LOAD_ACTIVITIES_FAILED, LOAD_OVERTIME, OVERTIME_LOADED,
   SAVE_ACTIVITY,
   SAVE_ACTIVITY_FAILED,
   SELECT_ACTIVITY,
@@ -23,7 +23,8 @@ const initialState = {
   openEditDialog: false,
   openCreateDialog: false,
   selectedActivity: {},
-  activities: []
+  activities: [],
+  overtimes: []
 }
 
 export default (state = initialState, action) => {
@@ -137,6 +138,17 @@ export default (state = initialState, action) => {
       return {
         ...state,
         loading: false
+      }
+    case LOAD_OVERTIME:
+      return {
+        ...state,
+        loading: true
+      }
+    case OVERTIME_LOADED:
+      return {
+        ...state,
+        loading: false,
+        overtimes: action.payload
       }
     default:
       return state

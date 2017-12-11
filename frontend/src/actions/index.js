@@ -80,3 +80,12 @@ export const clearErrorMessage = () =>
 
 export const showErrorMessage = errorMessage =>
   ({ type: SHOW_ERROR_MESSAGE, payload: errorMessage })
+
+export const LOAD_OVERTIME = 'LOAD_OVERTIME'
+export const OVERTIME_LOADED = 'OVERTIME_LOADED'
+
+export const loadOvertime = () =>
+  ({ type: LOAD_OVERTIME })
+
+export const overtimeLoaded = overtime =>
+  ({ type: OVERTIME_LOADED, payload: overtime })
