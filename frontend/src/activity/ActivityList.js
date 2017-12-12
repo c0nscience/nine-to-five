@@ -83,7 +83,7 @@ class ActivityList extends Component {
 
             return currentWeek === week && currentYear === year
           })
-          console.log(overtime)
+
           return (
             <div key={weekNumber}>
               <Card className={classes.weekSummaryCard}>
