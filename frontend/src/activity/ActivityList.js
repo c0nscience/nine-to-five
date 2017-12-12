@@ -68,7 +68,7 @@ class ActivityList extends Component {
 
     return (
       <div>
-        {Object.entries(byWeek).sort((a, b) => moment(a[0], 'GGGG-WW').isSameOrBefore(moment(b[0], 'GGGG-WW'))).map(v => {
+        {Object.entries(byWeek).sort((a, b) => moment(b[0], 'GGGG-WW') - moment(a[0], 'GGGG-WW')).map(v => {
           const [weekNumber, weeks] = v
 
           const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(2)
@@ -80,9 +80,6 @@ class ActivityList extends Component {
 
             const currentWeek = currentWeekDate.isoWeek()
             const currentYear = currentWeekDate.isoWeekYear()
-
-            console.log(`week: ${currentWeek} === ${week}`)
-            console.log(`year: ${currentYear} === ${year}`)
 
             return currentWeek === week && currentYear === year
           })
@@ -105,7 +102,7 @@ class ActivityList extends Component {
               {Object.entries(weeks.days).filter(value => {
                 const activities = value[1]
                 return activities.filter(activity => activity.end !== undefined).length > 0
-              }).sort((a, b) => moment(a[0], 'll').isSameOrBefore(moment(b[0], 'll'))).map(value => {
+              }).sort((a, b) => moment(b[0], 'll') - moment(a[0], 'll')).map(value => {
                 const [day, activities] = value
                 const totalDiff = activities.reduce((result, activity) => {
                   const localStart = moment.utc(activity.start).local()
