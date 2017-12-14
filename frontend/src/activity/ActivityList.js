@@ -71,9 +71,9 @@ class ActivityList extends Component {
         {Object.entries(byWeek).sort((a, b) => moment(b[0], 'GGGG-WW') - moment(a[0], 'GGGG-WW')).map(v => {
           const [weekNumber, weeks] = v
 
-          const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(2)
+          const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(3)
           const currentWeekDate = moment(weekNumber, 'GGGG-WW')
-          const overtime = overtimes.find(o => {
+          const overtimeStatistics = overtimes.find(o => {
             const weekDate = moment(o.week)
             const week = weekDate.isoWeek()
             const year = weekDate.isoWeekYear()
@@ -83,7 +83,6 @@ class ActivityList extends Component {
 
             return currentWeek === week && currentYear === year
           })
-
           return (
             <div key={weekNumber}>
               <Card className={classes.weekSummaryCard}>
@@ -92,8 +91,8 @@ class ActivityList extends Component {
                     Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, 'GGGG-WW').isoWeek()}
                   </Typography>
                   {
-                    overtime && <Typography type="caption">
-                      Overtime - Current: {overtime.overtime} - Total: {overtime.totalOvertime}
+                    overtimeStatistics && <Typography type="caption">
+                      Overtime - Current: {moment.duration(overtimeStatistics.overtime).asHours().toPrecision(3)} - Total: {moment.duration(overtimeStatistics.totalOvertime).asHours().toPrecision(3)}
                     </Typography>
                   }
                 </CardContent>
