@@ -3,18 +3,15 @@ import {
   ACTIVITY_DELETED,
   ACTIVITY_SAVED,
   ACTIVITY_STARTED,
-  ACTIVITY_STOP_FAILURE,
   ACTIVITY_STOPPED,
   DELETE_ACTIVITY,
-  DELETE_ACTIVITY_FAILED,
   DESELECT_ACTIVITY,
   LOAD_ACTIVITIES,
-  LOAD_ACTIVITIES_FAILED, LOAD_OVERTIME, OVERTIME_LOADED,
+  LOAD_OVERTIME,
+  OVERTIME_LOADED,
   SAVE_ACTIVITY,
-  SAVE_ACTIVITY_FAILED,
   SELECT_ACTIVITY,
   START_ACTIVITY,
-  START_ACTIVITY_FAILED,
   STOP_ACTIVITY
 } from '../actions'
 
@@ -41,11 +38,6 @@ export default (state = initialState, action) => {
         activities: action.payload,
         loading: false
       }
-    case LOAD_ACTIVITIES_FAILED:
-      return {
-        ...state,
-        loading: false
-      }
     case START_ACTIVITY:
       return {
         ...state,
@@ -59,11 +51,6 @@ export default (state = initialState, action) => {
           action.payload,
           ...state.activities
         ]
-      }
-    case START_ACTIVITY_FAILED:
-      return {
-        ...state,
-        loading: false
       }
     case STOP_ACTIVITY:
       return {
@@ -79,11 +66,6 @@ export default (state = initialState, action) => {
             action.payload :
             activity
         ))
-      }
-    case ACTIVITY_STOP_FAILURE:
-      return {
-        ...state,
-        loading: false
       }
     case 'LOGOUT_SUCCESS':
       return initialState
@@ -113,11 +95,6 @@ export default (state = initialState, action) => {
             activity
         ))
       }
-    case SAVE_ACTIVITY_FAILED:
-      return {
-        ...state,
-        loading: false
-      }
     case DELETE_ACTIVITY:
       return {
         ...state,
@@ -133,11 +110,6 @@ export default (state = initialState, action) => {
           ...state.activities.slice(0, deletedActivityIndex),
           ...state.activities.slice(deletedActivityIndex + 1)
         ]
-      }
-    case DELETE_ACTIVITY_FAILED:
-      return {
-        ...state,
-        loading: false
       }
     case LOAD_OVERTIME:
       return {

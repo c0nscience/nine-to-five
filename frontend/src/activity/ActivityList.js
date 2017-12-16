@@ -147,7 +147,7 @@ class ActivityList extends Component {
         {Object.keys(timer).map(runIndex => {
           const renderTime = timer[runIndex].end - timer[runIndex].start
           return (
-            <div>Run {runIndex}: {renderTime}ms</div>
+            <div key={`render-run-${runIndex}`}>Run {runIndex}: {renderTime}ms</div>
           )
         })}
         {content}

@@ -30,8 +30,8 @@ class Activity extends Component {
   }
 
   render() {
-    const { classes, activities, isAuthenticated } = this.props
-
+    const { classes, activities, isAuthenticated, runningRequests } = this.props
+    const loading = runningRequests.length > 0
     const runningActivity = activities.find(activity => activity.end === undefined)
     return (
       <div>
@@ -40,8 +40,8 @@ class Activity extends Component {
           {
             isAuthenticated &&
             <Grid item xs={12} sm={10}>
-              {runningActivity && <RunningActivityItem {...runningActivity}/>}
-              {!runningActivity && <CreateActivityForm/>}
+              {runningActivity && <RunningActivityItem {...runningActivity} loading={loading}/>}
+              {!runningActivity && <CreateActivityForm loading={loading}/>}
               <ActivityList/>
               <ActivityEditDialog/>
             </Grid>
@@ -54,7 +54,8 @@ class Activity extends Component {
 
 const mapStateToProps = state => ({
   activities: state.activity.activities,
-  isAuthenticated: state.auth.isAuthenticated
+  isAuthenticated: state.auth.isAuthenticated,
+  runningRequests: state.network.runningRequests
 })
 
 const mapDispatchToProps = {

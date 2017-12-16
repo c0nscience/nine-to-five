@@ -3,6 +3,7 @@ import { applyMiddleware, compose, combineReducers, createStore } from 'redux'
 import activity from './reducers/activity'
 import auth from './reducers/auth'
 import error from './reducers/error'
+import network from './reducers/network'
 import thunkMiddleware from 'redux-thunk'
 import { connectRouter, routerMiddleware } from 'connected-react-router'
 import { createEpicMiddleware } from 'redux-observable'
@@ -15,7 +16,8 @@ export const history = createBrowserHistory()
 const reducers = combineReducers({
   activity,
   auth,
-  error
+  error,
+  network
 })
 
 const epicMiddleware = createEpicMiddleware(rootEpic)

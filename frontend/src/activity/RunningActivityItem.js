@@ -12,10 +12,18 @@ import StopButton from './ActivityStopButton'
 
 const styles = theme => ({
   paper: {
-    paddingTop: theme.spacing.unit * 2,
+    paddingTop: theme.spacing.unit * 2 + 5,
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
     paddingBottom: theme.spacing.unit * 5,
+    marginBottom: theme.spacing.unit * 3,
+    position: 'relative'
+  },
+  loadingPaper: {
+    paddingTop: theme.spacing.unit * 2,
+    paddingLeft: theme.spacing.unit * 2,
+    paddingRight: theme.spacing.unit * 2,
+    paddingBottom: theme.spacing.unit * 6,
     marginBottom: theme.spacing.unit * 3,
     position: 'relative'
   },
@@ -33,13 +41,13 @@ const styles = theme => ({
 const timeFormat = 'HH:mm'
 
 const RunningActivityItem = (props) => {
-  const { classes, id, name, start: startUtc } = props
+  const { classes, id, name, start: startUtc, loading } = props
 
   const localStart = moment.utc(startUtc).local()
 
   const durationAsMilliseconds = moment.duration(moment().diff(localStart)).asMilliseconds()
   return (
-    <Paper className={classes.paper}>
+    <Paper className={loading ? classes.loadingPaper : classes.paper}>
       <Grid container spacing={0}>
         <Grid item xs={4}>
           <Typography type="display2">

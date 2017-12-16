@@ -7,6 +7,7 @@ import { handleAuthentication } from './reducers/auth'
 import NavBar from './NavBar/NavBar'
 import Callback from './Callback/Callback'
 import Activity from './activity/Activity'
+import LoadingIndicator from './component/LoadingIndicator'
 
 const App = ({ history, handleAuthentication }) => {
   const handleCallback = (nextState) => {
@@ -18,6 +19,7 @@ const App = ({ history, handleAuthentication }) => {
   return (
     <div>
       <NavBar/>
+      <LoadingIndicator/>
       <ConnectedRouter history={history}>
         <Switch>
           <Route exact path="/" component={Activity}/>
@@ -27,7 +29,10 @@ const App = ({ history, handleAuthentication }) => {
         </Switch>
       </ConnectedRouter>
       <div>
-        <div>Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank" rel="noopener noreferrer">CC 3.0 BY</a></div>
+        <div>Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a
+          href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a
+          href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank"
+          rel="noopener noreferrer">CC 3.0 BY</a></div>
       </div>
     </div>
   )

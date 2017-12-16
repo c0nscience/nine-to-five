@@ -23,7 +23,8 @@ const styles = theme => ({
   }
 })
 
-const StopButton = ({ classes, loading, stopActivity }) => {
+const StopButton = ({ classes, runningRequests, stopActivity }) => {
+  const loading = runningRequests.length > 0
   return (
     <div className={classes.button}>
       <Button fab
@@ -33,13 +34,12 @@ const StopButton = ({ classes, loading, stopActivity }) => {
               onClick={stopActivity}>
         <StopIcon/>
       </Button>
-      {loading && <CircularProgress size={68} className={classes.fabProgress}/>}
     </div>
   )
 }
 
 const mapStateToProps = state => ({
-  loading: state.activity.loading,
+  runningRequests: state.network.runningRequests
 })
 
 const mapDispatchToProps = {

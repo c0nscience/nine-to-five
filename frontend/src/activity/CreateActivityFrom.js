@@ -9,6 +9,14 @@ import TextField from 'material-ui/TextField'
 
 const styles = theme => ({
   paper: {
+    paddingTop: theme.spacing.unit * 2 + 5,
+    paddingLeft: theme.spacing.unit * 2,
+    paddingRight: theme.spacing.unit * 2,
+    paddingBottom: theme.spacing.unit * 6,
+    marginBottom: theme.spacing.unit * 3,
+    position: 'relative'
+  },
+  loadingPaper: {
     paddingTop: theme.spacing.unit * 2,
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
@@ -43,10 +51,10 @@ class CreateActivityForm extends Component {
 
 
   render() {
-    const { classes } = this.props
+    const { classes, loading } = this.props
     return (
       <div>
-        <Paper className={classes.paper}>
+        <Paper className={loading ? classes.loadingPaper : classes.paper}>
           <form onSubmit={this.handleRequestSave}>
             <Grid container spacing={0}>
               <Grid item xs={12}>

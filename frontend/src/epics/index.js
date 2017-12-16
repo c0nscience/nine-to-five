@@ -1,4 +1,6 @@
 import { Observable } from 'rxjs'
+import { concat as concat$ } from 'rxjs/observable/concat'
+import { of as of$ } from 'rxjs/observable/of'
 import { combineEpics } from 'redux-observable'
 import {
   activitiesLoaded,
@@ -6,20 +8,17 @@ import {
   activitySaved,
   activityStarted,
   activityStopped,
+  addNetworkActivity,
   DELETE_ACTIVITY,
-  deleteActivityFailed,
   deselectActivity,
   LOAD_ACTIVITIES,
   LOAD_OVERTIME,
-  loadActivitiesFailed,
   overtimeLoaded,
+  removeNetworkActivity,
   SAVE_ACTIVITY,
-  saveActivityFailed,
   showErrorMessage,
   START_ACTIVITY,
-  startActivityFailed,
-  STOP_ACTIVITY,
-  stoppingActivityFailed
+  STOP_ACTIVITY
 } from '../actions'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
@@ -69,65 +68,94 @@ const del = (endpoint) => {
   })
 }
 
+const errors = (requestName, actionFailed) => error => {
+  console.error(error)
+  return of$(showErrorMessage(`${requestName} failed with status: ${error.status}`), actionFailed())
+}
+
 const loadActivitiesEpic = action$ => (
   action$.ofType(LOAD_ACTIVITIES)
-    .switchMap(() => get('activities')
-      .map(activities => activitiesLoaded(activities)))
-    .catch(error => {
-      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), loadActivitiesFailed())
-    })
+    .switchMap(() => concat$(
+      of$(addNetworkActivity(LOAD_ACTIVITIES)),
+      get('activities')
+        .flatMap(activities => concat$(
+          of$(activitiesLoaded(activities)),
+          of$(removeNetworkActivity(LOAD_ACTIVITIES))
+        ))
+    ))
+    .catch(errors('Load activities', () => removeNetworkActivity(LOAD_ACTIVITIES)))
 )
 
 const startActivityEpic = action$ => (
   action$.ofType(START_ACTIVITY)
-    .switchMap(({ payload }) => post('activity', { name: payload })
-      .map(result => result.response)
-      .map(response => activityStarted(response)))
-    .catch(error => {
-      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), startActivityFailed())
-    })
+    .switchMap(({ payload }) => concat$(
+      of$(addNetworkActivity(START_ACTIVITY)),
+      post('activity', { name: payload })
+        .map(result => result.response)
+        .flatMap(response => concat$(
+          of$(activityStarted(response)),
+          of$(removeNetworkActivity(START_ACTIVITY))
+        ))
+    ))
+    .catch(errors('Start activity', () => removeNetworkActivity(START_ACTIVITY)))
 )
 
 const stopActivityEpic = action$ => (
   action$.ofType(STOP_ACTIVITY)
-    .switchMap(() => post('activity/stop')
-      .map(result => result.response)
-      .map(response => activityStopped(response)))
-    .catch(error => {
-      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), stoppingActivityFailed())
-    })
+    .switchMap(() => concat$(
+      of$(addNetworkActivity(STOP_ACTIVITY)),
+      post('activity/stop')
+        .map(result => result.response)
+        .flatMap(response => concat$(
+          of$(activityStopped(response)),
+          of$(removeNetworkActivity(STOP_ACTIVITY))
+        ))
+    ))
+    .catch(errors('Stop activity', () => removeNetworkActivity(STOP_ACTIVITY)))
 )
 
 const saveActivityEpic = action$ => (
   action$.ofType(SAVE_ACTIVITY)
-    .switchMap(({ payload }) => Observable.concat(
-      Observable.of(deselectActivity()),
+    .switchMap(({ payload }) => concat$(
+      of$(addNetworkActivity(SAVE_ACTIVITY)),
+      of$(deselectActivity()),
       put(`activity/${payload.id}`, payload)
         .map(result => result.response)
-        .map(response => activitySaved(response))
+        .flatMap(response => concat$(
+          of$(activitySaved(response)),
+          of$(removeNetworkActivity(SAVE_ACTIVITY))
+        ))
     ))
-    .catch(error => {
-      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), saveActivityFailed())
-    })
+    .catch(errors('Save activity', () => removeNetworkActivity(SAVE_ACTIVITY)))
 )
 
 const deleteActivityEpic = action$ => (
   action$.ofType(DELETE_ACTIVITY)
-    .switchMap(({ payload }) => Observable.concat(
-      Observable.of(deselectActivity()),
+    .switchMap(({ payload }) => concat$(
+      of$(addNetworkActivity(DELETE_ACTIVITY)),
+      of$(deselectActivity()),
       del(`activity/${payload}`)
         .map(result => result.response)
-        .map(response => activityDeleted(response))
+        .flatMap(response => concat$(
+          of$(activityDeleted(response)),
+          of$(removeNetworkActivity(DELETE_ACTIVITY))
+        ))
     ))
-    .catch(error => {
-      return Observable.of(showErrorMessage(`Request failed with status: ${error.status}`), deleteActivityFailed())
-    })
+    .catch(errors('Delete activity', () => removeNetworkActivity(DELETE_ACTIVITY)))
 )
 
 const loadOvertimeEpic = action$ => (
   action$.ofType(LOAD_OVERTIME)
-    .switchMap(() => get('statistics/overtime')
-      .map(overtime => overtimeLoaded(overtime)))
+    .switchMap(() => concat$(
+      of$(addNetworkActivity(LOAD_OVERTIME)),
+      get('statistics/overtime')
+        .delay(5000)
+        .flatMap(overtime => concat$(
+          of$(overtimeLoaded(overtime)),
+          of$(removeNetworkActivity(LOAD_OVERTIME))
+        ))
+    ))
+    .catch(errors('Load overtime', () => removeNetworkActivity(LOAD_OVERTIME)))
 )
 
 export const rootEpic = combineEpics(

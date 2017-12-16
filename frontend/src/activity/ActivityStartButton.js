@@ -22,7 +22,8 @@ const styles = theme => ({
   }
 })
 
-const StartButton = ({ classes, loading, onClick, disabled }) => {
+const StartButton = ({ classes, runningRequests, onClick, disabled }) => {
+  const loading = runningRequests.length > 0
   return (
     <div className={classes.button}>
         <Button fab
@@ -32,14 +33,12 @@ const StartButton = ({ classes, loading, onClick, disabled }) => {
                 onClick={onClick}>
           <AddIcon/>
         </Button>
-
-      {loading && <CircularProgress size={68} className={classes.fabProgress}/>}
     </div>
   )
 }
 
 const mapStateToProps = state => ({
-  loading: state.activity.loading
+  runningRequests: state.network.runningRequests
 })
 
 export default connect(
