@@ -90,16 +90,18 @@ const loadActivitiesEpic = action$ => (
         .map(toActivityWithMoment)
         // .groupBy(a => a.start.format('GGGG-WW'))
         // .map(activities => activities.reduce((week, activity) => {
-        //   const duration = activity.end.diff(activity.start)
+        //   const end = activity.end || moment()
+        //   const duration = moment.duration(end.diff(activity.start))
         //   return {
         //     ...week,
-        //     totalDuration: week.totalDuration + duration,
+        //     date: week.date || moment(activity.start).startOf('isoWeek'),
+        //     totalDuration: week.totalDuration.add(duration),
         //     activities: [
         //       ...week.activities,
         //       activity
         //     ]
         //   }
-        // }, {totalDuration: 0, activities: []}))
+        // }, {totalDuration: moment.duration(0), activities: []}))
         // .mergeAll()
         .toArray()
         .flatMap(activities => concat$(
