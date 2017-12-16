@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 import AddIcon from 'material-ui-icons/Add'
-import { CircularProgress } from 'material-ui/Progress'
 
 const styles = theme => ({
   button: {
