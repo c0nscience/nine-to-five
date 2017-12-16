@@ -20,13 +20,11 @@ const styles = theme => ({
 
 const ActivityItem = (props) => {
   const timeFormat = 'HH:mm'
-  const { id, name, start: startUtc, end: endUtc } = props
+  const { id, name, start, end } = props
 
-  const localStart = moment.utc(startUtc).local()
-  const localEnd = moment.utc(endUtc).local()
-
-  const duration = moment.duration(moment(localEnd).diff(moment(localStart))).humanize()
-  const period = `${duration} from ${localStart.format(timeFormat)} ${endUtc === undefined ? '' : `to ${localEnd.format(timeFormat)}`}`
+  const endOrNow = end || moment()
+  const duration = moment.duration(endOrNow.diff(start)).humanize()
+  const period = `${duration} from ${start.format(timeFormat)} ${end === undefined ? '' : `to ${end.format(timeFormat)}`}`
 
   return (
     <ListItem>
@@ -37,8 +35,8 @@ const ActivityItem = (props) => {
                       props.selectActivity({
                         id,
                         name,
-                        start: localStart,
-                        end: endUtc && localEnd
+                        start: start,
+                        end: end
                       })
                     }}>
           <Edit/>

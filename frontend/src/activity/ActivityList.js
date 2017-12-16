@@ -34,10 +34,9 @@ class ActivityList extends Component {
   render() {
     const { activities, classes, overtimes } = this.props
     const byDay = activities.reduce((groups, item) => {
-      const start = item['start']
-      const localStart = moment.utc(start).local().format('ll')
-      groups[localStart] = groups[localStart] || []
-      groups[localStart].push(item)
+      const start = item['start'].format('ll')
+      groups[start] = groups[start] || []
+      groups[start].push(item)
       return groups
     }, {})
 
@@ -56,10 +55,8 @@ class ActivityList extends Component {
         }
 
         weeks[week].totalDuration += activities.reduce((result, activity) => {
-          const localStart = moment.utc(activity.start).local()
-          const localEnd = moment.utc(activity.end).local()
-
-          const diff = moment(localEnd).diff(moment(localStart))
+          const end = activity.end || moment()
+          const diff = end.diff(activity.start)
           return result + diff
         }, 0)
 
@@ -104,10 +101,8 @@ class ActivityList extends Component {
               }).sort((a, b) => moment(b[0], 'll') - moment(a[0], 'll')).map(value => {
                 const [day, activities] = value
                 const totalDiff = activities.reduce((result, activity) => {
-                  const localStart = moment.utc(activity.start).local()
-                  const localEnd = moment.utc(activity.end).local()
-
-                  const diff = moment(localEnd).diff(moment(localStart))
+                  const end = activity.end || moment()
+                  const diff = end.diff(activity.start)
                   return result + diff
                 }, 0)
 
@@ -120,7 +115,7 @@ class ActivityList extends Component {
                     <Card className={classes.card}>
                       <CardContent className={classes.cardContent}>
                         <List>
-                          {activities.filter(activity => activity.end !== undefined).map(activity => (
+                          {activities.filter(activity => activity.end !== null).map(activity => (
                             <ActivityItem {...activity}
                                           key={activity.id}/>
                           ))}

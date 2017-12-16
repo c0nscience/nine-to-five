@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs'
 import { concat as concat$ } from 'rxjs/observable/concat'
 import { of as of$ } from 'rxjs/observable/of'
+import { from as from$ } from 'rxjs/observable/from'
 import { combineEpics } from 'redux-observable'
 import {
   activitiesLoaded,
@@ -20,6 +21,7 @@ import {
   START_ACTIVITY,
   STOP_ACTIVITY
 } from '../actions'
+import moment from 'moment/moment'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
 
@@ -73,11 +75,34 @@ const errors = (requestName, actionFailed) => error => {
   return of$(showErrorMessage(`${requestName} failed with status: ${error.status}`), actionFailed())
 }
 
+const toActivityWithMoment = activity => ({
+  ...activity,
+  start: moment.utc(activity.start).local(),
+  end: activity.end && moment.utc(activity.end).local()
+})
+
 const loadActivitiesEpic = action$ => (
   action$.ofType(LOAD_ACTIVITIES)
     .switchMap(() => concat$(
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities')
+        .flatMap(from$)
+        .map(toActivityWithMoment)
+        // .groupBy(a => a.start.format('GGGG-WW'))
+        // .map(activities => activities.reduce((week, activity) => {
+        //   const duration = activity.end.diff(activity.start)
+        //   return {
+        //     ...week,
+        //     totalDuration: week.totalDuration + duration,
+        //     activities: [
+        //       ...week.activities,
+        //       activity
+        //     ]
+        //   }
+        // }, {totalDuration: 0, activities: []}))
+        // .mergeAll()
+        .toArray()
+        .do(a => console.log(a))
         .flatMap(activities => concat$(
           of$(activitiesLoaded(activities)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
@@ -92,6 +117,7 @@ const startActivityEpic = action$ => (
       of$(addNetworkActivity(START_ACTIVITY)),
       post('activity', { name: payload })
         .map(result => result.response)
+        .map(toActivityWithMoment)
         .flatMap(response => concat$(
           of$(activityStarted(response)),
           of$(removeNetworkActivity(START_ACTIVITY))
@@ -106,6 +132,7 @@ const stopActivityEpic = action$ => (
       of$(addNetworkActivity(STOP_ACTIVITY)),
       post('activity/stop')
         .map(result => result.response)
+        .map(toActivityWithMoment)
         .flatMap(response => concat$(
           of$(activityStopped(response)),
           of$(removeNetworkActivity(STOP_ACTIVITY))
@@ -121,6 +148,7 @@ const saveActivityEpic = action$ => (
       of$(deselectActivity()),
       put(`activity/${payload.id}`, payload)
         .map(result => result.response)
+        .map(toActivityWithMoment)
         .flatMap(response => concat$(
           of$(activitySaved(response)),
           of$(removeNetworkActivity(SAVE_ACTIVITY))
