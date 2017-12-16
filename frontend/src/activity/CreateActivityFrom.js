@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import classNames from 'classnames'
 import Paper from 'material-ui/Paper'
 import { withStyles } from 'material-ui/styles'
 import { startActivity } from '../actions'
@@ -9,7 +10,7 @@ import TextField from 'material-ui/TextField'
 
 const styles = theme => ({
   paper: {
-    paddingTop: theme.spacing.unit * 2 + 5,
+    paddingTop: theme.spacing.unit * 3,
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
     paddingBottom: theme.spacing.unit * 6,
@@ -17,7 +18,7 @@ const styles = theme => ({
     position: 'relative'
   },
   loadingPaper: {
-    paddingTop: theme.spacing.unit * 2,
+    paddingTop: theme.spacing.unit * 3 - 5,
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
     paddingBottom: theme.spacing.unit * 6,
@@ -53,26 +54,27 @@ class CreateActivityForm extends Component {
   render() {
     const { classes, loading } = this.props
     return (
-      <div>
-        <Paper className={loading ? classes.loadingPaper : classes.paper}>
-          <form onSubmit={this.handleRequestSave}>
-            <Grid container spacing={0}>
-              <Grid item xs={12}>
-                <TextField
-                  id="name"
-                  autoFocus
-                  label="Name"
-                  type="text"
-                  fullWidth
-                  value={this.state.name}
-                  onChange={this.handleNameChange}
-                />
-              </Grid>
+      <Paper className={classNames({
+        [classes.loadingPaper]: loading,
+        [classes.paper]: !loading
+      })}>
+        <form onSubmit={this.handleRequestSave}>
+          <Grid container spacing={0}>
+            <Grid item xs={12}>
+              <TextField
+                id="name"
+                autoFocus
+                label="Name"
+                type="text"
+                fullWidth
+                value={this.state.name}
+                onChange={this.handleNameChange}
+              />
             </Grid>
-            <StartButton disabled={this.state.name.length < 3} onClick={this.handleRequestSave}/>
-          </form>
-        </Paper>
-      </div>
+          </Grid>
+          <StartButton disabled={this.state.name.length < 3} onClick={this.handleRequestSave}/>
+        </form>
+      </Paper>
     )
   }
 }

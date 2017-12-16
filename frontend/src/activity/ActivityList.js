@@ -115,7 +115,7 @@ class ActivityList extends Component {
                     <Card className={classes.card}>
                       <CardContent className={classes.cardContent}>
                         <List>
-                          {activities.filter(activity => activity.end !== null).map(activity => (
+                          {activities.filter(activity => activity.end !== undefined).map(activity => (
                             <ActivityItem {...activity}
                                           key={activity.id}/>
                           ))}
