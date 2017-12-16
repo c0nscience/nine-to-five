@@ -102,7 +102,6 @@ const loadActivitiesEpic = action$ => (
         // }, {totalDuration: 0, activities: []}))
         // .mergeAll()
         .toArray()
-        .do(a => console.log(a))
         .flatMap(activities => concat$(
           of$(activitiesLoaded(activities)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
