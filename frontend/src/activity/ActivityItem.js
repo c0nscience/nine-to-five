@@ -21,13 +21,12 @@ const styles = theme => ({
 const ActivityItem = (props) => {
   const timeFormat = 'HH:mm'
   const { id, name, start, end } = props
-  console.time(`item-render-${id}`)
 
   const endOrNow = end || moment()
   const duration = moment.duration(endOrNow.diff(start)).humanize()
   const period = `${duration} from ${start.format(timeFormat)} ${end === undefined ? '' : `to ${end.format(timeFormat)}`}`
 
-  const content = (
+  return (
     <ListItem>
       <ListItemText primary={name} secondary={period}/>
       <ListItemSecondaryAction>
@@ -45,9 +44,6 @@ const ActivityItem = (props) => {
       </ListItemSecondaryAction>
     </ListItem>
   )
-
-  console.timeEnd(`item-render-${id}`)
-  return content
 }
 
 const mapDispatchToProps = {

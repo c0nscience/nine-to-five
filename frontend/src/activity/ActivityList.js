@@ -24,8 +24,6 @@ const styles = theme => ({
   }
 })
 
-let runIndex = 0
-
 class ActivityList extends Component {
 
   componentDidMount() {
@@ -34,7 +32,6 @@ class ActivityList extends Component {
   }
 
   render() {
-    console.time(`list-render-${runIndex}`)
     const { activities, classes, overtimes } = this.props
     const byDay = activities.reduce((groups, item) => {
       const start = item['start'].format('ll')
@@ -66,7 +63,7 @@ class ActivityList extends Component {
         return weeks
       }, {})
 
-    const content = (
+    return (
       <div>
         {Object.entries(byWeek).sort((a, b) => moment(b[0], 'GGGG-WW') - moment(a[0], 'GGGG-WW')).map(v => {
           const [weekNumber, weeks] = v
@@ -133,10 +130,6 @@ class ActivityList extends Component {
         })}
       </div>
     )
-
-    console.timeEnd(`list-render-${runIndex}`)
-    runIndex = runIndex + 1
-    return content
   }
 }
 
