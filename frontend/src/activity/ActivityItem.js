@@ -48,12 +48,11 @@ const ActivityItem = (props) => {
   )
 }
 
-const mapStateToProps = state => ({})
 const mapDispatchToProps = {
   selectActivity
 }
 
 export default connect(
-  mapStateToProps,
+  null,
   mapDispatchToProps,
 )(withStyles(styles)(ActivityItem))
