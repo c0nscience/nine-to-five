@@ -149,7 +149,6 @@ const loadOvertimeEpic = action$ => (
     .switchMap(() => concat$(
       of$(addNetworkActivity(LOAD_OVERTIME)),
       get('statistics/overtime')
-        .delay(5000)
         .flatMap(overtime => concat$(
           of$(overtimeLoaded(overtime)),
           of$(removeNetworkActivity(LOAD_OVERTIME))

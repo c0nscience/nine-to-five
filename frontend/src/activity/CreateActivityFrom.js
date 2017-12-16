@@ -13,7 +13,7 @@ const styles = theme => ({
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
     paddingBottom: theme.spacing.unit * 6,
-    marginBottom: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit * 4,
     position: 'relative'
   },
   loadingPaper: {
@@ -21,7 +21,7 @@ const styles = theme => ({
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
     paddingBottom: theme.spacing.unit * 6,
-    marginBottom: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit * 4,
     position: 'relative'
   }
 })
