@@ -33,35 +33,34 @@ class ActivityList extends Component {
 
   render() {
     const { activities, classes, overtimes } = this.props
-    const byDay = activities.reduce((groups, item) => {
-      const start = item['start'].format('ll')
-      groups[start] = groups[start] || []
-      groups[start].push(item)
-      return groups
+    const byWeek = activities.reduce((weeks, activity) => {
+      const weekDate = activity.start.format('GGGG-WW')
+      const dayDate = activity.start.format('ll')
+      const week = weeks[weekDate] || {
+        totalDuration: 0,
+        days: {}
+      }
+
+      const days = {
+        ...week.days,
+        [dayDate]: [
+          ...week.days[dayDate] || [],
+          activity
+        ]
+      }
+
+      const end = activity.end || moment()
+      const diff = end.diff(activity.start)
+
+      return {
+        ...weeks,
+        [weekDate]: {
+          ...week,
+          totalDuration: week.totalDuration + diff,
+          days: days
+        }
+      }
     }, {})
-
-    const byWeek = Object.keys(byDay)
-      .reduce((weeks, date) => {
-        const week = moment(date, 'll').format('GGGG-WW')
-
-        weeks[week] = weeks[week] || {
-          totalDuration: 0,
-          days: {}
-        }
-        const activities = byDay[date]
-        weeks[week].days = {
-          [date]: activities,
-          ...weeks[week].days
-        }
-
-        weeks[week].totalDuration += activities.reduce((result, activity) => {
-          const end = activity.end || moment()
-          const diff = end.diff(activity.start)
-          return result + diff
-        }, 0)
-
-        return weeks
-      }, {})
 
     return (
       <div>
