@@ -32,7 +32,8 @@ class Activity extends Component {
   render() {
     const { classes, activities, isAuthenticated, runningRequests } = this.props
     const loading = runningRequests.length > 0
-    const runningActivity = activities.find(activity => activity.end === undefined)
+    // const runningActivity = activities.find(activity => activity.end === undefined)
+    const runningActivity = undefined
     return (
       <div>
         <ErrorMessage/>

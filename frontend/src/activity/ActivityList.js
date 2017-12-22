@@ -35,38 +35,37 @@ class ActivityList extends Component {
 
   render() {
     console.time(`#${run} Render list`)
-    const { activities, classes, overtimes } = this.props
-    console.time(`#${run} Render list - reduce`)
-    console.log(`#${run} Render list - number of activities ${activities.length}`)
-    const byWeek = activities.reduce((weeks, activity) => {
-      const weekDate = activity.start.format('GGGG-WW')
-      const dayDate = activity.start.format('ll')
-      const week = weeks[weekDate] || {
-        totalDuration: 0,
-        days: {}
-      }
-
-      const days = {
-        ...week.days,
-        [dayDate]: [
-          ...week.days[dayDate] || [],
-          activity
-        ]
-      }
-
-      const end = activity.end || moment()
-      const diff = end.diff(activity.start)
-
-      return {
-        ...weeks,
-        [weekDate]: {
-          ...week,
-          totalDuration: week.totalDuration + diff,
-          days: days
-        }
-      }
-    }, {})
-    console.timeEnd(`#${run} Render list - reduce`)
+    const { activities: byWeek, classes, overtimes } = this.props
+    // console.time(`#${run} Render list - reduce`)
+    // const byWeek = activities.reduce((weeks, activity) => {
+    //   const weekDate = activity.start.format('GGGG-WW')
+    //   const dayDate = activity.start.format('ll')
+    //   const week = weeks[weekDate] || {
+    //     totalDuration: 0,
+    //     days: {}
+    //   }
+    //
+    //   const days = {
+    //     ...week.days,
+    //     [dayDate]: [
+    //       ...week.days[dayDate] || [],
+    //       activity
+    //     ]
+    //   }
+    //
+    //   const end = activity.end || moment()
+    //   const diff = end.diff(activity.start)
+    //
+    //   return {
+    //     ...weeks,
+    //     [weekDate]: {
+    //       ...week,
+    //       totalDuration: week.totalDuration + diff,
+    //       days: days
+    //     }
+    //   }
+    // }, {})
+    // console.timeEnd(`#${run} Render list - reduce`)
 
     console.time(`#${run} Render list - generate content`)
     const content = (

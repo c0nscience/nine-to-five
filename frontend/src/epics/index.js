@@ -87,23 +87,39 @@ const loadActivitiesEpic = action$ => (
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities')
         .flatMap(from$)
-        .map(toActivityWithMoment)
-        // .groupBy(a => a.start.format('GGGG-WW'))
-        // .map(activities => activities.reduce((week, activity) => {
-        //   const end = activity.end || moment()
-        //   const duration = moment.duration(end.diff(activity.start))
-        //   return {
-        //     ...week,
-        //     date: week.date || moment(activity.start).startOf('isoWeek'),
-        //     totalDuration: week.totalDuration.add(duration),
-        //     activities: [
-        //       ...week.activities,
-        //       activity
-        //     ]
-        //   }
-        // }, {totalDuration: moment.duration(0), activities: []}))
-        // .mergeAll()
-        .toArray()
+        .reduce((weeks, _activity) => {
+          console.time(`process ${_activity.id}`)
+          const activity = toActivityWithMoment(_activity)
+          const weekDate = activity.start.format('GGGG-WW')
+          const dayDate = activity.start.format('ll')
+          const week = weeks[weekDate] || {
+            totalDuration: 0,
+            days: {}
+          }
+
+          const days = {
+            ...week.days,
+            [dayDate]: [
+              ...week.days[dayDate] || [],
+              activity
+            ]
+          }
+
+          const end = activity.end || moment()
+          const diff = end.diff(activity.start)
+
+          const result = {
+            ...weeks,
+            [weekDate]: {
+              ...week,
+              totalDuration: week.totalDuration + diff,
+              days: days
+            }
+          }
+          console.timeEnd(`process ${_activity.id}`)
+          return result
+        }, {})
+        .do(a => console.log(a))
         .flatMap(activities => concat$(
           of$(activitiesLoaded(activities)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
