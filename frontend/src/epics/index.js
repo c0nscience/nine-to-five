@@ -88,7 +88,6 @@ const loadActivitiesEpic = action$ => (
       get('activities')
         .flatMap(from$)
         .reduce((weeks, _activity) => {
-          console.time(`process ${_activity.id}`)
           const activity = toActivityWithMoment(_activity)
           const weekDate = activity.start.format('GGGG-WW')
           const dayDate = activity.start.format('ll')
@@ -108,7 +107,7 @@ const loadActivitiesEpic = action$ => (
           const end = activity.end || moment()
           const diff = end.diff(activity.start)
 
-          const result = {
+          return {
             ...weeks,
             [weekDate]: {
               ...week,
@@ -116,10 +115,7 @@ const loadActivitiesEpic = action$ => (
               days: days
             }
           }
-          console.timeEnd(`process ${_activity.id}`)
-          return result
         }, {})
-        .do(a => console.log(a))
         .flatMap(activities => concat$(
           of$(activitiesLoaded(activities)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
