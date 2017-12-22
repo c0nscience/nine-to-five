@@ -73,8 +73,7 @@ const loadActivitiesEpic = action$ => (
     .switchMap(() => concat$(
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities')
-        .flatMap(from$)
-        .reduce((weeks, _activity) => {
+        .map(activities => activities.reduce((weeks, _activity) => {
           const activity = toActivityWithMoment(_activity)
           const weekDate = activity.start.format('GGGG-WW')
           const dayDate = activity.start.format('ll')
@@ -112,7 +111,7 @@ const loadActivitiesEpic = action$ => (
               days: days
             }
           }
-        }, {})
+        }, {}))
         .flatMap(activities => concat$(
           of$(activitiesLoaded(activities)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
