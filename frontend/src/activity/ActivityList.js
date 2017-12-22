@@ -66,21 +66,16 @@ class ActivityList extends Component {
               </Card>
 
               {Object.entries(weeks.days).filter(value => {
-                const activities = value[1]
+                const activities = value[1].activities
                 return activities.filter(activity => activity.end !== undefined).length > 0
               }).sort((a, b) => moment(b[0], 'll') - moment(a[0], 'll')).map(value => {
-                const [day, activities] = value
-                const totalDiff = activities.reduce((result, activity) => {
-                  const end = activity.end || moment()
-                  const diff = end.diff(activity.start)
-                  return result + diff
-                }, 0)
-
-                const totalDurationAsHours = moment.duration(totalDiff).asHours().toPrecision(2)
+                const [dayDate, day] = value
+                const activities = day.activities
+                const totalDurationAsHours = moment.duration(day.totalDuration).asHours().toPrecision(2)
                 return (
-                  <div key={day}>
+                  <div key={dayDate}>
                     <Typography type="subheading" className={classes.dayHeadline}>
-                      {totalDurationAsHours} hrs on {day}
+                      {totalDurationAsHours} hrs on {dayDate}
                     </Typography>
                     <Card className={classes.card}>
                       <CardContent className={classes.cardContent}>

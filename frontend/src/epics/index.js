@@ -4,22 +4,9 @@ import { of as of$ } from 'rxjs/observable/of'
 import { from as from$ } from 'rxjs/observable/from'
 import { combineEpics } from 'redux-observable'
 import {
-  activitiesLoaded,
-  activityDeleted,
-  activitySaved,
-  activityStarted,
-  activityStopped,
-  addNetworkActivity,
-  DELETE_ACTIVITY,
-  deselectActivity,
-  LOAD_ACTIVITIES,
-  LOAD_OVERTIME,
-  overtimeLoaded,
-  removeNetworkActivity,
-  SAVE_ACTIVITY,
-  showErrorMessage,
-  START_ACTIVITY,
-  STOP_ACTIVITY
+  activitiesLoaded, activityDeleted, activitySaved, activityStarted, activityStopped, addNetworkActivity,
+  DELETE_ACTIVITY, deselectActivity, LOAD_ACTIVITIES, LOAD_OVERTIME, overtimeLoaded, removeNetworkActivity,
+  SAVE_ACTIVITY, showErrorMessage, START_ACTIVITY, STOP_ACTIVITY
 } from '../actions'
 import moment from 'moment/moment'
 
@@ -91,21 +78,31 @@ const loadActivitiesEpic = action$ => (
           const activity = toActivityWithMoment(_activity)
           const weekDate = activity.start.format('GGGG-WW')
           const dayDate = activity.start.format('ll')
+
+          const end = activity.end || moment()
+          const diff = end.diff(activity.start)
+
           const week = weeks[weekDate] || {
             totalDuration: 0,
             days: {}
           }
 
-          const days = {
-            ...week.days,
-            [dayDate]: [
-              ...week.days[dayDate] || [],
-              activity
-            ]
+          const day = week.days[dayDate] || {
+            totalDuration : 0,
+            activities: []
           }
 
-          const end = activity.end || moment()
-          const diff = end.diff(activity.start)
+          const days = {
+            ...week.days,
+            [dayDate]: {
+              ...day,
+              totalDuration: day.totalDuration + diff,
+              activities: [
+                ...day.activities || [],
+                activity
+              ]
+            }
+          }
 
           return {
             ...weeks,
