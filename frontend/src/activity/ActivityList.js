@@ -24,6 +24,8 @@ const styles = theme => ({
   }
 })
 
+let run = 0
+
 class ActivityList extends Component {
 
   componentDidMount() {
@@ -32,7 +34,10 @@ class ActivityList extends Component {
   }
 
   render() {
+    console.time(`#${run} Render list`)
     const { activities, classes, overtimes } = this.props
+    console.time(`#${run} Render list - reduce`)
+    console.log(`#${run} Render list - number of activities ${activities.length}`)
     const byWeek = activities.reduce((weeks, activity) => {
       const weekDate = activity.start.format('GGGG-WW')
       const dayDate = activity.start.format('ll')
@@ -61,8 +66,10 @@ class ActivityList extends Component {
         }
       }
     }, {})
+    console.timeEnd(`#${run} Render list - reduce`)
 
-    return (
+    console.time(`#${run} Render list - generate content`)
+    const content = (
       <div>
         {Object.entries(byWeek).sort((a, b) => moment(b[0], 'GGGG-WW') - moment(a[0], 'GGGG-WW')).map(v => {
           const [weekNumber, weeks] = v
@@ -129,6 +136,10 @@ class ActivityList extends Component {
         })}
       </div>
     )
+    console.timeEnd(`#${run} Render list - generate content`)
+    console.timeEnd(`#${run} Render list`)
+    run = run + 1
+    return content
   }
 }
 
