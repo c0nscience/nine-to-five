@@ -11,6 +11,7 @@ const initialState = {
   openCreateDialog: false,
   selectedActivity: {},
   activitiesByWeek: {},
+  running: undefined,
   activities: [],
   overtimes: []
 }
@@ -62,8 +63,9 @@ export default (state = initialState, action) => {
     case ACTIVITIES_LOADED:
       return {
         ...state,
-        activitiesByWeek: action.payload.activitiesByWeek,
+        running: action.payload.activities.find(a => a.end === undefined),
         activities: action.payload.activities,
+        activitiesByWeek: action.payload.activitiesByWeek,
         loading: false
       }
     case START_ACTIVITY:
@@ -75,6 +77,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         loading: false,
+        running: action.payload,
         activities: [
           action.payload,
           ...state.activities
@@ -92,6 +95,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         loading: false,
+        running: undefined,
         activities: state.activities.map(activity => (
           activity.id === action.payload.id ?
             action.payload :
@@ -127,6 +131,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         loading: false,
+        running: action.payload.end === undefined ? action.payload : undefined,
         activities: state.activities.map(activity => (
           activity.id === action.payload.id ?
             action.payload :
@@ -150,6 +155,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         loading: false,
+        running: state.running && state.running.id === action.payload.id ? undefined : state.running,
         activities: [
           ...state.activities.slice(0, deletedActivityIndex),
           ...state.activities.slice(deletedActivityIndex + 1)

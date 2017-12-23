@@ -30,9 +30,8 @@ class Activity extends Component {
   }
 
   render() {
-    const { classes, activities, isAuthenticated, runningRequests } = this.props
+    const { classes, isAuthenticated, runningRequests, runningActivity } = this.props
     const loading = runningRequests.length > 0
-    const runningActivity = activities.find(activity => activity.end === undefined)
     return (
       <div>
         <ErrorMessage/>
@@ -53,7 +52,7 @@ class Activity extends Component {
 }
 
 const mapStateToProps = state => ({
-  activities: state.activity.activities,
+  runningActivity: state.activity.running,
   isAuthenticated: state.auth.isAuthenticated,
   runningRequests: state.network.runningRequests
 })
