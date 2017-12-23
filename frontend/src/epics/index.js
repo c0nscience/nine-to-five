@@ -1,7 +1,6 @@
 import { Observable } from 'rxjs'
 import { concat as concat$ } from 'rxjs/observable/concat'
 import { of as of$ } from 'rxjs/observable/of'
-import { from as from$ } from 'rxjs/observable/from'
 import { combineEpics } from 'redux-observable'
 import {
   activitiesLoaded, activityDeleted, activitySaved, activityStarted, activityStopped, addNetworkActivity,
@@ -73,7 +72,9 @@ const loadActivitiesEpic = action$ => (
     .switchMap(() => concat$(
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities')
-        .map(activities => activities.reduce((weeks, _activity) => {
+        .map(activities => ({
+          activities,
+          activitiesByWeek: activities.reduce((weeks, _activity) => {
           const activity = toActivityWithMoment(_activity)
           const weekDate = activity.start.format('GGGG-WW')
           const dayDate = activity.start.format('ll')
@@ -97,7 +98,7 @@ const loadActivitiesEpic = action$ => (
               ...day,
               totalDuration: day.totalDuration + diff,
               activities: [
-                ...day.activities || [],
+                ...day.activities,
                 activity
               ]
             }
@@ -111,9 +112,10 @@ const loadActivitiesEpic = action$ => (
               days: days
             }
           }
-        }, {}))
-        .flatMap(activities => concat$(
-          of$(activitiesLoaded(activities)),
+        }, {})
+        }))
+        .flatMap(activitiesByWeek => concat$(
+          of$(activitiesLoaded(activitiesByWeek)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
         ))
     ))

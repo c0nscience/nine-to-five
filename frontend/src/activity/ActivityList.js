@@ -32,7 +32,7 @@ class ActivityList extends Component {
   }
 
   render() {
-    const { activities: byWeek, classes, overtimes } = this.props
+    const { activitiesByWeek: byWeek, classes, overtimes } = this.props
     return (
       <div>
         {Object.entries(byWeek).sort((a, b) => moment(b[0], 'GGGG-WW') - moment(a[0], 'GGGG-WW')).map(v => {
@@ -99,7 +99,7 @@ class ActivityList extends Component {
 }
 
 const mapStateToProps = state => ({
-  activities: state.activity.activities,
+  activitiesByWeek: state.activity.activitiesByWeek,
   overtimes: state.activity.overtimes
 })
 export default connect(

@@ -63,7 +63,6 @@ class CreateActivityForm extends Component {
             <Grid item xs={12}>
               <TextField
                 id="name"
-                autoFocus
                 label="Name"
                 type="text"
                 fullWidth
