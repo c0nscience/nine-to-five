@@ -135,7 +135,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         loading: false,
-        running: action.payload.end === undefined ? action.payload : undefined,
+        running: action.payload.end === undefined ? action.payload : state.running,
         activities: state.activities.map(activity => (
           activity.id === action.payload.id ?
             action.payload :
