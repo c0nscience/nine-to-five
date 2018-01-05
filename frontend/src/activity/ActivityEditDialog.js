@@ -97,7 +97,7 @@ class ActivityEditDialog extends Component {
 
     const ConfirmDialog = () => (
       <Dialog open={this.state.confirmDialogOpen}
-              onRequestClose={this.handleCloseConfirmDialog}>
+              onClose={this.handleCloseConfirmDialog}>
         <DialogTitle>Are you sure?</DialogTitle>
         <DialogActions>
           <Button onClick={this.handleCloseConfirmDialog}>
@@ -115,7 +115,7 @@ class ActivityEditDialog extends Component {
         <ConfirmDialog/>
         <Dialog fullScreen={fullScreen}
                 open={this.props.open}
-                onRequestClose={this.props.deselectActivity}>
+                onClose={this.props.deselectActivity}>
           <DialogTitle>Edit</DialogTitle>
           <DialogContent>
             <form onSubmit={this.handleRequestSave}>
