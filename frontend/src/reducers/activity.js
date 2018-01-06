@@ -1,6 +1,8 @@
 import {
   ACTIVITIES_LOADED, ACTIVITY_DELETED, ACTIVITY_SAVED, ACTIVITY_STARTED, ACTIVITY_STOPPED, DELETE_ACTIVITY,
-  DESELECT_ACTIVITY, LOAD_ACTIVITIES, LOAD_OVERTIME, OVERTIME_LOADED, SAVE_ACTIVITY, SELECT_ACTIVITY, START_ACTIVITY,
+  DESELECT_ACTIVITY, LOAD_ACTIVITIES, LOAD_OVERTIME, LOAD_RUNNING_ACTIVITY, OVERTIME_LOADED, RUNNING_ACTIVITY_LOADED,
+  SAVE_ACTIVITY,
+  SELECT_ACTIVITY, START_ACTIVITY,
   STOP_ACTIVITY
 } from '../actions'
 import moment from 'moment/moment'
@@ -12,7 +14,6 @@ const initialState = {
   selectedActivity: {},
   activitiesByWeek: {},
   running: undefined,
-  activities: [],
   overtimes: []
 }
 
@@ -67,9 +68,7 @@ export default (state = initialState, action) => {
     case ACTIVITIES_LOADED:
       return {
         ...state,
-        running: action.payload.activities.find(a => a.end === undefined),
-        activities: action.payload.activities,
-        activitiesByWeek: action.payload.activitiesByWeek,
+        activitiesByWeek: action.payload,
         loading: false
       }
     case START_ACTIVITY:
@@ -82,10 +81,6 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         running: action.payload,
-        activities: [
-          action.payload,
-          ...state.activities
-        ],
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
           (dayActivities, activity) => ([activity, ...dayActivities]))
@@ -100,11 +95,6 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         running: undefined,
-        activities: state.activities.map(activity => (
-          activity.id === action.payload.id ?
-            action.payload :
-            activity
-        )),
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
           (dayActivities, activity) => dayActivities.map(a => (
@@ -136,11 +126,6 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         running: action.payload.end === undefined ? action.payload : state.running,
-        activities: state.activities.map(activity => (
-          activity.id === action.payload.id ?
-            action.payload :
-            activity
-        )),
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
           (dayActivities, activity) => dayActivities.map(a => (
@@ -154,18 +139,12 @@ export default (state = initialState, action) => {
         loading: true
       }
     case ACTIVITY_DELETED:
-      const deletedActivityIndex = state.activities.findIndex(activity => activity.id === action.payload.id)
-      const activityToDelete = state.activities[deletedActivityIndex]
       return {
         ...state,
         loading: false,
         running: state.running && state.running.id === action.payload.id ? undefined : state.running,
-        activities: [
-          ...state.activities.slice(0, deletedActivityIndex),
-          ...state.activities.slice(deletedActivityIndex + 1)
-        ],
         activitiesByWeek: activitiesByWeekReducer(
-          activityToDelete,
+          action.payload,
           (dayActivities, activity) => {
             const index = dayActivities.findIndex(a => a.id === activity.id)
             return [
@@ -185,6 +164,16 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         overtimes: action.payload
+      }
+    case LOAD_RUNNING_ACTIVITY:
+      return {
+        ...state,
+        loading: true
+      }
+    case RUNNING_ACTIVITY_LOADED:
+      return {
+        ...state,
+        running: action.payload
       }
     default:
       return state

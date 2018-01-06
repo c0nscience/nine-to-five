@@ -78,3 +78,12 @@ export const addNetworkActivity = networkActivity =>
 
 export const removeNetworkActivity = networkActivity =>
   ({ type: REMOVE_NETWORK_ACTIVITY, payload: networkActivity })
+
+export const LOAD_RUNNING_ACTIVITY = 'LOAD_RUNNING_ACTIVITY'
+export const RUNNING_ACTIVITY_LOADED = 'RUNNING_ACTIVITY_LOADED'
+
+export const loadRunningActivity = () =>
+  ({ type: LOAD_RUNNING_ACTIVITY })
+
+export const runningActivityLoaded = runningActivity =>
+  ({ type: RUNNING_ACTIVITY_LOADED, payload: runningActivity })

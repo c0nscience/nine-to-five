@@ -4,7 +4,8 @@ import { of as of$ } from 'rxjs/observable/of'
 import { combineEpics } from 'redux-observable'
 import {
   activitiesLoaded, activityDeleted, activitySaved, activityStarted, activityStopped, addNetworkActivity,
-  DELETE_ACTIVITY, deselectActivity, LOAD_ACTIVITIES, LOAD_OVERTIME, overtimeLoaded, removeNetworkActivity,
+  DELETE_ACTIVITY, deselectActivity, LOAD_ACTIVITIES, LOAD_OVERTIME, LOAD_RUNNING_ACTIVITY, overtimeLoaded,
+  removeNetworkActivity, runningActivityLoaded,
   SAVE_ACTIVITY, showErrorMessage, START_ACTIVITY, STOP_ACTIVITY
 } from '../actions'
 import moment from 'moment/moment'
@@ -72,9 +73,7 @@ const loadActivitiesEpic = action$ => (
     .switchMap(() => concat$(
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities')
-        .map(activities => ({
-          activities,
-          activitiesByWeek: activities.reduce((weeks, _activity) => {
+        .map(activities => activities.reduce((weeks, _activity) => {
           const activity = toActivityWithMoment(_activity)
           const weekDate = activity.start.format('GGGG-WW')
           const dayDate = activity.start.format('ll')
@@ -112,8 +111,7 @@ const loadActivitiesEpic = action$ => (
               days: days
             }
           }
-        }, {})
-        }))
+        }, {}))
         .flatMap(activitiesByWeek => concat$(
           of$(activitiesLoaded(activitiesByWeek)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
@@ -176,7 +174,7 @@ const deleteActivityEpic = action$ => (
       del(`activity/${payload}`)
         .map(result => result.response)
         .flatMap(response => concat$(
-          of$(activityDeleted(response)),
+          of$(activityDeleted(toActivityWithMoment(response))),
           of$(removeNetworkActivity(DELETE_ACTIVITY))
         ))
     ))
@@ -196,11 +194,25 @@ const loadOvertimeEpic = action$ => (
     .catch(errors('Load overtime', () => removeNetworkActivity(LOAD_OVERTIME)))
 )
 
+const loadRunningActivityEpic = action$ => (
+  action$.ofType(LOAD_RUNNING_ACTIVITY)
+    .switchMap(() => concat$(
+      of$(addNetworkActivity(LOAD_RUNNING_ACTIVITY)),
+      get('activity/running')
+        .flatMap(runningActivity => concat$(
+          of$(runningActivityLoaded(runningActivity)),
+          of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+        ))
+    ))
+    .catch(errors('Load overtime', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY)))
+)
+
 export const rootEpic = combineEpics(
   loadActivitiesEpic,
   startActivityEpic,
   stopActivityEpic,
   saveActivityEpic,
   deleteActivityEpic,
-  loadOvertimeEpic
+  loadOvertimeEpic,
+  loadRunningActivityEpic
 )
