@@ -204,7 +204,13 @@ const loadRunningActivityEpic = action$ => (
           of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
         ))
     ))
-    .catch(errors('Load overtime', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY)))
+    .catch(e => {
+      if (e.status === 404) {
+        return of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+      }
+
+      return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
+    })
 )
 
 export const rootEpic = combineEpics(
