@@ -128,9 +128,7 @@ export default (state = initialState, action) => {
         running: action.payload.end === undefined ? action.payload : state.running,
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
-          (dayActivities, activity) => dayActivities.map(a => (
-            a.id === activity.id ? activity : a
-          ))
+          (dayActivities, activity) => ([activity, ...dayActivities ])
         )
       }
     case DELETE_ACTIVITY:

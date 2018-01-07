@@ -28,8 +28,8 @@ export const activityStopped = stoppedActivity =>
 export const SAVE_ACTIVITY = 'SAVE_ACTIVITY'
 export const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
 
-export const saveActivity = activity =>
-  ({ type: SAVE_ACTIVITY, payload: activity })
+export const saveActivity = (activity, oldActivity) =>
+  ({ type: SAVE_ACTIVITY, payload: {activity, oldActivity} })
 
 export const activitySaved = activity =>
   ({ type: ACTIVITY_SAVED, payload: activity })

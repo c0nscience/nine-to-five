@@ -35,7 +35,13 @@ class ActivityEditDialog extends Component {
       id,
       name,
       start,
-      end
+      end,
+      oldActivity: {
+        id,
+        name,
+        start,
+        end
+      }
     })
 
   }
@@ -57,12 +63,14 @@ class ActivityEditDialog extends Component {
 
   handleRequestSave(event) {
     event.preventDefault()
-    this.props.saveActivity({
-      id: this.state.id,
-      name: this.state.name,
-      start: moment(this.state.start, dateTimeFormat).utc(false).toISOString(),
-      end: moment(this.state.end, dateTimeFormat).utc(false).toISOString()
-    })
+    this.props.saveActivity(
+      {
+        id: this.state.id,
+        name: this.state.name,
+        start: moment(this.state.start, dateTimeFormat).utc(false).toISOString(),
+        end: moment(this.state.end, dateTimeFormat).utc(false).toISOString()
+      },
+      this.state.oldActivity)
   }
 
   handleRequestDelete(event) {

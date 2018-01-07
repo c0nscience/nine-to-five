@@ -155,10 +155,11 @@ const saveActivityEpic = action$ => (
     .switchMap(({ payload }) => concat$(
       of$(addNetworkActivity(SAVE_ACTIVITY)),
       of$(deselectActivity()),
-      put(`activity/${payload.id}`, payload)
+      put(`activity/${payload.activity.id}`, payload.activity)
         .map(result => result.response)
         .map(toActivityWithMoment)
         .flatMap(response => concat$(
+          of$(activityDeleted(toActivityWithMoment(payload.oldActivity))),
           of$(activitySaved(response)),
           of$(removeNetworkActivity(SAVE_ACTIVITY))
         ))
