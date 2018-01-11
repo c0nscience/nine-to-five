@@ -7,7 +7,7 @@ import { handleAuthentication } from './reducers/auth'
 import {closeMenuDrawer} from './actions'
 import NavBar from './NavBar/NavBar'
 import Callback from './Callback/Callback'
-import Activity from './activity/Activity'
+import Activity from './activity-old/Activity'
 import LoadingIndicator from './component/LoadingIndicator'
 import Menu from './component/Menu'
 
