@@ -5,9 +5,10 @@ import Toolbar from 'material-ui/Toolbar'
 import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
-import RefreshIcon from 'material-ui-icons/Refresh'
+import MenuIcon from 'material-ui-icons/Menu'
 import { connect } from 'react-redux'
 import { login, logout } from '../reducers/auth'
+import { openMenuDrawer } from '../actions'
 
 const styles = {
   root: {
@@ -25,6 +26,7 @@ const styles = {
 const NavBar = ({
                   login,
                   logout,
+                  openMenuDrawer,
                   isAuthenticated,
                   classes
                 }) => (
@@ -35,9 +37,9 @@ const NavBar = ({
                     color="contrast"
                     aria-label="Menu"
                     onClick={() => {
-                      window.location.reload()
+                      openMenuDrawer()
                     }}>
-          <RefreshIcon/>
+          <MenuIcon/>
         </IconButton>
         <Typography type="title" color="inherit" className={classes.flex}>
           Nine 2 Five
@@ -56,7 +58,8 @@ const NavBar = ({
 
 const mapDispatchToProps = {
   login,
-  logout
+  logout,
+  openMenuDrawer
 }
 
 export default connect(

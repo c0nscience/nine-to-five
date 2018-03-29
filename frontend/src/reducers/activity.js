@@ -3,12 +3,13 @@ import {
   DESELECT_ACTIVITY, LOAD_ACTIVITIES, LOAD_OVERTIME, LOAD_RUNNING_ACTIVITY, OVERTIME_LOADED, RUNNING_ACTIVITY_LOADED,
   SAVE_ACTIVITY,
   SELECT_ACTIVITY, START_ACTIVITY,
-  STOP_ACTIVITY
+  STOP_ACTIVITY, OPEN_MENU_DRAWER, CLOSE_MENU_DRAWER
 } from '../actions'
 import moment from 'moment/moment'
 
 const initialState = {
   loading: false,
+  menuDrawerOpen: false,
   openEditDialog: false,
   openCreateDialog: false,
   selectedActivity: {},
@@ -128,7 +129,7 @@ export default (state = initialState, action) => {
         running: action.payload.end === undefined ? action.payload : state.running,
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
-          (dayActivities, activity) => ([activity, ...dayActivities ])
+          (dayActivities, activity) => ([activity, ...dayActivities])
         )
       }
     case DELETE_ACTIVITY:
@@ -172,6 +173,16 @@ export default (state = initialState, action) => {
       return {
         ...state,
         running: action.payload
+      }
+    case OPEN_MENU_DRAWER:
+      return {
+        ...state,
+        menuDrawerOpen: true
+      }
+    case CLOSE_MENU_DRAWER:
+      return {
+        ...state,
+        menuDrawerOpen: false
       }
     default:
       return state

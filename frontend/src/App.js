@@ -4,12 +4,14 @@ import { Route, Switch } from 'react-router'
 import { connect } from 'react-redux'
 import withRoot from './component/withRoot'
 import { handleAuthentication } from './reducers/auth'
+import {closeMenuDrawer} from './actions'
 import NavBar from './NavBar/NavBar'
 import Callback from './Callback/Callback'
 import Activity from './activity/Activity'
 import LoadingIndicator from './component/LoadingIndicator'
+import Menu from './component/Menu'
 
-const App = ({ history, handleAuthentication }) => {
+const App = ({ history, handleAuthentication, menuDrawerOpen, closeMenuDrawer }) => {
   const handleCallback = (nextState) => {
     if (/access_token|id_token|error/.test(nextState.location.hash)) {
       handleAuthentication()
@@ -19,6 +21,7 @@ const App = ({ history, handleAuthentication }) => {
   return (
     <div>
       <NavBar/>
+      <Menu open={menuDrawerOpen} onClose={closeMenuDrawer}/>
       <LoadingIndicator/>
       <ConnectedRouter history={history}>
         <Switch>
@@ -38,8 +41,13 @@ const App = ({ history, handleAuthentication }) => {
   )
 }
 
+const mapStateToProps = state => ({
+  menuDrawerOpen: state.activity.menuDrawerOpen
+})
+
 const mapDispatchToProps = {
-  handleAuthentication
+  handleAuthentication,
+  closeMenuDrawer
 }
 
-export default connect(null, mapDispatchToProps)(withRoot(App))
+export default connect(mapStateToProps, mapDispatchToProps)(withRoot(App))
