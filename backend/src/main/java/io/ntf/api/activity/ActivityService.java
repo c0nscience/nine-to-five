@@ -22,7 +22,7 @@ public class ActivityService {
     this.activityRepository = activityRepository;
   }
 
-  Flux<Activity> findByUserId(String userId) {
+  public Flux<Activity> findByUserId(String userId) {
     return activityRepository.findByUserIdOrderByStartDesc(userId);
   }
 

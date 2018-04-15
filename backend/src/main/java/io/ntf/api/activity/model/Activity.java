@@ -1,10 +1,12 @@
 package io.ntf.api.activity.model;
 
+import io.vavr.control.Option;
 import lombok.*;
 import lombok.experimental.Wither;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Document(collection = "activities")
@@ -26,5 +28,9 @@ public class Activity {
   private LocalDateTime start;
 
   private LocalDateTime end;
+
+  public Duration duration() {
+    return Duration.between(start, Option.of(end).getOrElse(LocalDateTime.now()));
+  }
 
 }
