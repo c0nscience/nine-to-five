@@ -1,24 +1,22 @@
 package io.ntf.api.statistics.model;
 
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.Wither;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
-
-@Document
-@Data
+@Document(collection = "userConfigurations")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Wither
 public class UserConfiguration {
 
   @Id
+  private String id;
   private String userId;
-
   private WorkTimeConfiguration workTimeConfiguration;
 
-  @Document
-  @Data
-  public static class WorkTimeConfiguration {
-    private LocalDate beginOfOvertimeCalculation;
-    private Long workingHoursPerWeek;
-  }
 }

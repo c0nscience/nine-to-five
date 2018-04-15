@@ -13,4 +13,4 @@ auth0:
 logging:
   level:
     org.hibernate.engine.jdbc.env.internal.LobCreatorBuilderImpl: WARN
-#    org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG
+    org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG
