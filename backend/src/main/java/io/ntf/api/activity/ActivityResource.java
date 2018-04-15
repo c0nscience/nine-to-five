@@ -24,10 +24,10 @@ public class ActivityResource {
   }
 
   @GetMapping("/activities")
-  public Flux<Activity> getAllActivities(Mono<Principal> principal) {
+  public Flux<Activity> all(Mono<Principal> principal) {
     return principal
       .map(Principal::getName)
-      .flatMapMany(name -> activityService.findByUserId(name));
+      .flatMapMany(name -> activityService.all(name));
   }
 
   @PostMapping("/activity")

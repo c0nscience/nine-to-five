@@ -30,6 +30,10 @@ public class ActivityService {
     return activityRepository.findByUserIdAndId(userId, id);
   }
 
+  Flux<Activity> all(String userId) {
+    return activityRepository.findByUserIdAndStartIsAfterOrderByStartDesc(userId, LocalDateTime.now().minusMonths(1));
+  }
+
   Mono<Activity> start(String userId, String name) {
     return running(userId)
       .<Activity>flatMap(a -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not start new activity while another is running.")))
