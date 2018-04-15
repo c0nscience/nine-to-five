@@ -1,14 +1,18 @@
 package io.ntf.api.activity;
 
 import io.ntf.api.activity.model.Activity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 
 @RestController
 public class ActivityResource {
@@ -26,29 +30,52 @@ public class ActivityResource {
       .flatMapMany(name -> activityService.findByUserId(name));
   }
 
-  /**
-   * def start: Action[JsValue] = (Action andThen hasScope("start:activity")).async(parse.json) { implicit request =>
-   * request.body.validate[StartDataTransferObject].fold(
-   * errors => {
-   * Future.successful(BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toJson(errors))))
-   * },
-   * start => {
-   * activityDAO.findRunning(request.userId)
-   * .flatMap(maybeRunningActivity => maybeRunningActivity
-   * .map(_ => Future.successful(BadRequest("Can not start new activity while another is running.")))
-   * .getOrElse(activityDAO
-   * .insert(Activity(userId = request.userId, name = start.name, start = LocalDateTime.now(ZoneOffset.UTC)))
-   * .map(Json.toJson(_))
-   * .map(Created(_))
-   * )
-   * )
-   * }
-   * )
-   * }
-   */
   @PostMapping("/activity")
-  public Mono<Activity> start() {
-    return Mono.empty();
+  public Mono<ResponseEntity<Activity>> start(@RequestBody Mono<StartActivity> startActivity, Mono<Principal> principal) {
+    return principal.map(Principal::getName)
+      .zipWith(startActivity.map(StartActivity::getName))
+      .flatMap(tpl -> activityService.start(tpl.getT1(), tpl.getT2()))
+      .map(activity -> ResponseEntity.status(HttpStatus.CREATED).body(activity));
   }
 
+  @GetMapping("/activity/running")
+  public Mono<Activity> running(Mono<Principal> principal) {
+    return principal.map(Principal::getName)
+      .flatMap(activityService::running)
+      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+  }
+
+  @PostMapping("/activity/stop")
+  public Mono<Activity> stop(Mono<Principal> principal) {
+    return principal.map(Principal::getName)
+      .flatMap(activityService::stop);
+  }
+
+  @PutMapping("/activity/{id}")
+  public Mono<Activity> update(@PathVariable("id") String id, @RequestBody Mono<UpdateActivity> updateActivity, Mono<Principal> principal) {
+    return principal.map(Principal::getName)
+      .zipWith(updateActivity)
+      .flatMap(tpl -> activityService.update(tpl.getT1(), tpl.getT2()))
+      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+  }
+
+  @DeleteMapping("/activity/{id}")
+  public Mono<DeletedActivity> delete(@PathVariable("id") String id, Mono<Principal> principal) {
+    return principal.map(Principal::getName)
+      .flatMap(userId -> activityService.delete(userId, id))
+      .map(a -> DeletedActivity.builder().id(a.getId()).start(a.getStart()).build())
+      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+  }
+
+  @Data
+  private static class StartActivity {
+    private String name;
+  }
+
+  @Value
+  @Builder
+  private static class DeletedActivity {
+    private String id;
+    private LocalDateTime start;
+  }
 }

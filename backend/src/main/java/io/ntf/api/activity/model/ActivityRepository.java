@@ -1,12 +1,14 @@
 package io.ntf.api.activity.model;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.stream.Stream;
+public interface ActivityRepository extends ReactiveMongoRepository<Activity, String> {
 
-public interface ActivityRepository extends JpaRepository<Activity, Long> {
+  Flux<Activity> findByUserIdOrderByStartDesc(String userId);
 
-  List<Activity> findByUserIdOrderByStartDesc(String userId);
+  Mono<Activity> findByUserIdAndId(String userId, String id);
+
+  Mono<Activity> findByUserIdAndEndNull(String userId);
 }

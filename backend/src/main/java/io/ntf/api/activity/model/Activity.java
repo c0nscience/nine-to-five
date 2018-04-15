@@ -2,21 +2,22 @@ package io.ntf.api.activity.model;
 
 import lombok.*;
 import lombok.experimental.Wither;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Document(collection = "activities")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@Wither
 public class Activity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private String id;
 
   private String userId;
 
@@ -24,7 +25,6 @@ public class Activity {
 
   private LocalDateTime start;
 
-  @Column(name = "\"end\"")
   private LocalDateTime end;
 
 }

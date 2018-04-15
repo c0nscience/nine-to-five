@@ -1,14 +1,7 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5434/ntf-db
-    password: postgres
-    username: postgres
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
 
   jackson:
     default-property-inclusion: non_null
@@ -20,4 +13,4 @@ auth0:
 logging:
   level:
     org.hibernate.engine.jdbc.env.internal.LobCreatorBuilderImpl: WARN
-
+#    org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG

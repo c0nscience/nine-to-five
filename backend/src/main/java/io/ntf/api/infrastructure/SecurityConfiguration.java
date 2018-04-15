@@ -29,6 +29,7 @@ public class SecurityConfiguration {
     //@formatter:off
     JwtWebSecurityConfigurer.forRS256(audience, issuer)
       .configure(http)
+      .csrf().disable()
       .authorizeExchange()
         .pathMatchers(POST, "/activity").hasAuthority("start:activity")
         .pathMatchers(POST, "/activity/stop").hasAuthority("stop:activity")

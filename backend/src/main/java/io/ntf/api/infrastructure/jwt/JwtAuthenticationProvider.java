@@ -53,7 +53,6 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         JwtAuthentication jwt = (JwtAuthentication) authentication;
         try {
             final Authentication jwtAuth = jwt.verify(jwtVerifier(jwt));
-            logger.info("Authenticated with jwt with scopes {}", jwtAuth.getAuthorities());
             return jwtAuth;
         } catch (JWTVerificationException e) {
             throw new BadCredentialsException("Not a valid token", e);
