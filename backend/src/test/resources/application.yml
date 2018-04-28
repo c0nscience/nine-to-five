@@ -1,14 +1,10 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5435/test-ntf-db
-    password: postgres
-    username: postgres
-    driver-class-name: org.postgresql.Driver
+  data:
+    mongodb:
+      uri: mongodb://localhost:27018/ntf-db-test
 
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
+  jackson:
+    default-property-inclusion: non_null
 
 auth0:
   issuer: https://ninetofive.eu.auth0.com/

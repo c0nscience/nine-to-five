@@ -6,3 +6,9 @@ services:
       MONGO_INITDB_DATABASE: ntf-db
     ports:
       - "27017:27017"
+  test-mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_DATABASE: ntf-db-test
+    ports:
+      - "27018:27017"

@@ -38,6 +38,8 @@ public class SecurityConfiguration {
         .pathMatchers(DELETE, "/activity/{id}").hasAuthority("delete:activity")
         .pathMatchers(DELETE, "/activity/{id}").hasAuthority("delete:activity")
         .pathMatchers(GET, "/activities").hasAuthority("read:activities")
+        .pathMatchers(GET, "/logs").hasAuthority("read:logs")
+        .pathMatchers(POST, "/log").hasAuthority("create:log")
 
         .pathMatchers(GET, "/statistics/overtime").hasAuthority("read:overtime")
 

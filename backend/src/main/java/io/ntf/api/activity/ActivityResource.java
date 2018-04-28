@@ -23,8 +23,14 @@ public class ActivityResource {
     this.activityService = activityService;
   }
 
+  @GetMapping("/log/{logId}/activities")
+  public Flux<Activity> allFromLog(@PathVariable("logId") String logId, Mono<Principal> principal) {
+    return principal.map(Principal::getName)
+      .flatMapMany(userId -> activityService.findByLogIdAndUserId(logId, userId));
+  }
+
   @GetMapping("/activities")
-  public Flux<Activity> all(Mono<Principal> principal) {
+  public Flux<Activity> allFromDefault(Mono<Principal> principal) {
     return principal
       .map(Principal::getName)
       .flatMapMany(name -> activityService.all(name));

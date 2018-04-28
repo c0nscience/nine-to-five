@@ -2,12 +2,12 @@ package io.ntf.api.activity;
 
 import io.ntf.api.activity.model.Activity;
 import io.ntf.api.activity.model.ActivityRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -21,13 +21,11 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
-import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.*;
-
 
 @RunWith(SpringRunner.class)
-@DataJpaTest
-@AutoConfigureTestDatabase(replace=Replace.NONE)
+@DataMongoTest
 @Import(ActivityService.class)
+@Slf4j
 public class ActivityServiceTest {
 
   private static final LocalDateTime NOW = LocalDateTime.now();
@@ -41,10 +39,10 @@ public class ActivityServiceTest {
 
   @Before
   public void setUp() {
-    activityRepository.deleteAll();
-    activityRepository.save(Activity.builder().userId(USER_ID).name("activity 1").start(NOW).build());
-    activityRepository.save(Activity.builder().userId(USER_ID).name("activity 2").start(NOW.minusHours(1)).end(NOW).build());
-    activityRepository.save(Activity.builder().userId(UUID.randomUUID().toString()).name("another activity").start(NOW.minusHours(3)).end(NOW.minusHours(2)).build());
+    activityRepository.deleteAll().block();
+    activityRepository.save(new Activity(null, USER_ID, null, "activity 1", NOW, null)).block();
+    activityRepository.save(new Activity(null, USER_ID, null, "activity 2", NOW.minusHours(1), NOW)).block();
+    activityRepository.save(new Activity(null, UUID.randomUUID().toString(), null, "another activity", NOW.minusHours(3), NOW.minusHours(2))).block();
   }
 
   @Test
@@ -60,13 +58,7 @@ public class ActivityServiceTest {
   }
 
   private Predicate<Activity> activityWith(String name, LocalDateTime start, LocalDateTime end) {
-    return activity -> Activity.builder()
-      .id(activity.getId())
-      .userId(activity.getUserId())
-      .name(name)
-      .start(start)
-      .end(end)
-      .build().equals(activity);
+    return activity -> new Activity(activity.getId(), activity.getUserId(), null, name, start, end).equals(activity);
   }
 
   @TestConfiguration
