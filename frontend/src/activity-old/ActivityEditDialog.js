@@ -169,7 +169,7 @@ class ActivityEditDialog extends Component {
             <Button onClick={this.handleClose}>
               Cancel
             </Button>
-            <Button onClick={this.handleRequestSave} disabled={this.state.name && this.state.name.length < 3}
+            <Button onClick={this.handleRequestSave} disabled={this.state.name.length < 3}
                     color="primary">
               Save
             </Button>

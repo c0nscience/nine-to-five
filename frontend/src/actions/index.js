@@ -96,3 +96,21 @@ export const openMenuDrawer = () =>
 
 export const closeMenuDrawer = () =>
   ({type: CLOSE_MENU_DRAWER})
+
+export const LOAD_LOGS = 'LOAD_LOGS'
+export const LOGS_LOADED = 'LOGS_LOADED'
+
+export const loadLogs = () =>
+  ({type: LOAD_LOGS})
+
+export const logsLoaded = logs =>
+  ({type: LOGS_LOADED, payload: logs})
+
+export const CREATE_LOG = 'CREATE_LOG'
+export const LOG_CREATED = 'LOG_CREATED'
+
+export const createLog = log =>
+  ({type: CREATE_LOG, payload: log})
+
+export const logCreated = log =>
+  ({type: LOG_CREATED, payload: log})

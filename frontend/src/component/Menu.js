@@ -1,11 +1,12 @@
 import React from 'react'
-import { withStyles } from 'material-ui/styles'
+import {withStyles} from 'material-ui/styles'
 import Drawer from 'material-ui/Drawer'
-import List, { ListItem, ListItemText, ListItemIcon } from 'material-ui/List'
+import List, {ListItem, ListItemIcon, ListItemText} from 'material-ui/List'
 import ListSubheader from 'material-ui/List/ListSubheader'
-import { closeMenuDrawer } from '../actions'
-import { connect } from 'react-redux'
+import {closeMenuDrawer, loadLogs} from '../actions'
+import {connect} from 'react-redux'
 import RefreshIcon from 'material-ui-icons/Refresh'
+import {push, replace} from 'connected-react-router'
 
 const styles = {
   list: {
@@ -13,15 +14,23 @@ const styles = {
   }
 }
 
-const Menu = ({ menuDrawerOpen: open, closeMenuDrawer, classes }) => (
-  <Drawer open={open} onRequestClose={closeMenuDrawer}>
-    <div
-      tabIndex={0}
-      role="button"
-      onClick={closeMenuDrawer}
-      onKeyDown={closeMenuDrawer}>
+class Menu extends React.Component {
+  componentDidMount() {
+    this.props.loadLogs()
+  }
+
+  render() {
+    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace} = this.props
+    return <Drawer open={open} onRequestClose={closeMenuDrawer}>
+      <div
+        tabIndex={0}
+        role="button"
+        onClick={closeMenuDrawer}
+        onKeyDown={closeMenuDrawer}>
         <List className={classes.list}>
-          <ListItem button onClick={() => {window.location.reload()}}>
+          <ListItem button onClick={() => {
+            window.location.reload()
+          }}>
             <ListItemIcon>
               <RefreshIcon/>
             </ListItemIcon>
@@ -34,23 +43,39 @@ const Menu = ({ menuDrawerOpen: open, closeMenuDrawer, classes }) => (
           </ListItem>
 
           <ListSubheader>Lists</ListSubheader>
-          <ListItem button>
-            <ListItemText primary="Scout24"/>
+          {logs.map(log =>
+            <ListItem button key={log.id} onClick={() => {
+              replace(`/log/${log.id}`)
+            }}>
+              <ListItemText primary={log.name}/>
+            </ListItem>
+          )}
+          <ListItem button onClick={() => {
+            replace('/')
+          }}>
+            <ListItemText primary="Default"/>
           </ListItem>
-          <ListItem button>
-            <ListItemText primary="NIST"/>
+          <ListItem button onClick={() => {
+            push('/new-log')
+          }}>
+            <ListItemText primary="Add"/>
           </ListItem>
         </List>
-    </div>
-  </Drawer>
-)
+      </div>
+    </Drawer>
+  }
+}
 
 const mapStateToProps = state => ({
-  menuDrawerOpen: state.activity.menuDrawerOpen
+  menuDrawerOpen: state.activity.menuDrawerOpen,
+  logs: state.activity.logs
 })
 
 const mapDispatchToProps = {
-  closeMenuDrawer
+  closeMenuDrawer,
+  loadLogs,
+  push,
+  replace
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Menu))

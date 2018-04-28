@@ -3,7 +3,7 @@ import {
   DESELECT_ACTIVITY, LOAD_ACTIVITIES, LOAD_OVERTIME, LOAD_RUNNING_ACTIVITY, OVERTIME_LOADED, RUNNING_ACTIVITY_LOADED,
   SAVE_ACTIVITY,
   SELECT_ACTIVITY, START_ACTIVITY,
-  STOP_ACTIVITY, OPEN_MENU_DRAWER, CLOSE_MENU_DRAWER
+  STOP_ACTIVITY, OPEN_MENU_DRAWER, CLOSE_MENU_DRAWER, LOGS_LOADED, LOG_CREATED
 } from '../actions'
 import moment from 'moment/moment'
 
@@ -15,7 +15,8 @@ const initialState = {
   selectedActivity: {},
   activitiesByWeek: {},
   running: undefined,
-  overtimes: []
+  overtimes: [],
+  logs: []
 }
 
 const reduceActivitiesByWeek = state => (activity, reducer) => {
@@ -183,6 +184,19 @@ export default (state = initialState, action) => {
       return {
         ...state,
         menuDrawerOpen: false
+      }
+    case LOGS_LOADED:
+      return {
+        ...state,
+        logs: action.payload
+      }
+    case LOG_CREATED:
+      return {
+        ...state,
+        logs: [
+          ...state.logs,
+          action.payload
+        ]
       }
     default:
       return state

@@ -21,7 +21,7 @@ const auth = new auth0.WebAuth({
   redirectUri: AUTH_CONFIG.callbackUrl,
   audience: 'https://api.ntf.io',
   responseType: 'token',
-  scope: 'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime'
+  scope: 'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log'
 })
 
 export const login = () => (dispatch) => {

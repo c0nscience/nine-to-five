@@ -8,8 +8,10 @@ import {closeMenuDrawer} from './actions'
 import NavBar from './NavBar/NavBar'
 import Callback from './Callback/Callback'
 import Activity from './activity-old/Activity'
+import NewLogForm from './logs/NewLogForm'
 import LoadingIndicator from './component/LoadingIndicator'
 import Menu from './component/Menu'
+import Log from './logs/Log'
 
 const App = ({ history, handleAuthentication, menuDrawerOpen, closeMenuDrawer }) => {
   const handleCallback = (nextState) => {
@@ -26,6 +28,8 @@ const App = ({ history, handleAuthentication, menuDrawerOpen, closeMenuDrawer })
       <ConnectedRouter history={history}>
         <Switch>
           <Route exact path="/" component={Activity}/>
+          <Route exact path="/new-log" component={NewLogForm}/>
+          <Route exact path="/log/:id" component={Log}/>
           <Route path="/callback" render={(props) => {
             return <Callback {...props} handleCallback={handleCallback}/>
           }}/>

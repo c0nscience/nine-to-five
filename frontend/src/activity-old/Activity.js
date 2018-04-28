@@ -13,9 +13,6 @@ const styles = theme => ({
   root: {
     flexGrow: 1
   },
-  card: {
-    marginBottom: theme.spacing.unit * 3,
-  },
 })
 
 
