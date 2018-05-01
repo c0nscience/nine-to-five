@@ -6,7 +6,7 @@ import moment from 'moment'
 import { withStyles } from 'material-ui/styles'
 import green from 'material-ui/colors/green'
 import amber from 'material-ui/colors/amber'
-import Edit from 'material-ui-icons/Edit'
+import Edit from '@material-ui/icons/Edit'
 import { selectActivity } from '../actions'
 
 const styles = theme => ({

@@ -57,11 +57,11 @@ class ActivityList extends Component {
               <div key={weekNumber}>
                 <Card className={classes.weekSummaryCard}>
                   <CardContent>
-                    <Typography type="headline">
+                    <Typography variant="headline">
                       Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, 'GGGG-WW').isoWeek()}
                     </Typography>
                     {
-                      overtimeStatistics && <Typography type="caption">
+                      overtimeStatistics && <Typography variant="caption">
                         Overtime - Current: {moment.duration(overtimeStatistics.overtime).asHours().toPrecision(3)} -
                         Total: {moment.duration(overtimeStatistics.totalOvertime).asHours().toPrecision(3)}
                       </Typography>
@@ -81,7 +81,7 @@ class ActivityList extends Component {
                     const totalDurationAsHours = moment.duration(day.totalDuration).asHours().toPrecision(2)
                     return (
                       <div key={dayDate}>
-                        <Typography type="subheading" className={classes.dayHeadline}>
+                        <Typography variant="subheading" className={classes.dayHeadline}>
                           {totalDurationAsHours} hrs on {dayDate}
                         </Typography>
                         <Card className={classes.card}>

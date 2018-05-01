@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
-import AddIcon from 'material-ui-icons/Add'
+import AddIcon from '@material-ui/icons/Add'
 
 const styles = theme => ({
   button: {
@@ -25,7 +25,7 @@ const StartButton = ({ classes, runningRequests, onClick, disabled }) => {
   const loading = runningRequests.length > 0
   return (
     <div className={classes.button}>
-        <Button fab
+        <Button variant="fab"
                 disabled={loading || disabled}
                 color="primary"
                 aria-label="add"

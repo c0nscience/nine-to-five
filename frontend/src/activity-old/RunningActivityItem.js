@@ -6,7 +6,7 @@ import Typography from 'material-ui/Typography'
 import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
 import { withStyles } from 'material-ui/styles'
-import Edit from 'material-ui-icons/Edit'
+import Edit from '@material-ui/icons/Edit'
 import { selectActivity } from '../actions'
 import Grid from 'material-ui/Grid'
 import StopButton from './ActivityStopButton'
@@ -54,15 +54,15 @@ const RunningActivityItem = (props) => {
     })}>
       <Grid container spacing={0}>
         <Grid item xs={4}>
-          <Typography type="display2">
+          <Typography variant="display2">
             {moment.utc(durationAsMilliseconds).format(timeFormat)}
           </Typography>
-          <Typography type="caption">
+          <Typography variant="caption">
             since {localStart.format(timeFormat)}
           </Typography>
         </Grid>
         <Grid item xs={7}>
-          <Typography type="title" className={classes.name}>
+          <Typography variant="title" className={classes.name}>
             {name.slice(0, 57)}{name.length >= 57 ? ' ...' : ''}
           </Typography>
         </Grid>

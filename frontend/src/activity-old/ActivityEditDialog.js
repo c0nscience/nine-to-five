@@ -111,7 +111,7 @@ class ActivityEditDialog extends Component {
           <Button onClick={this.handleCloseConfirmDialog}>
             No, close!
           </Button>
-          <Button onClick={this.handleRequestDelete} color="accent">
+          <Button onClick={this.handleRequestDelete} color="secondary">
             Yes, delete!
           </Button>
         </DialogActions>
@@ -163,7 +163,7 @@ class ActivityEditDialog extends Component {
             </form>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleOpenConfirmDialog} color="accent">
+            <Button onClick={this.handleOpenConfirmDialog} color="secondary">
               Delete
             </Button>
             <Button onClick={this.handleClose}>

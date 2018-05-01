@@ -5,7 +5,7 @@ import Toolbar from 'material-ui/Toolbar'
 import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
-import MenuIcon from 'material-ui-icons/Menu'
+import MenuIcon from '@material-ui/icons/Menu'
 import { connect } from 'react-redux'
 import { login, logout } from '../reducers/auth'
 import { openMenuDrawer } from '../actions'
@@ -34,21 +34,21 @@ const NavBar = ({
     <AppBar position="static">
       <Toolbar disableGutters>
         <IconButton className={classes.menuButton}
-                    color="contrast"
+                    color="inherit"
                     aria-label="Menu"
                     onClick={() => {
                       openMenuDrawer()
                     }}>
           <MenuIcon/>
         </IconButton>
-        <Typography type="title" color="inherit" className={classes.flex}>
+        <Typography variant="title" color="inherit" className={classes.flex}>
           Nine 2 Five
         </Typography>
         {
-          !isAuthenticated && <Button color="contrast" onClick={login}>Login</Button>
+          !isAuthenticated && <Button color="inherit" onClick={login}>Login</Button>
         }
         {
-          isAuthenticated && <Button color="contrast" onClick={logout}>Logout</Button>
+          isAuthenticated && <Button color="inherit" onClick={logout}>Logout</Button>
         }
       </Toolbar>
     </AppBar>

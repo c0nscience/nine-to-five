@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Snackbar from 'material-ui/Snackbar'
 import IconButton from 'material-ui/IconButton'
-import CloseIcon from 'material-ui-icons/Close'
+import CloseIcon from '@material-ui/icons/Close'
 import { clearErrorMessage } from '../actions'
 
 const styles = theme => ({
@@ -33,7 +33,7 @@ class ErrorMessage extends Component {
         }}
         open={!!message}
         autoHideDuration={3000}
-        onRequestClose={this.handleRequestClose}
+        onClose={this.handleRequestClose}
         SnackbarContentProps={{
           'aria-describedby': 'message-id',
         }}

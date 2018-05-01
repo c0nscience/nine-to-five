@@ -24,10 +24,10 @@ import {
   SAVE_ACTIVITY,
   showErrorMessage,
   START_ACTIVITY,
-  STOP_ACTIVITY,
+  STOP_ACTIVITY, SELECT_LOG, closeMenuDrawer,
 } from '../actions'
 import moment from 'moment/moment'
-import {goBack} from "connected-react-router";
+import {goBack, push} from "connected-react-router";
 
 const BASE_URL = process.env.REACT_APP_API_HOST
 
@@ -35,7 +35,7 @@ const url = (endpoint) => {
   return `${BASE_URL}/${endpoint}`
 }
 
-const authenticationHeader = () => {
+const authorizationHeader = () => {
   const token = localStorage.getItem('access_token')
 
   return {
@@ -44,7 +44,7 @@ const authenticationHeader = () => {
 }
 
 const get = (endpoint) => {
-  return Observable.ajax.getJSON(url(endpoint), authenticationHeader())
+  return Observable.ajax.getJSON(url(endpoint), authorizationHeader())
 }
 
 const post = (endpoint, body) => {
@@ -52,7 +52,7 @@ const post = (endpoint, body) => {
     method: 'POST',
     url: url(endpoint),
     body,
-    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
     crossDomain: true
   })
 }
@@ -62,7 +62,7 @@ const put = (endpoint, body) => {
     method: 'PUT',
     url: url(endpoint),
     body,
-    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
     crossDomain: true
   })
 }
@@ -71,7 +71,7 @@ const del = (endpoint) => {
   return Observable.ajax({
     method: 'DELETE',
     url: url(endpoint),
-    headers: {...authenticationHeader(), 'Content-Type': 'application/json'},
+    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
     crossDomain: true
   })
 }
@@ -253,6 +253,7 @@ const createLog = action$ => (
     .switchMap(({payload}) => concat$(
       of$(addNetworkActivity(CREATE_LOG)),
       post('log', payload)
+        .map(result => result.response)
         .flatMap(log => concat$(
           of$(logCreated(log)),
           of$(removeNetworkActivity(CREATE_LOG)),
@@ -264,6 +265,14 @@ const createLog = action$ => (
     })
 )
 
+const selectLog = action$ => (
+  action$.ofType(SELECT_LOG)
+    .switchMap(() => concat$(
+      of$(closeMenuDrawer()),
+      of$(push(`/log/edit`))
+    ))
+)
+
 export const rootEpic = combineEpics(
   loadActivitiesEpic,
   startActivityEpic,
@@ -273,5 +282,6 @@ export const rootEpic = combineEpics(
   loadOvertimeEpic,
   loadRunningActivityEpic,
   loadLogs,
-  createLog
+  createLog,
+  selectLog
 )

@@ -108,9 +108,13 @@ export const logsLoaded = logs =>
 
 export const CREATE_LOG = 'CREATE_LOG'
 export const LOG_CREATED = 'LOG_CREATED'
+export const SELECT_LOG = 'SELECT_LOG'
 
 export const createLog = log =>
   ({type: CREATE_LOG, payload: log})
 
 export const logCreated = log =>
   ({type: LOG_CREATED, payload: log})
+
+export const selectLog = log =>
+  ({type: SELECT_LOG, payload: log})
