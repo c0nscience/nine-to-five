@@ -18,7 +18,10 @@ const styles = {
 
 class Menu extends React.Component {
   componentDidMount() {
-    this.props.loadLogs()//TODO only load while logged in
+    const {isAuthenticated, loadLogs} = this.props
+    if (isAuthenticated) {
+      loadLogs()
+    }
   }
 
   render() {
@@ -75,6 +78,7 @@ class Menu extends React.Component {
 
 const mapStateToProps = state => ({
   menuDrawerOpen: state.activity.menuDrawerOpen,
+  isAuthenticated: state.auth.isAuthenticated,
   logs: state.activity.logs
 })
 

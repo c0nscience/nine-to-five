@@ -30,11 +30,10 @@ class EditLogForm extends React.Component {
   }
 
   static getDerivedStateFromProps({id, name}) {
-    console.log('getDerivedStateFromProps', id, name)
-    // this.setState({
-    //   id: id,
-    //   name: name
-    // })
+    return {
+      id,
+      name
+    }
   }
 
   handleNameChange(event) {
@@ -77,7 +76,7 @@ class EditLogForm extends React.Component {
               </form>
             </CardContent>
             <CardActions>
-              <Button onClick={this.handleCancel} color="accent">
+              <Button onClick={this.handleCancel} color="secondary">
                 Delete
               </Button>
               <Button onClick={this.handleCancel}>
