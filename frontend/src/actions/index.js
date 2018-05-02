@@ -29,7 +29,7 @@ export const SAVE_ACTIVITY = 'SAVE_ACTIVITY'
 export const ACTIVITY_SAVED = 'ACTIVITY_SAVED'
 
 export const saveActivity = (activity, oldActivity) =>
-  ({ type: SAVE_ACTIVITY, payload: {activity, oldActivity} })
+  ({ type: SAVE_ACTIVITY, payload: { activity, oldActivity } })
 
 export const activitySaved = activity =>
   ({ type: ACTIVITY_SAVED, payload: activity })
@@ -92,29 +92,33 @@ export const OPEN_MENU_DRAWER = 'OPEN_MENU_DRAWER'
 export const CLOSE_MENU_DRAWER = 'CLOSE_MENU_DRAWER'
 
 export const openMenuDrawer = () =>
-  ({type: OPEN_MENU_DRAWER})
+  ({ type: OPEN_MENU_DRAWER })
 
 export const closeMenuDrawer = () =>
-  ({type: CLOSE_MENU_DRAWER})
+  ({ type: CLOSE_MENU_DRAWER })
 
 export const LOAD_LOGS = 'LOAD_LOGS'
 export const LOGS_LOADED = 'LOGS_LOADED'
 
 export const loadLogs = () =>
-  ({type: LOAD_LOGS})
+  ({ type: LOAD_LOGS })
 
 export const logsLoaded = logs =>
-  ({type: LOGS_LOADED, payload: logs})
+  ({ type: LOGS_LOADED, payload: logs })
 
 export const CREATE_LOG = 'CREATE_LOG'
 export const LOG_CREATED = 'LOG_CREATED'
-export const SELECT_LOG = 'SELECT_LOG'
+export const UPDATE_LOG = 'UPDATE_LOG'
+export const LOG_UPDATED = 'LOG_UPDATED'
 
 export const createLog = log =>
-  ({type: CREATE_LOG, payload: log})
+  ({ type: CREATE_LOG, payload: log })
 
 export const logCreated = log =>
-  ({type: LOG_CREATED, payload: log})
+  ({ type: LOG_CREATED, payload: log })
 
-export const selectLog = log =>
-  ({type: SELECT_LOG, payload: log})
+export const updateLog = log =>
+  ({ type: UPDATE_LOG, payload: log })
+
+export const logUpdated = log =>
+  ({ type: LOG_UPDATED, payload: log })

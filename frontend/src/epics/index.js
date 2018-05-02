@@ -1,7 +1,7 @@
-import {Observable} from 'rxjs'
-import {concat as concat$} from 'rxjs/observable/concat'
-import {of as of$} from 'rxjs/observable/of'
-import {combineEpics} from 'redux-observable'
+import { Observable } from 'rxjs'
+import { concat as concat$ } from 'rxjs/observable/concat'
+import { of as of$ } from 'rxjs/observable/of'
+import { combineEpics } from 'redux-observable'
 import {
   activitiesLoaded,
   activityDeleted,
@@ -10,13 +10,13 @@ import {
   activityStopped,
   addNetworkActivity,
   CREATE_LOG,
-  logCreated,
   DELETE_ACTIVITY,
   deselectActivity,
   LOAD_ACTIVITIES,
   LOAD_LOGS,
   LOAD_OVERTIME,
   LOAD_RUNNING_ACTIVITY,
+  logCreated,
   logsLoaded,
   overtimeLoaded,
   removeNetworkActivity,
@@ -24,10 +24,12 @@ import {
   SAVE_ACTIVITY,
   showErrorMessage,
   START_ACTIVITY,
-  STOP_ACTIVITY, SELECT_LOG, closeMenuDrawer,
+  STOP_ACTIVITY,
+  UPDATE_LOG,
+  logUpdated,
 } from '../actions'
 import moment from 'moment/moment'
-import {goBack, push} from "connected-react-router";
+import { goBack } from "connected-react-router";
 
 const BASE_URL = process.env.REACT_APP_API_HOST
 
@@ -52,7 +54,7 @@ const post = (endpoint, body) => {
     method: 'POST',
     url: url(endpoint),
     body,
-    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authorizationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -62,7 +64,7 @@ const put = (endpoint, body) => {
     method: 'PUT',
     url: url(endpoint),
     body,
-    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authorizationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -71,7 +73,7 @@ const del = (endpoint) => {
   return Observable.ajax({
     method: 'DELETE',
     url: url(endpoint),
-    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authorizationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -141,9 +143,9 @@ const loadActivitiesEpic = action$ => (
 
 const startActivityEpic = action$ => (
   action$.ofType(START_ACTIVITY)
-    .switchMap(({payload}) => concat$(
+    .switchMap(({ payload }) => concat$(
       of$(addNetworkActivity(START_ACTIVITY)),
-      post('activity', {name: payload})
+      post('activity', { name: payload })
         .map(result => result.response)
         .map(toActivityWithMoment)
         .flatMap(response => concat$(
@@ -171,7 +173,7 @@ const stopActivityEpic = action$ => (
 
 const saveActivityEpic = action$ => (
   action$.ofType(SAVE_ACTIVITY)
-    .switchMap(({payload}) => concat$(
+    .switchMap(({ payload }) => concat$(
       of$(addNetworkActivity(SAVE_ACTIVITY)),
       of$(deselectActivity()),
       put(`activity/${payload.activity.id}`, payload.activity)
@@ -188,7 +190,7 @@ const saveActivityEpic = action$ => (
 
 const deleteActivityEpic = action$ => (
   action$.ofType(DELETE_ACTIVITY)
-    .switchMap(({payload}) => concat$(
+    .switchMap(({ payload }) => concat$(
       of$(addNetworkActivity(DELETE_ACTIVITY)),
       of$(deselectActivity()),
       del(`activity/${payload}`)
@@ -250,7 +252,7 @@ const loadLogs = action$ => (
 
 const createLog = action$ => (
   action$.ofType(CREATE_LOG)
-    .switchMap(({payload}) => concat$(
+    .switchMap(({ payload }) => concat$(
       of$(addNetworkActivity(CREATE_LOG)),
       post('log', payload)
         .map(result => result.response)
@@ -265,12 +267,21 @@ const createLog = action$ => (
     })
 )
 
-const selectLog = action$ => (
-  action$.ofType(SELECT_LOG)
-    .switchMap(() => concat$(
-      of$(closeMenuDrawer()),
-      of$(push(`/log/edit`))
+const updateLog = action$ => (
+  action$.ofType(UPDATE_LOG)
+    .switchMap(({ payload }) => concat$(
+      of$(addNetworkActivity(UPDATE_LOG)),
+      put(`log/${payload.id}`, payload)
+        .map(result => result.response)
+        .flatMap(log => concat$(
+          of$(logUpdated(log)),
+          of$(removeNetworkActivity(UPDATE_LOG)),
+          of$(goBack())
+        ))
     ))
+    .catch(e => {
+      return errors('Update log', () => removeNetworkActivity(UPDATE_LOG))(e)
+    })
 )
 
 export const rootEpic = combineEpics(
@@ -283,5 +294,5 @@ export const rootEpic = combineEpics(
   loadRunningActivityEpic,
   loadLogs,
   createLog,
-  selectLog
+  updateLog
 )

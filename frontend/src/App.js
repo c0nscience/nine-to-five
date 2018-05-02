@@ -30,7 +30,7 @@ const App = ({history, handleAuthentication, menuDrawerOpen, closeMenuDrawer}) =
         <Switch>
           <Route exact path="/" component={Activity}/>
           <Route exact path="/log/new" component={NewLogForm}/>
-          <Route exact path="/log/edit" component={EditLogForm}/>
+          <Route exact path="/log/:id/edit" component={EditLogForm}/>
           <Route exact path="/log/:id" component={Log}/>
           <Route path="/callback" render={(props) => {
             return <Callback {...props} handleCallback={handleCallback}/>

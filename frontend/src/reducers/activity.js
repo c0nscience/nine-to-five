@@ -1,9 +1,24 @@
 import {
-  ACTIVITIES_LOADED, ACTIVITY_DELETED, ACTIVITY_SAVED, ACTIVITY_STARTED, ACTIVITY_STOPPED, DELETE_ACTIVITY,
-  DESELECT_ACTIVITY, LOAD_ACTIVITIES, LOAD_OVERTIME, LOAD_RUNNING_ACTIVITY, OVERTIME_LOADED, RUNNING_ACTIVITY_LOADED,
+  ACTIVITIES_LOADED,
+  ACTIVITY_DELETED,
+  ACTIVITY_SAVED,
+  ACTIVITY_STARTED,
+  ACTIVITY_STOPPED,
+  CLOSE_MENU_DRAWER,
+  DELETE_ACTIVITY,
+  DESELECT_ACTIVITY,
+  LOAD_ACTIVITIES,
+  LOAD_OVERTIME,
+  LOAD_RUNNING_ACTIVITY,
+  LOG_CREATED, LOG_UPDATED,
+  LOGS_LOADED,
+  OPEN_MENU_DRAWER,
+  OVERTIME_LOADED,
+  RUNNING_ACTIVITY_LOADED,
   SAVE_ACTIVITY,
-  SELECT_ACTIVITY, START_ACTIVITY,
-  STOP_ACTIVITY, OPEN_MENU_DRAWER, CLOSE_MENU_DRAWER, LOGS_LOADED, LOG_CREATED, SELECT_LOG
+  SELECT_ACTIVITY,
+  START_ACTIVITY,
+  STOP_ACTIVITY
 } from '../actions'
 import moment from 'moment/moment'
 
@@ -199,10 +214,10 @@ export default (state = initialState, action) => {
           action.payload
         ]
       }
-    case SELECT_LOG:
+    case LOG_UPDATED:
       return {
         ...state,
-        selectedLog: action.payload
+        logs: state.logs.map(l => l.id === action.payload.id ? action.payload : l)
       }
     default:
       return state

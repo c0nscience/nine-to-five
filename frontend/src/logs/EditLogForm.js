@@ -4,6 +4,7 @@ import {Button, Card, CardActions, CardContent, Grid} from 'material-ui'
 import {withStyles} from 'material-ui/styles'
 import {connect} from 'react-redux'
 import {goBack} from 'connected-react-router'
+import { updateLog } from "../actions";
 
 const styles = theme => ({
   root: {
@@ -49,10 +50,11 @@ class EditLogForm extends React.Component {
 
   handleRequestSave(event) {
     event.preventDefault()
-    const {name} = this.state
-    // this.props.createLog({
-    //   name
-    // });
+    const {id, name} = this.state
+    this.props.updateLog({
+      id,
+      name
+    });
   }
 
   render() {
@@ -63,7 +65,7 @@ class EditLogForm extends React.Component {
         <Grid item xs={12} sm={10}>
           <Card>
             <CardContent>
-              <h1>Edit Log: {this.state.name}</h1>
+              <h1>Edit Log</h1>
 
               <form>
                 <TextField
@@ -94,13 +96,13 @@ class EditLogForm extends React.Component {
   }
 }
 
-const mapStateToProps = state => ({
-  id: state.activity.selectedLog.id,
-  name: state.activity.selectedLog.name,
+const mapStateToProps = (state, ownProps) => ({
+  ...(state.activity.logs.find(l => l.id === ownProps.match.params.id) || initialState),
 })
 
 const mapDispatchToProps = {
-  goBack
+  goBack,
+  updateLog
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(EditLogForm))
