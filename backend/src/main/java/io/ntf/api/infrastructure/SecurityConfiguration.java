@@ -40,6 +40,7 @@ public class SecurityConfiguration {
         .pathMatchers(GET, "/activities").hasAuthority("read:activities")
         .pathMatchers(GET, "/logs").hasAuthority("read:logs")
         .pathMatchers(POST, "/log").hasAuthority("create:log")
+        .pathMatchers(PUT, "/log/{id}").hasAuthority("update:log")
 
         .pathMatchers(GET, "/statistics/overtime").hasAuthority("read:overtime")
 
