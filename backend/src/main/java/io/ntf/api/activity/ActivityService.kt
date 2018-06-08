@@ -8,13 +8,10 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 
 @Service
 @Slf4j
-class ActivityService(private val activityRepository: ActivityRepository, private val logService: LogService) {
+class ActivityService(private val activityRepository: ActivityRepository, private val logService: LogService): TimeTrait {
 
   fun findByUserId(userId: String): Flux<Activity> {
     return activityRepository.findByUserIdOrderByStartDesc(userId)
@@ -39,10 +36,6 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
 
     return Mono.just(activity)
       .flatMap { activityRepository.save(it) }
-  }
-
-  private fun now(): LocalDateTime {
-    return LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES)
   }
 
   fun running(userId: String): Mono<Activity> {
