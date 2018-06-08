@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 @Service
 @Slf4j
@@ -24,7 +25,7 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
   }
 
   fun all(userId: String): Flux<Activity> {
-    return activityRepository.findByUserIdAndLogIdIsNullAndStartIsAfterOrderByStartDesc(userId, LocalDateTime.now().minusMonths(1))
+    return activityRepository.findByUserIdAndLogIdIsNullAndStartIsAfterOrderByStartDesc(userId, now().minusMonths(1))
   }
 
   fun start(userId: String, name: String): Mono<Activity> {
@@ -34,10 +35,14 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
   }
 
   private fun startAndSaveActivityWith(userId: String, name: String): Mono<Activity> {
-    val activity = Activity(userId = userId, name = name, start = LocalDateTime.now(ZoneOffset.UTC))
+    val activity = Activity(userId = userId, name = name, start = now())
 
     return Mono.just(activity)
       .flatMap { activityRepository.save(it) }
+  }
+
+  private fun now(): LocalDateTime {
+    return LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES)
   }
 
   fun running(userId: String): Mono<Activity> {
@@ -46,7 +51,7 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
 
   fun stop(userId: String): Mono<Activity> {
     return running(userId)
-      .map { activity -> activity.copy(end = LocalDateTime.now(ZoneOffset.UTC)) }
+      .map { activity -> activity.copy(end = now()) }
       .flatMap { activityRepository.save(it) }
   }
 
