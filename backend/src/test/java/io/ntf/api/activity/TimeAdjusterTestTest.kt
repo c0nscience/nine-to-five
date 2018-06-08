@@ -10,6 +10,8 @@ import java.time.LocalTime
 class TimeAdjusterTestTest: TimeTrait {
 
   private val testValues = listOf(
+    Pair(3, 0),
+    Pair(6, 10),
     Pair(13, 10),
     Pair(16, 20),
     Pair(26, 30),
