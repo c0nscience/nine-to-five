@@ -1,7 +1,7 @@
 import { CLEAR_ERROR_MESSAGE, SHOW_ERROR_MESSAGE } from '../actions'
 
 const initialState = {
-  message: null
+  message: undefined
 }
 
 export default (state = initialState, action) => {
@@ -15,7 +15,7 @@ export default (state = initialState, action) => {
     case CLEAR_ERROR_MESSAGE:
       return {
         ...state,
-        message: null
+        message: undefined
       }
     default:
       return state

@@ -27,7 +27,7 @@ class Activity extends Component {
   }
 
   render() {
-    const { classes, isAuthenticated, runningRequests, runningActivity } = this.props
+    const { classes, isAuthenticated, runningRequests, runningActivity, selectedActivity } = this.props
     const loading = runningRequests.length > 0
     return (
       <div>
@@ -39,7 +39,7 @@ class Activity extends Component {
               {runningActivity && <RunningActivityItem {...runningActivity} loading={loading}/>}
               {!runningActivity && <CreateActivityForm loading={loading}/>}
               <ActivityList/>
-              <ActivityEditDialog/>
+              {selectedActivity && <ActivityEditDialog/>}
             </Grid>
           }
         </Grid>
@@ -49,6 +49,7 @@ class Activity extends Component {
 }
 
 const mapStateToProps = state => ({
+  selectedActivity: state.activity.selectedActivity,
   runningActivity: state.activity.running,
   isAuthenticated: state.auth.isAuthenticated,
   runningRequests: state.network.runningRequests

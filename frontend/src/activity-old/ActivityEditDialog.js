@@ -7,31 +7,13 @@ import { deleteActivity, deselectActivity, saveActivity } from '../actions'
 import moment from 'moment'
 
 const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
-const initState = {
-  id: '',
-  name: '',
-  start: '',
-  end: '',
-  confirmDialogOpen: false
-}
 
 class ActivityEditDialog extends Component {
 
-  constructor() {
-    super()
-    this.state = initState
-    this.handleNameChange = this.handleNameChange.bind(this)
-    this.handleStartChange = this.handleStartChange.bind(this)
-    this.handleEndChange = this.handleEndChange.bind(this)
-    this.handleRequestSave = this.handleRequestSave.bind(this)
-    this.handleClose = this.handleClose.bind(this)
-    this.handleRequestDelete = this.handleRequestDelete.bind(this)
-    this.handleOpenConfirmDialog = this.handleOpenConfirmDialog.bind(this)
-    this.handleCloseConfirmDialog = this.handleCloseConfirmDialog.bind(this)
-  }
-
-  componentWillReceiveProps({ id, name, start, end }) {
-    this.setState({
+  constructor(props) {
+    super(props)
+    const { id, name, start, end } = props
+    this.state = {
       id,
       name,
       start,
@@ -42,8 +24,16 @@ class ActivityEditDialog extends Component {
         start,
         end
       }
-    })
+    }
 
+    this.handleNameChange = this.handleNameChange.bind(this)
+    this.handleStartChange = this.handleStartChange.bind(this)
+    this.handleEndChange = this.handleEndChange.bind(this)
+    this.handleRequestSave = this.handleRequestSave.bind(this)
+    this.handleClose = this.handleClose.bind(this)
+    this.handleRequestDelete = this.handleRequestDelete.bind(this)
+    this.handleOpenConfirmDialog = this.handleOpenConfirmDialog.bind(this)
+    this.handleCloseConfirmDialog = this.handleCloseConfirmDialog.bind(this)
   }
 
   handleNameChange(event) {
@@ -83,7 +73,6 @@ class ActivityEditDialog extends Component {
 
   handleClose(event) {
     event.preventDefault()
-    this.setState(initState)
     this.props.deselectActivity()
   }
 
@@ -102,6 +91,8 @@ class ActivityEditDialog extends Component {
   render() {
 
     const { fullScreen } = this.props
+
+    console.log(`render called: ${this.state.name}`)
 
     const ConfirmDialog = () => (
       <Dialog open={this.state.confirmDialogOpen}
@@ -180,13 +171,15 @@ class ActivityEditDialog extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  open: state.activity.openEditDialog,
-  id: state.activity.selectedActivity.id,
-  name: state.activity.selectedActivity.name,
-  start: state.activity.selectedActivity.start,
-  end: state.activity.selectedActivity.end
-})
+const mapStateToProps = state => {
+  return {
+    open: state.activity.openEditDialog,
+    id: state.activity.selectedActivity.id,
+    name: state.activity.selectedActivity.name,
+    start: state.activity.selectedActivity.start,
+    end: state.activity.selectedActivity.end
+  };
+}
 const mapDispatchToProps = {
   deselectActivity,
   saveActivity,

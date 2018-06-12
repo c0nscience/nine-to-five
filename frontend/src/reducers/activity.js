@@ -27,7 +27,7 @@ const initialState = {
   menuDrawerOpen: false,
   openEditDialog: false,
   openCreateDialog: false,
-  selectedActivity: {},
+  selectedActivity: undefined,
   activitiesByWeek: {},
   selectedLog: undefined,
   running: undefined,
@@ -132,6 +132,7 @@ export default (state = initialState, action) => {
     case DESELECT_ACTIVITY:
       return {
         ...state,
+        selectedActivity: undefined,
         openEditDialog: false
       }
     case SAVE_ACTIVITY:
