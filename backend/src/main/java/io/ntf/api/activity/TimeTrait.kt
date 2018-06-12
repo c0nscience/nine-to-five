@@ -8,6 +8,8 @@ import java.time.temporal.Temporal
 
 interface TimeTrait {
 
+  private val roundingThreshold: Long get() = 5
+
   fun now(): LocalDateTime {
     return LocalDateTime.now(ZoneOffset.UTC)
       .truncatedTo(ChronoUnit.MINUTES)
@@ -17,11 +19,11 @@ interface TimeTrait {
   fun adjustToNearestTenth(): (Temporal) -> Temporal {
     return { temporal: Temporal ->
       val minute = temporal.get(ChronoField.MINUTE_OF_HOUR)
-      val remainder = (minute % 10).toLong()
-      val adjustBy = if (remainder < 5) {
+      val remainder = minute % roundingThreshold
+      val adjustBy = if (remainder < 3) {
         remainder * -1
       } else {
-        10 - remainder
+        roundingThreshold - remainder
       }
       temporal.plus(adjustBy, ChronoUnit.MINUTES)
     }
