@@ -13,7 +13,8 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 
 export const history = createBrowserHistory()
 
-const reducers = combineReducers({
+const reducers = history => combineReducers({
+  router: connectRouter(history),
   activity,
   auth,
   error,
@@ -22,7 +23,7 @@ const reducers = combineReducers({
 
 const epicMiddleware = createEpicMiddleware()
 const store = createStore(
-  connectRouter(history)(reducers),
+  reducers(history),
   composeEnhancers(
     applyMiddleware(
       epicMiddleware,
