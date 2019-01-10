@@ -1,11 +1,11 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import React, {Component} from 'react'
+import {connect} from 'react-redux'
 import ActivityItem from './ActivityItem'
-import { loadActivities, loadOvertime, loadRunningActivity } from '../actions'
-import { withStyles } from 'material-ui/styles'
+import {loadActivities, loadOvertime, loadRunningActivity} from '../actions'
+import {withStyles} from 'material-ui/styles'
 import List from 'material-ui/List'
 import moment from 'moment'
-import { Card, CardContent, Typography } from 'material-ui'
+import {Card, CardContent, Typography} from 'material-ui'
 
 const styles = theme => ({
   weekSummaryCard: {

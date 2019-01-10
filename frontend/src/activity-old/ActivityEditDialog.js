@@ -1,9 +1,9 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import React, {Component} from 'react'
+import {connect} from 'react-redux'
 import Button from 'material-ui/Button'
 import TextField from 'material-ui/TextField'
-import Dialog, { DialogActions, DialogContent, DialogTitle, withMobileDialog } from 'material-ui/Dialog'
-import { deleteActivity, deselectActivity, saveActivity } from '../actions'
+import Dialog, {DialogActions, DialogContent, DialogTitle, withMobileDialog} from 'material-ui/Dialog'
+import {deleteActivity, deselectActivity, saveActivity} from '../actions'
 import moment from 'moment'
 
 const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
@@ -18,6 +18,7 @@ class ActivityEditDialog extends Component {
       name,
       start,
       end,
+      confirmDialogOpen: false,
       oldActivity: {
         id,
         name,

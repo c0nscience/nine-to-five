@@ -1,6 +1,7 @@
-import {Observable, of as of$} from 'rxjs'
-import {catchError as catchError$, concat as concat$, switchMap as switchMap$} from 'rxjs/operators'
-import {combineEpics} from 'redux-observable'
+import {concat, of as of$} from 'rxjs'
+import {ajax} from "rxjs/ajax";
+import {catchError as catchError$, flatMap as flatMap$, map as map$, switchMap as switchMap$} from 'rxjs/operators'
+import {combineEpics, ofType as ofType$} from 'redux-observable'
 import {
   activitiesLoaded,
   activityDeleted,
@@ -45,11 +46,11 @@ const authorizationHeader = () => {
 }
 
 const get = (endpoint) => {
-  return Observable.ajax.getJSON(url(endpoint), authorizationHeader())
+  return ajax.getJSON(url(endpoint), authorizationHeader())
 }
 
 const post = (endpoint, body) => {
-  return Observable.ajax({
+  return ajax({
     method: 'POST',
     url: url(endpoint),
     body,
@@ -59,7 +60,7 @@ const post = (endpoint, body) => {
 }
 
 const put = (endpoint, body) => {
-  return Observable.ajax({
+  return ajax({
     method: 'PUT',
     url: url(endpoint),
     body,
@@ -69,7 +70,7 @@ const put = (endpoint, body) => {
 }
 
 const del = (endpoint) => {
-  return Observable.ajax({
+  return ajax({
     method: 'DELETE',
     url: url(endpoint),
     headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
@@ -89,71 +90,72 @@ const toActivityWithMoment = activity => ({
 })
 
 const loadActivitiesEpic = action$ => (
-  action$.ofType(LOAD_ACTIVITIES)
-    .pipe(
-      switchMap$(() => concat$(
-        of$(addNetworkActivity(LOAD_ACTIVITIES)),
-        get('activities')
-          .map(activities => activities.reduce((weeks, _activity) => {
-            const activity = toActivityWithMoment(_activity)
-            const weekDate = activity.start.format('GGGG-WW')
-            const dayDate = activity.start.format('ll')
+  action$.pipe(
+    ofType$(LOAD_ACTIVITIES),
+    switchMap$(() => concat(
+      of$(addNetworkActivity(LOAD_ACTIVITIES)),
+      get('activities').pipe(
+        map$(activities => activities.reduce((weeks, _activity) => {
+          const activity = toActivityWithMoment(_activity)
+          const weekDate = activity.start.format('GGGG-WW')
+          const dayDate = activity.start.format('ll')
 
-            const end = activity.end || moment()
-            const diff = end.diff(activity.start)
+          const end = activity.end || moment()
+          const diff = end.diff(activity.start)
 
-            const week = weeks[weekDate] || {
-              totalDuration: 0,
-              days: {}
+          const week = weeks[weekDate] || {
+            totalDuration: 0,
+            days: {}
+          }
+
+          const day = week.days[dayDate] || {
+            totalDuration: 0,
+            activities: []
+          }
+
+          const days = {
+            ...week.days,
+            [dayDate]: {
+              ...day,
+              totalDuration: day.totalDuration + diff,
+              activities: [
+                ...day.activities,
+                activity
+              ]
             }
+          }
 
-            const day = week.days[dayDate] || {
-              totalDuration: 0,
-              activities: []
+          return {
+            ...weeks,
+            [weekDate]: {
+              ...week,
+              totalDuration: week.totalDuration + diff,
+              days: days
             }
-
-            const days = {
-              ...week.days,
-              [dayDate]: {
-                ...day,
-                totalDuration: day.totalDuration + diff,
-                activities: [
-                  ...day.activities,
-                  activity
-                ]
-              }
-            }
-
-            return {
-              ...weeks,
-              [weekDate]: {
-                ...week,
-                totalDuration: week.totalDuration + diff,
-                days: days
-              }
-            }
-          }, {}))
-          .flatMap(activitiesByWeek => concat$(
-            of$(activitiesLoaded(activitiesByWeek)),
-            of$(removeNetworkActivity(LOAD_ACTIVITIES))
-          ))
-      )),
-      catchError$(errors('Load activities', () => removeNetworkActivity(LOAD_ACTIVITIES)))
-    )
+          }
+        }, {})),
+        flatMap$(activitiesByWeek => concat(
+          of$(activitiesLoaded(activitiesByWeek)),
+          of$(removeNetworkActivity(LOAD_ACTIVITIES))
+        ))
+      ),
+    )),
+    catchError$(errors('Load activities', () => removeNetworkActivity(LOAD_ACTIVITIES)))
+  )
 )
 
 const startActivityEpic = action$ => (
   action$.ofType(START_ACTIVITY)
     .pipe(
-      switchMap$(({payload}) => concat$(
+      switchMap$(({payload}) => concat(
         of$(addNetworkActivity(START_ACTIVITY)),
-        post('activity', {name: payload})
-          .map(result => result.response)
-          .map(toActivityWithMoment)
-          .flatMap(response => concat$(
+        post('activity', {name: payload}).pipe(
+          map$(result => result.response),
+          map$(toActivityWithMoment),
+          flatMap$(response => concat(
             of$(activityStarted(response)),
             of$(removeNetworkActivity(START_ACTIVITY))
-          ))
+          )))
       )),
       catchError$(errors('Start activity', () => removeNetworkActivity(START_ACTIVITY)))
     )
@@ -162,51 +164,51 @@ const startActivityEpic = action$ => (
 const stopActivityEpic = action$ => (
   action$.ofType(STOP_ACTIVITY)
     .pipe(
-      switchMap$(() => concat$(
+      switchMap$(() => concat(
         of$(addNetworkActivity(STOP_ACTIVITY)),
-        post('activity/stop')
-          .map(result => result.response)
-          .map(toActivityWithMoment)
-          .flatMap(response => concat$(
+        post('activity/stop').pipe(
+          map$(result => result.response),
+          map$(toActivityWithMoment),
+          flatMap$(response => concat(
             of$(activityStopped(response)),
             of$(removeNetworkActivity(STOP_ACTIVITY))
-          ))
+          )))
       )),
       catchError$(errors('Stop activity', () => removeNetworkActivity(STOP_ACTIVITY)))
     )
 )
 
 const saveActivityEpic = action$ => (
-  action$.ofType(SAVE_ACTIVITY)
-    .pipe(
-      switchMap$(({payload}) => concat$(
-        of$(addNetworkActivity(SAVE_ACTIVITY)),
-        of$(deselectActivity()),
-        put(`activity/${payload.activity.id}`, payload.activity)
-          .map(result => result.response)
-          .map(toActivityWithMoment)
-          .flatMap(response => concat$(
-            of$(activityDeleted(toActivityWithMoment(payload.oldActivity))),
-            of$(activitySaved(response)),
-            of$(removeNetworkActivity(SAVE_ACTIVITY))
-          ))
-      )),
-      catchError$(errors('Save activity', () => removeNetworkActivity(SAVE_ACTIVITY)))
-    )
+  action$.pipe(
+    ofType$(SAVE_ACTIVITY),
+    switchMap$(({payload}) => concat(
+      of$(addNetworkActivity(SAVE_ACTIVITY)),
+      of$(deselectActivity()),
+      put(`activity/${payload.activity.id}`, payload.activity).pipe(
+        map$(result => result.response),
+        map$(toActivityWithMoment),
+        flatMap$(response => concat(
+          of$(activityDeleted(toActivityWithMoment(payload.oldActivity))),
+          of$(activitySaved(response)),
+          of$(removeNetworkActivity(SAVE_ACTIVITY))
+        )))
+    )),
+    catchError$(errors('Save activity', () => removeNetworkActivity(SAVE_ACTIVITY)))
+  )
 )
 
 const deleteActivityEpic = action$ => (
   action$.ofType(DELETE_ACTIVITY)
     .pipe(
-      switchMap$(({payload}) => concat$(
+      switchMap$(({payload}) => concat(
         of$(addNetworkActivity(DELETE_ACTIVITY)),
         of$(deselectActivity()),
-        del(`activity/${payload}`)
-          .map(result => result.response)
-          .flatMap(response => concat$(
+        del(`activity/${payload}`).pipe(
+          map$(result => result.response),
+          flatMap$(response => concat(
             of$(activityDeleted(toActivityWithMoment(response))),
             of$(removeNetworkActivity(DELETE_ACTIVITY))
-          ))
+          )))
       )),
       catchError$(errors('Delete activity', () => removeNetworkActivity(DELETE_ACTIVITY)))
     )
@@ -215,68 +217,66 @@ const deleteActivityEpic = action$ => (
 const loadOvertimeEpic = action$ => (
   action$.ofType(LOAD_OVERTIME)
     .pipe(
-      switchMap$(() => concat$(
+      switchMap$(() => concat(
         of$(addNetworkActivity(LOAD_OVERTIME)),
-        get('statistics/overtime')
-          .flatMap(overtime => concat$(
+        get('statistics/overtime').pipe(
+          flatMap$(overtime => concat(
             of$(overtimeLoaded(overtime)),
             of$(removeNetworkActivity(LOAD_OVERTIME))
-          ))
+          )))
       )),
       catchError$(errors('Load overtime', () => removeNetworkActivity(LOAD_OVERTIME)))
     )
 )
 
 const loadRunningActivityEpic = action$ => (
-  action$.ofType(LOAD_RUNNING_ACTIVITY)
-    .pipe(
-      switchMap$(() => concat$(
-        of$(addNetworkActivity(LOAD_RUNNING_ACTIVITY)),
-        get('activity/running')
-          .flatMap(runningActivity => concat$(
-            of$(runningActivityLoaded(runningActivity)),
-            of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
-          ))
-      )),
-      catchError$(e => {
-        if (e.status === 404) {
-          return of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
-        }
+  action$.pipe(
+    ofType$(LOAD_RUNNING_ACTIVITY),
+    switchMap$(() => concat(
+      of$(addNetworkActivity(LOAD_RUNNING_ACTIVITY)),
+      get('activity/running').pipe(
+        map$(runningActivity => runningActivityLoaded(runningActivity)),
+      ),
+      of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+    )),
+    catchError$(e => {
+      if (e.status === 404) {
+        return of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+      }
 
-        return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
-      })
-    )
+      return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
+    })
+  )
 )
 
 const loadLogs = action$ => (
-  action$.ofType(LOAD_LOGS)
-    .pipe(
-      switchMap$(() => concat$(
-        of$(addNetworkActivity(LOAD_LOGS)),
-        get('logs')
-          .flatMap(logs => concat$(
-            of$(logsLoaded(logs)),
-            of$(removeNetworkActivity(LOAD_LOGS))
-          ))
-      )),
-      catchError$(e => {
-        return errors('Load logs', () => removeNetworkActivity(LOAD_LOGS))(e)
-      })
-    )
+  action$.pipe(
+    ofType$(LOAD_LOGS),
+    switchMap$(() => concat(
+      of$(addNetworkActivity(LOAD_LOGS)),
+      get('logs').pipe(
+        map$(logs => logsLoaded(logs))
+      ),
+      of$(removeNetworkActivity(LOAD_LOGS))
+    )),
+    catchError$(e => {
+      return errors('Load logs', () => removeNetworkActivity(LOAD_LOGS))(e)
+    })
+  )
 )
 
 const createLog = action$ => (
   action$.ofType(CREATE_LOG)
     .pipe(
-      switchMap$(({payload}) => concat$(
+      switchMap$(({payload}) => concat(
         of$(addNetworkActivity(CREATE_LOG)),
-        post('log', payload)
-          .map(result => result.response)
-          .flatMap(log => concat$(
+        post('log', payload).pipe(
+          map$(result => result.response),
+          flatMap$(log => concat(
             of$(logCreated(log)),
             of$(removeNetworkActivity(CREATE_LOG)),
             of$(goBack())
-          ))
+          )))
       )),
       catchError$(e => {
         return errors('Create log', () => removeNetworkActivity(CREATE_LOG))(e)
@@ -287,15 +287,15 @@ const createLog = action$ => (
 const updateLog = action$ => (
   action$.ofType(UPDATE_LOG)
     .pipe(
-      switchMap$(({payload}) => concat$(
+      switchMap$(({payload}) => concat(
         of$(addNetworkActivity(UPDATE_LOG)),
-        put(`log/${payload.id}`, payload)
-          .map(result => result.response)
-          .flatMap(log => concat$(
+        put(`log/${payload.id}`, payload).pipe(
+          map$(result => result.response),
+          flatMap$(log => concat(
             of$(logUpdated(log)),
             of$(removeNetworkActivity(UPDATE_LOG)),
             of$(goBack())
-          ))
+          )))
       )),
       catchError$(e => {
         return errors('Update log', () => removeNetworkActivity(UPDATE_LOG))(e)
