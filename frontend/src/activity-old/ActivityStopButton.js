@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import StopIcon from '@material-ui/icons/Stop'
 import {stopActivity} from '../actions'
-import Button from "@material-ui/core/Button";
+import {Fab} from "@material-ui/core";
 
 const styles = theme => ({
   button: {
@@ -26,13 +26,12 @@ const StopButton = ({classes, runningRequests, stopActivity}) => {
   const loading = runningRequests.length > 0
   return (
     <div className={classes.button}>
-      <Button variant="fab"
-              disabled={loading}
-              color="secondary"
-              aria-label="stop"
-              onClick={stopActivity}>
+      <Fab disabled={loading}
+           color="secondary"
+           aria-label="stop"
+           onClick={stopActivity}>
         <StopIcon/>
-      </Button>
+      </Fab>
     </div>
   )
 }

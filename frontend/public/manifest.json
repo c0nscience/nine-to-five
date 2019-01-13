@@ -1,16 +1,23 @@
 {
-  "short_name": "Nine to Five",
-  "name": "Nine to Five Activity Log",
+  "name": "Nine to Five",
+  "short_name": "NTF",
+  "theme_color": "#2196f3",
+  "background_color": "#2196f3",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ],
-  "start_url": "./index.html",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff",
-  "orientation": "portrait-primary"
+  "splash_pages": null
 }
