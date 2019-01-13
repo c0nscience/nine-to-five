@@ -1,15 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import Paper from 'material-ui/Paper'
 import classNames from 'classnames'
-import Typography from 'material-ui/Typography'
-import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
-import { withStyles } from 'material-ui/styles'
+import { withStyles } from '@material-ui/core/styles'
 import Edit from '@material-ui/icons/Edit'
 import { selectActivity } from '../actions'
-import Grid from 'material-ui/Grid'
 import StopButton from './ActivityStopButton'
+import IconButton from "@material-ui/core/IconButton";
+import Typography from "@material-ui/core/Typography";
+import Grid from "@material-ui/core/Grid";
+import Paper from "@material-ui/core/Paper";
 
 const styles = theme => ({
   paper: {
@@ -54,7 +54,7 @@ const RunningActivityItem = (props) => {
     })}>
       <Grid container spacing={0}>
         <Grid item xs={4}>
-          <Typography variant="display2">
+          <Typography variant="h3">
             {moment.utc(durationAsMilliseconds).format(timeFormat)}
           </Typography>
           <Typography variant="caption">
@@ -62,7 +62,7 @@ const RunningActivityItem = (props) => {
           </Typography>
         </Grid>
         <Grid item xs={7}>
-          <Typography variant="title" className={classes.name}>
+          <Typography variant="h6" className={classes.name}>
             {name.slice(0, 57)}{name.length >= 57 ? ' ...' : ''}
           </Typography>
         </Grid>

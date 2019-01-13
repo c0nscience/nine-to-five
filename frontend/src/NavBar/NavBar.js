@@ -1,14 +1,14 @@
 import React from 'react'
-import { withStyles } from 'material-ui/styles'
-import AppBar from 'material-ui/AppBar'
-import Toolbar from 'material-ui/Toolbar'
-import Typography from 'material-ui/Typography'
-import Button from 'material-ui/Button'
-import IconButton from 'material-ui/IconButton'
+import {withStyles} from '@material-ui/core/styles'
+import AppBar from '@material-ui/core/AppBar'
+import Toolbar from '@material-ui/core/Toolbar'
+import Typography from '@material-ui/core/Typography'
+import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
-import { connect } from 'react-redux'
-import { login, logout } from '../reducers/auth'
-import { openMenuDrawer } from '../actions'
+import {connect} from 'react-redux'
+import {login, logout} from '../reducers/auth'
+import {openMenuDrawer} from '../actions'
 
 const styles = {
   root: {
@@ -41,7 +41,7 @@ const NavBar = ({
                     }}>
           <MenuIcon/>
         </IconButton>
-        <Typography variant="title" color="inherit" className={classes.flex}>
+        <Typography variant="h6" color="inherit" className={classes.flex}>
           Nine 2 Five
         </Typography>
         {

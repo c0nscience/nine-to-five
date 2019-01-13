@@ -1,14 +1,18 @@
 import React from 'react'
-import { withStyles } from 'material-ui/styles'
-import Drawer from 'material-ui/Drawer'
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
-import ListSubheader from 'material-ui/List/ListSubheader'
-import { closeMenuDrawer, loadLogs } from '../actions'
-import { connect } from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
+import {closeMenuDrawer, loadLogs} from '../actions'
+import {connect} from 'react-redux'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import { push, replace } from 'connected-react-router'
-import { IconButton, ListItemSecondaryAction } from 'material-ui'
+import {push, replace} from 'connected-react-router'
 import Edit from '@material-ui/icons/Edit'
+import Drawer from "@material-ui/core/Drawer";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListSubheader from "@material-ui/core/ListSubheader";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import IconButton from "@material-ui/core/IconButton";
 
 const styles = {
   list: {
@@ -18,7 +22,7 @@ const styles = {
 
 class Menu extends React.Component {
   componentDidMount() {
-    const { isAuthenticated, loadLogs } = this.props
+    const {isAuthenticated, loadLogs} = this.props
     if (isAuthenticated) {
       loadLogs()
     }
@@ -31,7 +35,7 @@ class Menu extends React.Component {
   }
 
   render() {
-    const { menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace } = this.props
+    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace} = this.props
     return <Drawer open={open} onClose={closeMenuDrawer}>
       <div
         tabIndex={0}

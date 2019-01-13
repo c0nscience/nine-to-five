@@ -1,10 +1,14 @@
 import React from 'react'
-import TextField from 'material-ui/TextField'
-import {Button, Card, CardActions, CardContent, Grid} from 'material-ui'
-import {withStyles} from 'material-ui/styles';
+import {withStyles} from '@material-ui/core/styles';
 import {connect} from 'react-redux'
 import {goBack} from 'connected-react-router'
 import {createLog} from "../actions";
+import Button from "@material-ui/core/Button/Button";
+import CardActions from "@material-ui/core/CardActions";
+import TextField from "@material-ui/core/TextField";
+import CardContent from "@material-ui/core/CardContent";
+import Card from "@material-ui/core/Card/Card";
+import Grid from "@material-ui/core/Grid";
 
 const styles = theme => ({
   root: {

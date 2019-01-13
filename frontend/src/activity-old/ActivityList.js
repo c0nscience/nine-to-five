@@ -1,11 +1,13 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
 import ActivityItem from './ActivityItem'
-import {loadActivities, loadOvertime, loadRunningActivity} from '../actions'
-import {withStyles} from 'material-ui/styles'
-import List from 'material-ui/List'
 import moment from 'moment'
-import {Card, CardContent, Typography} from 'material-ui'
+import {loadActivities, loadOvertime, loadRunningActivity} from '../actions'
+import {withStyles} from '@material-ui/core/styles'
+import List from '@material-ui/core/List'
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+import Typography from "@material-ui/core/Typography";
 
 const styles = theme => ({
   weekSummaryCard: {
@@ -57,7 +59,7 @@ class ActivityList extends Component {
               <div key={weekNumber}>
                 <Card className={classes.weekSummaryCard}>
                   <CardContent>
-                    <Typography variant="headline">
+                    <Typography variant="h5">
                       Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, 'GGGG-WW').isoWeek()}
                     </Typography>
                     {
@@ -81,7 +83,7 @@ class ActivityList extends Component {
                     const totalDurationAsHours = moment.duration(day.totalDuration).asHours().toPrecision(2)
                     return (
                       <div key={dayDate}>
-                        <Typography variant="subheading" className={classes.dayHeadline}>
+                        <Typography variant="subtitle1" className={classes.dayHeadline}>
                           {totalDurationAsHours} hrs on {dayDate}
                         </Typography>
                         <Card className={classes.card}>

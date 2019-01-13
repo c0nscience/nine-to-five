@@ -1,8 +1,8 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { withStyles } from 'material-ui/styles'
-import Button from 'material-ui/Button'
+import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import AddIcon from '@material-ui/icons/Add'
+import Fab from "@material-ui/core/Fab";
 
 const styles = theme => ({
   button: {
@@ -10,7 +10,7 @@ const styles = theme => ({
     top: 'auto',
     right: 'auto',
     left: theme.spacing.unit * 3,
-    bottom: - theme.spacing.unit * 3,
+    bottom: -theme.spacing.unit * 3,
     position: 'absolute'
   },
   fabProgress: {
@@ -21,17 +21,16 @@ const styles = theme => ({
   }
 })
 
-const StartButton = ({ classes, runningRequests, onClick, disabled }) => {
+const StartButton = ({classes, runningRequests, onClick, disabled}) => {
   const loading = runningRequests.length > 0
   return (
     <div className={classes.button}>
-        <Button variant="fab"
-                disabled={loading || disabled}
-                color="primary"
-                aria-label="add"
-                onClick={onClick}>
-          <AddIcon/>
-        </Button>
+      <Fab disabled={loading || disabled}
+           color="primary"
+           aria-label="add"
+           onClick={onClick}>
+        <AddIcon/>
+      </Fab>
     </div>
   )
 }

@@ -1,10 +1,14 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
-import Button from 'material-ui/Button'
-import TextField from 'material-ui/TextField'
-import Dialog, {DialogActions, DialogContent, DialogTitle, withMobileDialog} from 'material-ui/Dialog'
 import {deleteActivity, deselectActivity, saveActivity} from '../actions'
 import moment from 'moment'
+import withMobileDialog from "@material-ui/core/withMobileDialog";
+import Button from "@material-ui/core/Button/Button";
+import DialogActions from "@material-ui/core/DialogActions";
+import TextField from "@material-ui/core/TextField/TextField";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogTitle from "@material-ui/core/DialogTitle/DialogTitle";
+import Dialog from "@material-ui/core/Dialog";
 
 const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
 

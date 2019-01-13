@@ -1,9 +1,9 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { withStyles } from 'material-ui/styles'
-import Button from 'material-ui/Button'
+import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import StopIcon from '@material-ui/icons/Stop'
-import { stopActivity } from '../actions'
+import {stopActivity} from '../actions'
+import Button from "@material-ui/core/Button";
 
 const styles = theme => ({
   button: {
@@ -11,7 +11,7 @@ const styles = theme => ({
     top: 'auto',
     right: 'auto',
     left: theme.spacing.unit * 3,
-    bottom: - theme.spacing.unit * 3,
+    bottom: -theme.spacing.unit * 3,
     position: 'absolute'
   },
   fabProgress: {
@@ -22,7 +22,7 @@ const styles = theme => ({
   }
 })
 
-const StopButton = ({ classes, runningRequests, stopActivity }) => {
+const StopButton = ({classes, runningRequests, stopActivity}) => {
   const loading = runningRequests.length > 0
   return (
     <div className={classes.button}>

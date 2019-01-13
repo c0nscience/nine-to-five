@@ -1,13 +1,14 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { ListItem, ListItemSecondaryAction, ListItemText } from 'material-ui/List'
-import IconButton from 'material-ui/IconButton'
+import {connect} from 'react-redux'
 import moment from 'moment'
-import { withStyles } from 'material-ui/styles'
-import green from 'material-ui/colors/green'
-import amber from 'material-ui/colors/amber'
+import {withStyles} from '@material-ui/core/styles'
 import Edit from '@material-ui/icons/Edit'
-import { selectActivity } from '../actions'
+import {selectActivity} from '../actions'
+import {amber, green} from "@material-ui/core/colors";
+import IconButton from "@material-ui/core/IconButton";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItem from "@material-ui/core/ListItem/ListItem";
 
 const styles = theme => ({
   done: {
@@ -20,7 +21,7 @@ const styles = theme => ({
 
 const ActivityItem = (props) => {
   const timeFormat = 'HH:mm'
-  const { id, name, start, end } = props
+  const {id, name, start, end} = props
 
   const endOrNow = end || moment()
   const duration = moment.duration(endOrNow.diff(start)).humanize()

@@ -1,12 +1,12 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import React, {Component} from 'react'
+import {connect} from 'react-redux'
 import classNames from 'classnames'
-import Paper from 'material-ui/Paper'
-import { withStyles } from 'material-ui/styles'
-import { startActivity } from '../actions'
-import Grid from 'material-ui/Grid'
+import {withStyles} from '@material-ui/core/styles'
+import {startActivity} from '../actions'
 import StartButton from './ActivityStartButton'
-import TextField from 'material-ui/TextField'
+import TextField from "@material-ui/core/TextField"
+import Grid from "@material-ui/core/Grid"
+import Paper from "@material-ui/core/Paper"
 
 const styles = theme => ({
   paper: {
@@ -41,18 +41,18 @@ class CreateActivityForm extends Component {
 
   handleNameChange(event) {
     const name = event.target.value
-    this.setState({ name })
+    this.setState({name})
   }
 
   handleRequestSave(event) {
     event.preventDefault()
-    this.setState({ name: '' })
+    this.setState({name: ''})
     this.props.startActivity(this.state.name)
   }
 
 
   render() {
-    const { classes, loading } = this.props
+    const {classes, loading} = this.props
     return (
       <Paper className={classNames({
         [classes.loadingPaper]: loading,

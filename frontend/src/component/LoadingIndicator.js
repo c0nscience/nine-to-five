@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { LinearProgress } from 'material-ui/Progress'
+import LinearProgress from "@material-ui/core/LinearProgress";
 
 const LoadingIndicator = ({ runningRequests }) => {
   const loading = runningRequests.length > 0

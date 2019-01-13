@@ -1,10 +1,10 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { withStyles } from 'material-ui/styles'
-import Snackbar from 'material-ui/Snackbar'
-import IconButton from 'material-ui/IconButton'
+import React, {Component} from 'react'
+import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import CloseIcon from '@material-ui/icons/Close'
-import { clearErrorMessage } from '../actions'
+import {clearErrorMessage} from '../actions'
+import Snackbar from "@material-ui/core/Snackbar";
+import IconButton from "@material-ui/core/IconButton";
 
 const styles = theme => ({
   close: {
@@ -24,7 +24,7 @@ class ErrorMessage extends Component {
   };
 
   render() {
-    const { classes, message } = this.props
+    const {classes, message} = this.props
     return (
       <Snackbar
         anchorOrigin={{

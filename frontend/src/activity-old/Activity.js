@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
-import Grid from 'material-ui/Grid'
 import { connect } from 'react-redux'
-import { withStyles } from 'material-ui/styles'
+import { withStyles } from '@material-ui/core/styles'
 import ActivityList from './ActivityList'
 import ActivityEditDialog from './ActivityEditDialog'
 import RunningActivityItem from './RunningActivityItem'
 import CreateActivityForm from './CreateActivityFrom'
 import { logout } from '../reducers/auth'
 import ErrorMessage from '../component/ErrorMessage'
+import Grid from "@material-ui/core/Grid";
 
 const styles = theme => ({
   root: {
