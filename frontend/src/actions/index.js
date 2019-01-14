@@ -124,3 +124,12 @@ export const updateLog = log =>
 
 export const logUpdated = log =>
   ({ type: LOG_UPDATED, payload: log })
+
+export const LOAD_ACTIVITIES_OF_RANGE = 'LOAD_ACTIVITIES_OF_RANGE'
+export const ACTIVITIES_OF_RANGE_LOADED = 'ACTIVITIES_OF_RANGE_LOADED'
+
+export const loadActivitiesOfRange = (from, to) =>
+  ({ type: LOAD_ACTIVITIES_OF_RANGE, payload: {from, to} })
+
+export const activitiesOfRangeLoaded = activities =>
+  ({ type: ACTIVITIES_OF_RANGE_LOADED, payload: activities })

@@ -1,6 +1,6 @@
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
-import {closeMenuDrawer, loadLogs} from '../actions'
+import {closeMenuDrawer, loadLogs, loadActivitiesOfRange} from '../actions'
 import {connect} from 'react-redux'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import {push, replace} from 'connected-react-router'
@@ -13,6 +13,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import IconButton from "@material-ui/core/IconButton";
+import {DateTime} from "luxon"
 
 const styles = {
   list: {
@@ -35,7 +36,10 @@ class Menu extends React.Component {
   }
 
   render() {
-    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace} = this.props
+    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace, loadActivitiesOfRange} = this.props
+
+    const now = DateTime.utc()
+
     return <Drawer open={open} onClose={closeMenuDrawer}>
       <div
         tabIndex={0}
@@ -52,11 +56,18 @@ class Menu extends React.Component {
           </ListItem>
 
           {/*TODO only show while logged int*/}
-          <ListItem button>
+          <ListItem button onClick={() => loadActivitiesOfRange(now.startOf('day'), now.endOf('day'))}>
             <ListItemText primary="Today"/>
           </ListItem>
-          <ListItem button>
+
+          <ListItem button onClick={() => loadActivitiesOfRange(now.minus({ days: 1 }).startOf('day'), now.minus({ days: 1 }).endOf('day'))}>
+            <ListItemText primary="Yesterday"/>
+          </ListItem>
+          <ListItem button onClick={() => loadActivitiesOfRange(now.set({ weekday: 1 }), now.set({ weekday: 7 }))}>
             <ListItemText primary="This Week"/>
+          </ListItem>
+          <ListItem button> {/* Open easy dialog to choose from and to date. Start pre-filled to beginning of month and end pre-filled to today*/}
+            <ListItemText primary="Custom"/>
           </ListItem>
 
           {/*Only show while logged in*/}
@@ -75,9 +86,7 @@ class Menu extends React.Component {
               </ListItemSecondaryAction>
             </ListItem>
           )}
-          <ListItem button onClick={() => {
-            replace('/')
-          }}>
+          <ListItem button onClick={() => replace('/')}>
             <ListItemText primary="Default"/>
           </ListItem>
           <ListItem button onClick={() => {
@@ -102,6 +111,7 @@ const mapDispatchToProps = {
   loadLogs,
   push,
   replace,
+  loadActivitiesOfRange
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Menu))

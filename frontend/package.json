@@ -10,6 +10,7 @@
     "connected-react-router": "6.2.1",
     "fetch-mock": "7.3.0",
     "history": "^4.7.2",
+    "luxon": "^1.10.0",
     "moment": "2.23.0",
     "react": "16.7.0",
     "react-dom": "16.7.0",
