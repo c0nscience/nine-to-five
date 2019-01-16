@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 public class ActivityResource {
@@ -30,10 +31,10 @@ public class ActivityResource {
   }
 
   @GetMapping("/activities")
-  public Flux<Activity> allFromDefault(Mono<Principal> principal) {
+  public Mono<Map<String, ActivityService.WeekInformation>> allFromDefault(Mono<Principal> principal) {
     return principal
       .map(Principal::getName)
-      .flatMapMany(name -> activityService.all(name));
+      .flatMap(name -> activityService.all(name));
   }
 
   @PostMapping("/activity")
