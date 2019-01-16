@@ -3,7 +3,7 @@ import {ajax} from "rxjs/ajax";
 import {catchError as catchError$, flatMap as flatMap$, map as map$, switchMap as switchMap$} from 'rxjs/operators'
 import {combineEpics, ofType as ofType$} from 'redux-observable'
 import {
-  activitiesLoaded,
+  activitiesLoaded, activitiesOfRangeLoaded,
   activityDeleted,
   activitySaved,
   activityStarted,
@@ -12,7 +12,7 @@ import {
   CREATE_LOG,
   DELETE_ACTIVITY,
   deselectActivity,
-  LOAD_ACTIVITIES,
+  LOAD_ACTIVITIES, LOAD_ACTIVITIES_OF_RANGE,
   LOAD_LOGS,
   LOAD_OVERTIME,
   LOAD_RUNNING_ACTIVITY,
@@ -83,7 +83,7 @@ const errors = (requestName, actionFailed) => error => {
   return of$(showErrorMessage(`${requestName} failed with status: ${error.status}`), actionFailed())
 }
 
-const toActivityWithMoment = activity => ({
+export const toActivityWithMoment = activity => ({
   ...activity,
   start: moment.utc(activity.start).local(),
   end: activity.end && moment.utc(activity.end).local()
@@ -95,45 +95,6 @@ const loadActivitiesEpic = action$ => (
     switchMap$(() => concat(
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities').pipe(
-        map$(activities => activities.reduce((weeks, _activity) => {
-          const activity = toActivityWithMoment(_activity)
-          const weekDate = activity.start.format('GGGG-WW')
-          const dayDate = activity.start.format('ll')
-
-          const end = activity.end || moment()
-          const diff = end.diff(activity.start)
-
-          const week = weeks[weekDate] || {
-            totalDuration: 0,
-            days: {}
-          }
-
-          const day = week.days[dayDate] || {
-            totalDuration: 0,
-            activities: []
-          }
-
-          const days = {
-            ...week.days,
-            [dayDate]: {
-              ...day,
-              totalDuration: day.totalDuration + diff,
-              activities: [
-                ...day.activities,
-                activity
-              ]
-            }
-          }
-
-          return {
-            ...weeks,
-            [weekDate]: {
-              ...week,
-              totalDuration: week.totalDuration + diff,
-              days: days
-            }
-          }
-        }, {})),
         flatMap$(activitiesByWeek => concat(
           of$(activitiesLoaded(activitiesByWeek)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
@@ -303,6 +264,22 @@ const updateLog = action$ => (
     )
 )
 
+const loadActivitiesOfRange = action$ => (
+  action$.pipe(
+    ofType$(LOAD_ACTIVITIES_OF_RANGE),
+    switchMap$(({payload}) => concat(
+      of$(addNetworkActivity(LOAD_ACTIVITIES_OF_RANGE)),
+      get(`activities/${payload.from}/${payload.to}`).pipe(
+        map$(result => result.response),
+        flatMap$(activities => concat(
+          of$(activitiesOfRangeLoaded(activities)),
+          of$(removeNetworkActivity(LOAD_ACTIVITIES_OF_RANGE))
+        ))
+      )
+    ))
+  )
+)
+
 export const rootEpic = combineEpics(
   loadActivitiesEpic,
   startActivityEpic,
@@ -313,5 +290,6 @@ export const rootEpic = combineEpics(
   loadRunningActivityEpic,
   loadLogs,
   createLog,
-  updateLog
+  updateLog,
+  loadActivitiesOfRange
 )

@@ -21,8 +21,10 @@ const styles = theme => ({
 
 const ActivityItem = (props) => {
   const timeFormat = 'HH:mm'
-  const {id, name, start, end} = props
+  const {id, name, start: _start, end: _end} = props
 
+  const end = _end && moment.utc(_end).local()
+  const start = moment.utc(_start).local()
   const endOrNow = end || moment()
   const duration = moment.duration(endOrNow.diff(start)).humanize()
   const period = `${duration} from ${start.format(timeFormat)} ${end === undefined ? '' : `to ${end.format(timeFormat)}`}`
