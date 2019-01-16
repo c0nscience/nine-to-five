@@ -76,7 +76,7 @@ class ActivityList extends Component {
                     const activities = value[1].activities
                     return activities.filter(activity => activity.end !== undefined).length > 0
                   })
-                  .sort((a, b) => moment(b[0], 'll') - moment(a[0], 'll'))
+                  .sort((a, b) => moment.utc(b[0]).local() - moment.utc(a[0]).local())
                   .map(value => {
                     const [dayDate, day] = value
                     const activities = day.activities

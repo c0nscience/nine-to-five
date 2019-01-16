@@ -40,12 +40,12 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
   const dayDate = activity.start.format('YYYY-MM-DD')
 
   const week = state.activitiesByWeek[weekDate] || {
-    totalDuration: 0,
+    totalDuration: moment.duration(0),
     days: {}
   }
 
   const day = week.days[dayDate] || {
-    totalDuration: 0,
+    totalDuration: moment.duration(0),
     activities: []
   }
 
@@ -59,16 +59,21 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
         const end = moment(activity.end) || moment()
         const diff = end.diff(activity.start)
         return result + diff
-      }, 0),
+      }, moment.duration(0)),
       activities: activities
     }
   }
 
+
+  const totalDuration = Object.values(days).reduce((result, day) => {
+    return (result + moment.duration(day.totalDuration));
+  }, moment.duration(0));
+  console.log('reduceActivitiesByWeek - totalDuration', totalDuration)
   return {
     ...state.activitiesByWeek,
     [weekDate]: {
       ...week,
-      totalDuration: Object.values(days).reduce((result, day) => (result + day.totalDuration), 0),
+      totalDuration: totalDuration,
       days: days
     }
   }
