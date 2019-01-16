@@ -84,7 +84,7 @@ class ActivityList extends Component {
                     return (
                       <div key={dayDate}>
                         <Typography variant="subtitle1" className={classes.dayHeadline}>
-                          {totalDurationAsHours} hrs on {dayDate}
+                          {totalDurationAsHours} hrs on {moment.utc(dayDate).local().format('ll')}
                         </Typography>
                         <Card className={classes.card}>
                           <CardContent className={classes.cardContent}>
