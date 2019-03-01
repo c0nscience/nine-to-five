@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
+  jackson:
+    default-property-inclusion: non_null
+
+auth0:
+  issuer: https://ninetofive.eu.auth0.com/
+  audience: https://api.ntf.io
+
+logging:
+  level:
+    org.hibernate.engine.jdbc.env.internal.LobCreatorBuilderImpl: WARN
+    org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG
