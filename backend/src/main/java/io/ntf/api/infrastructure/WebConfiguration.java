@@ -17,7 +17,7 @@ public class WebConfiguration implements WebFluxConfigurer {
   @Override
   public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping("/**")
-      .allowedOrigins("http://localhost:3000", "https://ntf-webapp.herokuapp.com", "https://nine-to-five-git-master.conscience.now.sh/")
+      .allowedOrigins("http://localhost:3000", "https://ntf-webapp.herokuapp.com", "https://nine-to-five-git-master.conscience.now.sh")
       .allowedMethods("GET", "POST", "PUT", "DELETE");
   }
 
