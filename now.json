@@ -4,14 +4,5 @@
   "builds": [
     {"src": "frontend/package.json", "use": "@now/static-build", "config": {"distDir": "build"}}
   ],
-  "regions": ["bru"],
-  "routes": [
-    {"src": "frontend/static/(.*)", "headers": {"cache-control": "s-maxage=31536000,immutable"}, "dest": "/static/$1"},
-    {"src": "frontend/favicon.ico", "dest": "/favicon.ico"},
-    {"src": "frontend/asset-manifest.json", "dest": "/asset-manifest.json"},
-    {"src": "frontend/manifest.json", "dest": "/manifest.json"},
-    {"src": "frontend/precache-manifest.(.*)", "dest": "/precache-manifest.$1"},
-    {"src": "frontend/service-worker.js", "headers": {"cache-control": "s-maxage=0"}, "dest": "/service-worker.js"},
-    {"src": "frontend/(.*)", "headers": {"cache-control": "s-maxage=0"}, "dest": "/index.html"}
-  ]
+  "regions": ["bru"]
 }
