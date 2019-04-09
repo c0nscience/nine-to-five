@@ -8,7 +8,35 @@
   "routes": [
     {"src": "/static/(.*)", "headers": {"cache-control": "s-maxage=31536000,immutable"}, "dest": "frontend/static/$1"},
     {"src": "/favicon.ico", "dest": "frontend/favicon.ico"},
+    {
+      "src": "/favicon-16x16.png",
+      "dest": "frontend/favicon-16x16.png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "dest": "frontend/favicon-32x32.png"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "dest": "frontend/android-chrome-192x192.png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "dest": "frontend/android-chrome-512x512.png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "dest": "frontend/apple-touch-icon.png"
+    },
+    {
+      "src": "/mstile-150x150.png",
+      "dest": "frontend/mstile-150x150.png"
+    },
     {"src": "/asset-manifest.json", "dest": "frontend/asset-manifest.json"},
+    {
+      "src": "/safari-pinned-tab.svg",
+      "dest": "frontend/safari-pinned-tab.svg"
+    },
     {"src": "/manifest.json", "dest": "frontend/manifest.json"},
     {"src": "/precache-manifest.(.*)", "dest": "frontend/precache-manifest.$1"},
     {"src": "/service-worker.js", "headers": {"cache-control": "s-maxage=0"}, "dest": "frontend/service-worker.js"},
