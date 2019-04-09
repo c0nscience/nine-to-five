@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@material-ui/core": "^3.8.3",
+    "@material-ui/core": "^3.9.3",
     "@material-ui/icons": "^3.0.2",
     "auth0-js": "9.9.0",
     "classnames": "^2.2.6",
     "connected-react-router": "6.2.1",
     "fetch-mock": "7.3.0",
-    "history": "^4.7.2",
-    "luxon": "^1.10.0",
+    "history": "^4.9.0",
+    "luxon": "^1.12.1",
     "moment": "2.23.0",
     "react": "16.7.0",
     "react-dom": "16.7.0",
@@ -23,7 +23,7 @@
     "redux-observable": "1.0.0",
     "redux-thunk": "2.3.0",
     "rxjs": "6.3.3",
-    "rxjs-compat": "^6.3.3",
+    "rxjs-compat": "^6.4.0",
     "whatwg-fetch": "3.0.0"
   },
   "scripts": {
