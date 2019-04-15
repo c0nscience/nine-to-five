@@ -26,8 +26,8 @@ const ActivityItem = (props) => {
   const end = _end && DateTime.fromISO(_end).toLocal()
   const start = DateTime.fromISO(_start).toLocal()
   const endOrNow = end || DateTime.local()
-  const duration = endOrNow.diff(start).toFormat('h \'hrs\'', {floor: false})
-  const period = `${duration} from ${start.toFormat(timeFormat)} ${end === undefined ? '' : `to ${end.toFormat(timeFormat)}`}`
+  const duration = endOrNow.diff(start).as('hours')
+  const period = `${duration.toFixed(1)} hrs from ${start.toFormat(timeFormat)} ${end === undefined ? '' : `to ${end.toFormat(timeFormat)}`}`
 
   return (
     <ListItem>
