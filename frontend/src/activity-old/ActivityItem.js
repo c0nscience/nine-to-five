@@ -32,8 +32,8 @@ const ActivityItem = (props) => {
   const timeFormat = 'HH:mm'
   const {id, name, start: _start, end: _end} = props
 
-  const end = _end && DateTime.fromISO(handleMoment(_end)).toLocal()
-  const start = DateTime.fromISO(handleMoment(_start)).toLocal()
+  const end = _end && DateTime.fromISO(handleMoment(_end), {zone: 'utc'}).toLocal()
+  const start = DateTime.fromISO(handleMoment(_start), {zone: 'utc'}).toLocal()
   const endOrNow = end || DateTime.local()
   const duration = endOrNow.diff(start).as('hours')
   const period = `${duration.toFixed(1)} hrs from ${start.toFormat(timeFormat)} ${end === undefined ? '' : `to ${end.toFormat(timeFormat)}`}`
