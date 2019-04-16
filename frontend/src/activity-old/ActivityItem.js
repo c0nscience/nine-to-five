@@ -22,10 +22,8 @@ const styles = theme => ({
 
 const handleMoment = date => {
   if (moment.isMoment(date)) {
-    console.log('isMoment')
     return date.toISOString()
   } else {
-    console.log('is not moment')
     return date
   }
 }
@@ -49,8 +47,8 @@ const ActivityItem = (props) => {
                       props.selectActivity({
                         id,
                         name,
-                        start: start,
-                        end: end
+                        start: start.toISO(),
+                        end: end.toISO()
                       })
                     }}>
           <Edit/>

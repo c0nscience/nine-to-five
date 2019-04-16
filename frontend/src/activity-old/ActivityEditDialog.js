@@ -1,6 +1,6 @@
-import React, {Component} from 'react'
-import {connect} from 'react-redux'
-import {deleteActivity, deselectActivity, saveActivity} from '../actions'
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { deleteActivity, deselectActivity, saveActivity } from '../actions'
 import moment from 'moment'
 import withMobileDialog from "@material-ui/core/withMobileDialog";
 import Button from "@material-ui/core/Button/Button";
@@ -9,8 +9,11 @@ import TextField from "@material-ui/core/TextField/TextField";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
+import Grid from "@material-ui/core/Grid";
 
-const dateTimeFormat = 'YYYY-MM-DDTHH:mm'
+const dateFormat = 'YYYY-MM-DD'
+const timeFormat = 'HH:mm'
+const dateTimeFormat = `${dateFormat}T${timeFormat}`
 
 class ActivityEditDialog extends Component {
 
@@ -32,8 +35,6 @@ class ActivityEditDialog extends Component {
     }
 
     this.handleNameChange = this.handleNameChange.bind(this)
-    this.handleStartChange = this.handleStartChange.bind(this)
-    this.handleEndChange = this.handleEndChange.bind(this)
     this.handleRequestSave = this.handleRequestSave.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleRequestDelete = this.handleRequestDelete.bind(this)
@@ -46,13 +47,33 @@ class ActivityEditDialog extends Component {
     this.setState({ name })
   }
 
-  handleStartChange(event) {
-    const start = event.target.value
+  handleDate = (string, stateValue) => {
+    const date = moment(string, dateFormat)
+    return moment(stateValue).year(date.year()).month(date.month()).date(date.date()).toISOString(true)
+  }
+
+  handleTime = (string, stateValue) => {
+    const time = moment(string, timeFormat)
+    return moment(stateValue).hour(time.hour()).minute(time.minute()).toISOString(true)
+  }
+
+  handleStartDateChange = (event) => {
+    const start = this.handleDate(event.target.value, this.state.start)
     this.setState({ start })
   }
 
-  handleEndChange(event) {
-    const end = event.target.value
+  handleStartTimeChange = (event) => {
+    const start = this.handleTime(event.target.value, this.state.start)
+    this.setState({ start })
+  }
+
+  handleEndDateChange = (event) => {
+    const end = this.handleDate(event.target.value, this.state.end)
+    this.setState({ end })
+  }
+
+  handleEndTimeChange = (event) => {
+    const end = this.handleTime(event.target.value, this.state.end)
     this.setState({ end })
   }
 
@@ -123,39 +144,67 @@ class ActivityEditDialog extends Component {
           <DialogTitle>Edit</DialogTitle>
           <DialogContent>
             <form onSubmit={this.handleRequestSave}>
-              <TextField
-                id="name"
-                label="Name"
-                margin="dense"
-                type="text"
-                fullWidth
-                value={this.state.name}
-                onChange={this.handleNameChange}
-              />
-              <TextField
-                id="start"
-                label="Start"
-                margin="dense"
-                type="datetime-local"
-                fullWidth
-                value={moment(this.state.start).format(dateTimeFormat)}
-                onChange={this.handleStartChange}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-              {this.props.end && <TextField
-                id="end"
-                label="End"
-                margin="dense"
-                type="datetime-local"
-                fullWidth
-                value={moment(this.state.end).format(dateTimeFormat)}
-                onChange={this.handleEndChange}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />}
+              <Grid container>
+                <Grid item xs={12}>
+                  <TextField
+                    id="name"
+                    label="Name"
+                    margin="dense"
+                    type="text"
+                    fullWidth
+                    value={this.state.name}
+                    onChange={this.handleNameChange}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    id="start-date"
+                    label="Start date"
+                    margin="dense"
+                    type="date"
+                    value={moment(this.state.start).format(dateFormat)}
+                    onChange={this.handleStartDateChange}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    id="start-time"
+                    label="Time"
+                    margin="dense"
+                    type="time"
+                    value={moment(this.state.start).format(timeFormat)}
+                    onChange={this.handleStartTimeChange}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid>
+                {this.props.end && <Grid item xs={6}><TextField
+                  id="end-date"
+                  label="End date"
+                  margin="dense"
+                  type="date"
+                  value={moment(this.state.end).format(dateFormat)}
+                  onChange={this.handleEndDateChange}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                /></Grid>}
+                {this.props.end && <Grid item xs={6}><TextField
+                  id="end-time"
+                  label="Time"
+                  margin="dense"
+                  type="time"
+                  value={moment(this.state.end).format(timeFormat)}
+                  onChange={this.handleEndTimeChange}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                /></Grid>}
+              </Grid>
             </form>
           </DialogContent>
           <DialogActions>
