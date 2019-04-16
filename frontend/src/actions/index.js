@@ -133,3 +133,8 @@ export const loadActivitiesOfRange = (from, to) =>
 
 export const activitiesOfRangeLoaded = activities =>
   ({ type: ACTIVITIES_OF_RANGE_LOADED, payload: activities })
+
+export const CONTINUE_ACTIVITY = 'CONTINUE_ACTIVITY'
+
+export const continueActivity = activityName =>
+  ({ type:CONTINUE_ACTIVITY, payload: activityName })

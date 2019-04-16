@@ -8,7 +8,7 @@ import {
   activitySaved,
   activityStarted,
   activityStopped,
-  addNetworkActivity,
+  addNetworkActivity, CONTINUE_ACTIVITY,
   CREATE_LOG,
   DELETE_ACTIVITY,
   deselectActivity,
@@ -24,7 +24,7 @@ import {
   runningActivityLoaded,
   SAVE_ACTIVITY,
   showErrorMessage,
-  START_ACTIVITY,
+  START_ACTIVITY, startActivity,
   STOP_ACTIVITY,
   UPDATE_LOG,
 } from '../actions'
@@ -280,6 +280,15 @@ const loadActivitiesOfRange = action$ => (
   )
 )
 
+const continueActivity = action$ => (
+  action$.pipe(
+    ofType$(CONTINUE_ACTIVITY),
+    switchMap$(({payload}) => concat(
+      of$(startActivity(payload))
+    ))
+  )
+)
+
 export const rootEpic = combineEpics(
   loadActivitiesEpic,
   startActivityEpic,
@@ -291,5 +300,6 @@ export const rootEpic = combineEpics(
   loadLogs,
   createLog,
   updateLog,
-  loadActivitiesOfRange
+  loadActivitiesOfRange,
+  continueActivity
 )

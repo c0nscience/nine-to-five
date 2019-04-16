@@ -1,15 +1,15 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { deleteActivity, deselectActivity, saveActivity } from '../actions'
+import React, {Component} from 'react'
+import {connect} from 'react-redux'
+import {deleteActivity, deselectActivity, saveActivity} from '../actions'
 import moment from 'moment'
-import withMobileDialog from "@material-ui/core/withMobileDialog";
-import Button from "@material-ui/core/Button/Button";
-import DialogActions from "@material-ui/core/DialogActions";
-import TextField from "@material-ui/core/TextField/TextField";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogTitle from "@material-ui/core/DialogTitle/DialogTitle";
-import Dialog from "@material-ui/core/Dialog";
-import Grid from "@material-ui/core/Grid";
+import withMobileDialog from '@material-ui/core/withMobileDialog'
+import Button from '@material-ui/core/Button/Button'
+import DialogActions from '@material-ui/core/DialogActions'
+import TextField from '@material-ui/core/TextField/TextField'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogTitle from '@material-ui/core/DialogTitle/DialogTitle'
+import Dialog from '@material-ui/core/Dialog'
+import Grid from '@material-ui/core/Grid'
 
 const dateFormat = 'YYYY-MM-DD'
 const timeFormat = 'HH:mm'
@@ -33,16 +33,9 @@ class ActivityEditDialog extends Component {
         end
       }
     }
-
-    this.handleNameChange = this.handleNameChange.bind(this)
-    this.handleRequestSave = this.handleRequestSave.bind(this)
-    this.handleClose = this.handleClose.bind(this)
-    this.handleRequestDelete = this.handleRequestDelete.bind(this)
-    this.handleOpenConfirmDialog = this.handleOpenConfirmDialog.bind(this)
-    this.handleCloseConfirmDialog = this.handleCloseConfirmDialog.bind(this)
   }
 
-  handleNameChange(event) {
+  handleNameChange = event => {
     const name = event.target.value
     this.setState({ name })
   }
@@ -77,7 +70,7 @@ class ActivityEditDialog extends Component {
     this.setState({ end })
   }
 
-  handleRequestSave(event) {
+  handleRequestSave = event => {
     event.preventDefault()
     this.props.saveActivity(
       {
@@ -89,7 +82,7 @@ class ActivityEditDialog extends Component {
       this.state.oldActivity)
   }
 
-  handleRequestDelete(event) {
+  handleRequestDelete = event => {
     event.preventDefault()
     this.setState({
       confirmDialogOpen: false
@@ -97,18 +90,18 @@ class ActivityEditDialog extends Component {
     this.props.deleteActivity(this.state.id)
   }
 
-  handleClose(event) {
+  handleClose = event => {
     event.preventDefault()
     this.props.deselectActivity()
   }
 
-  handleOpenConfirmDialog() {
+  handleOpenConfirmDialog = () => {
     this.setState({
       confirmDialogOpen: true
     })
   }
 
-  handleCloseConfirmDialog() {
+  handleCloseConfirmDialog = () => {
     this.setState({
       confirmDialogOpen: false
     })
