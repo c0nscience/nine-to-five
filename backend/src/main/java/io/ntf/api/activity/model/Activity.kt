@@ -8,7 +8,6 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 @Document(collection = "activities")
-@Builder
 data class Activity(@Id val id: String? = null, val userId: String, val logId: String? = null, val name: String, val start: LocalDateTime, val end: LocalDateTime? = null) {
 
     fun duration(): Duration {
