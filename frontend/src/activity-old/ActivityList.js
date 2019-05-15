@@ -1,9 +1,9 @@
-import React, {Component} from 'react'
-import {connect} from 'react-redux'
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import ActivityItem from './ActivityItem'
 import moment from 'moment'
-import {loadActivities, loadOvertime, loadRunningActivity} from '../actions'
-import {withStyles} from '@material-ui/core/styles'
+import { loadActivities, loadOvertime, loadRunningActivity } from '../actions'
+import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
@@ -26,8 +26,6 @@ const styles = theme => ({
   }
 })
 
-const weekDateFormat = 'GGGG-W'
-
 class ActivityList extends Component {
 
   componentDidMount() {
@@ -38,16 +36,15 @@ class ActivityList extends Component {
 
   render() {
     const { activitiesByWeek: byWeek, classes, overtimes } = this.props
-
     return (
       <div>
         {Object.entries(byWeek)
-          .sort((a, b) => moment(b[0], weekDateFormat) - moment(a[0], weekDateFormat))
+          .sort((a, b) => moment(b[0], 'GGGG-W') - moment(a[0], 'GGGG-W'))
           .map(v => {
             const [weekNumber, weeks] = v
 
             const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(3)
-            const currentWeekDate = moment(weekNumber, weekDateFormat)
+            const currentWeekDate = moment(weekNumber, 'GGGG-W')
             const overtimeStatistics = overtimes.find(o => {
               const weekDate = moment(o.week)
               const week = weekDate.isoWeek()
@@ -63,7 +60,7 @@ class ActivityList extends Component {
                 <Card className={classes.weekSummaryCard}>
                   <CardContent>
                     <Typography variant="h5">
-                      Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, weekDateFormat).isoWeek()}
+                      Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, 'GGGG-W').isoWeek()}
                     </Typography>
                     {
                       overtimeStatistics && <Typography variant="caption">
