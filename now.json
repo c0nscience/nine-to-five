@@ -2,7 +2,7 @@
   "version": 2,
   "name": "nine-to-five",
   "builds": [
-    {"src": "frontend/package.json", "use": "@now/static-build", "config": {"distDir": "build"}}
+    {"src": "frontend/package.json", "use": "@now/static-build@0.4.18", "config": {"distDir": "build"}}
   ],
   "regions": ["bru"],
   "routes": [
