@@ -5,6 +5,12 @@
     {"src": "frontend/package.json", "use": "@now/static-build@0.4.18", "config": {"distDir": "build"}}
   ],
   "regions": ["bru"],
+  "build": {
+    "env": {
+      "REACT_APP_API_HOST": "https://ntf-japi.herokuapp.com",
+      "REACT_APP_CALLBACK_URL": "https://nine-to-five-git-master.conscience.now.sh/callback"
+    }
+  },
   "routes": [
     {"src": "/static/(.*)", "headers": {"cache-control": "s-maxage=31536000,immutable"}, "dest": "frontend/static/$1"},
     {"src": "/favicon.ico", "dest": "frontend/favicon.ico"},
