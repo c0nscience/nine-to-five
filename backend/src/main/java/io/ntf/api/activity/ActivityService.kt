@@ -79,9 +79,9 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
   private fun transformTo(activities: Flux<Activity>): Mono<ByWeek> {
     val stopwatch = Stopwatch.createStarted()
     return activities.reduce(emptyMap()) { result: ByWeek, activity: Activity ->
-      val weekDatePattern = DateTimeFormatter.ofPattern("Y-w")
+      val weekDatePattern = DateTimeFormatter.ISO_WEEK_DATE
       val dayDatePattern = DateTimeFormatter.ISO_LOCAL_DATE
-      val weekDate = activity.start.format(weekDatePattern)
+      val weekDate = activity.start.format(weekDatePattern).dropLast(2)
       val dayDate = activity.start.format(dayDatePattern)
 
       val end = activity.end ?: now()

@@ -26,6 +26,8 @@ const styles = theme => ({
   }
 })
 
+const weekDateFormat = 'GGGG-W'
+
 class ActivityList extends Component {
 
   componentDidMount() {
@@ -39,12 +41,12 @@ class ActivityList extends Component {
     return (
       <div>
         {Object.entries(byWeek)
-          .sort((a, b) => moment(b[0], 'GGGG-W') - moment(a[0], 'GGGG-W'))
+          .sort((a, b) => moment(b[0], weekDateFormat) - moment(a[0], weekDateFormat))
           .map(v => {
             const [weekNumber, weeks] = v
 
             const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(3)
-            const currentWeekDate = moment(weekNumber, 'GGGG-W')
+            const currentWeekDate = moment(weekNumber, weekDateFormat)
             const overtimeStatistics = overtimes.find(o => {
               const weekDate = moment(o.week)
               const week = weekDate.isoWeek()
@@ -60,7 +62,7 @@ class ActivityList extends Component {
                 <Card className={classes.weekSummaryCard}>
                   <CardContent>
                     <Typography variant="h5">
-                      Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, 'GGGG-W').isoWeek()}
+                      Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, weekDateFormat).isoWeek()}
                     </Typography>
                     {
                       overtimeStatistics && <Typography variant="caption">
