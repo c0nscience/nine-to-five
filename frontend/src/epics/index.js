@@ -1,18 +1,21 @@
 import {concat, of as of$} from 'rxjs'
-import {ajax} from "rxjs/ajax";
+import {ajax} from 'rxjs/ajax'
 import {catchError as catchError$, flatMap as flatMap$, map as map$, switchMap as switchMap$} from 'rxjs/operators'
 import {combineEpics, ofType as ofType$} from 'redux-observable'
 import {
-  activitiesLoaded, activitiesOfRangeLoaded,
+  activitiesLoaded,
+  activitiesOfRangeLoaded,
   activityDeleted,
   activitySaved,
   activityStarted,
   activityStopped,
-  addNetworkActivity, CONTINUE_ACTIVITY,
+  addNetworkActivity,
+  CONTINUE_ACTIVITY,
   CREATE_LOG,
   DELETE_ACTIVITY,
   deselectActivity,
-  LOAD_ACTIVITIES, LOAD_ACTIVITIES_OF_RANGE,
+  LOAD_ACTIVITIES,
+  LOAD_ACTIVITIES_OF_RANGE,
   LOAD_LOGS,
   LOAD_OVERTIME,
   LOAD_RUNNING_ACTIVITY,
@@ -24,12 +27,14 @@ import {
   runningActivityLoaded,
   SAVE_ACTIVITY,
   showErrorMessage,
-  START_ACTIVITY, startActivity,
-  STOP_ACTIVITY, stopActivity, SWITCH_ACTIVITY,
+  START_ACTIVITY,
+  startActivity,
+  STOP_ACTIVITY,
+  SWITCH_ACTIVITY,
   UPDATE_LOG,
 } from '../actions'
 import moment from 'moment/moment'
-import {goBack} from "connected-react-router";
+import {goBack} from 'connected-react-router'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
 
