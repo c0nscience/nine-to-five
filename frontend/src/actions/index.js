@@ -138,3 +138,8 @@ export const CONTINUE_ACTIVITY = 'CONTINUE_ACTIVITY'
 
 export const continueActivity = activityName =>
   ({ type:CONTINUE_ACTIVITY, payload: activityName })
+
+export const SWITCH_ACTIVITY = 'SWITCH_ACTIVITY'
+
+export const switchActivity = activityName =>
+  ({ type:SWITCH_ACTIVITY, payload: activityName })

@@ -1,9 +1,11 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import Edit from '@material-ui/icons/Edit'
 import Replay from '@material-ui/icons/Replay'
-import {continueActivity, selectActivity} from '../actions'
+import More from '@material-ui/icons/MoreVert'
+import Shuffle from '@material-ui/icons/Shuffle'
+import {continueActivity, selectActivity, switchActivity} from '../actions'
 import {amber, green} from '@material-ui/core/colors'
 import IconButton from '@material-ui/core/IconButton'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
@@ -11,6 +13,9 @@ import ListItemText from '@material-ui/core/ListItemText'
 import ListItem from '@material-ui/core/ListItem/ListItem'
 import {DateTime} from 'luxon'
 import moment from 'moment'
+import MenuItem from '@material-ui/core/MenuItem'
+import Menu from '@material-ui/core/Menu'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
 
 const styles = theme => ({
   done: {
@@ -30,8 +35,10 @@ const handleMoment = date => {
 }
 
 const ActivityItem = (props) => {
+  const [anchorEl, setAnchorEl] = useState(undefined)
+
   const timeFormat = 'HH:mm'
-  const {id, name, start: _start, end: _end} = props
+  const {id, name, start: _start, end: _end, isRunningActivity} = props
 
   const end = _end && DateTime.fromISO(handleMoment(_end), {zone: 'utc'}).toLocal()
   const start = DateTime.fromISO(handleMoment(_start), {zone: 'utc'}).toLocal()
@@ -42,33 +49,69 @@ const ActivityItem = (props) => {
   return <ListItem>
     <ListItemText primary={name} secondary={period}/>
     <ListItemSecondaryAction>
-      <IconButton aria-label="Replay"
-                  onClick={() => {
-                    props.continueActivity(name)
+      <IconButton aria-label="Menu"
+                  aria-haspopup="true"
+                  onClick={(event) => {
+                    setAnchorEl(event.currentTarget)
                   }}>
-        <Replay/>
+        <More/>
       </IconButton>
-      <IconButton aria-label="Edit"
-                  onClick={() => {
-                    props.selectActivity({
-                      id,
-                      name,
-                      start: start.toISO(),
-                      end: end.toISO()
-                    })
-                  }}>
-        <Edit/>
-      </IconButton>
+      <Menu
+        id={`item-menu-${id}`}
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(undefined)}>
+        {!isRunningActivity && <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          props.continueActivity(name)
+        }}>
+          <ListItemIcon>
+            <Replay/>
+          </ListItemIcon>
+          <ListItemText inset primary='Replay'/>
+        </MenuItem>}
+        {isRunningActivity && <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          props.switchActivity(name)
+        }}>
+          <ListItemIcon>
+            <Shuffle/>
+          </ListItemIcon>
+          <ListItemText inset primary='Switch'/>
+        </MenuItem>}
+        <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          props.selectActivity({
+            id,
+            name,
+            start: start.toISO(),
+            end: end.toISO()
+          })
+        }}>
+          <ListItemIcon>
+            <Edit/>
+          </ListItemIcon>
+          <ListItemText inset primary='Edit'/>
+        </MenuItem>
+      </Menu>
     </ListItemSecondaryAction>
   </ListItem>
 }
 
+const mapStateToProps = state => ({
+  isRunningActivity: state.activity.running !== undefined
+})
+
 const mapDispatchToProps = {
   selectActivity,
-  continueActivity
+  continueActivity,
+  switchActivity
 }
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps,
 )(withStyles(styles)(ActivityItem))

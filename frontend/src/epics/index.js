@@ -25,7 +25,7 @@ import {
   SAVE_ACTIVITY,
   showErrorMessage,
   START_ACTIVITY, startActivity,
-  STOP_ACTIVITY,
+  STOP_ACTIVITY, stopActivity, SWITCH_ACTIVITY,
   UPDATE_LOG,
 } from '../actions'
 import moment from 'moment/moment'
@@ -289,6 +289,23 @@ const continueActivity = action$ => (
   )
 )
 
+const switchActivity = action$ => (
+  action$.pipe(
+    ofType$(SWITCH_ACTIVITY),
+    switchMap$(({payload}) => concat(
+      of$(addNetworkActivity(STOP_ACTIVITY)),
+      post('activity/stop').pipe(
+        map$(result => result.response),
+        map$(toActivityWithMoment),
+        flatMap$(response => concat(
+          of$(activityStopped(response)),
+          of$(removeNetworkActivity(STOP_ACTIVITY)),
+          of$(startActivity(payload))
+        )))
+    ))
+  )
+)
+
 export const rootEpic = combineEpics(
   loadActivitiesEpic,
   startActivityEpic,
@@ -301,5 +318,6 @@ export const rootEpic = combineEpics(
   createLog,
   updateLog,
   loadActivitiesOfRange,
-  continueActivity
+  continueActivity,
+  switchActivity
 )

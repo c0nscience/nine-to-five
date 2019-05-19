@@ -96,7 +96,7 @@ class ActivityList extends Component {
                                   .filter(activity => activity.end !== undefined)
                                   .map(activity => (
                                     <ActivityItem {...activity}
-                                                  key={activity.id}/>
+                                                  key={`activity-${activity.id}`}/>
                                   ))
                               }
                             </List>
