@@ -29,6 +29,9 @@ class EditLogForm extends React.Component {
   constructor() {
     super()
     this.state = initialState
+    this.handleNameChange = this.handleNameChange.bind(this)
+    this.handleCancel = this.handleCancel.bind(this)
+    this.handleRequestSave = this.handleRequestSave.bind(this)
   }
 
   static getDerivedStateFromProps({id, name}) {
@@ -38,18 +41,18 @@ class EditLogForm extends React.Component {
     }
   }
 
-  handleNameChange = (event) => {
+  handleNameChange(event) {
     const name = event.target.value
     this.setState({name})
   }
 
-  handleCancel = (event) => {
+  handleCancel(event) {
     event.preventDefault()
     this.setState(initialState)
     this.props.goBack()
   }
 
-  handleRequestSave = (event) => {
+  handleRequestSave(event) {
     event.preventDefault()
     const {id, name} = this.state
     this.props.updateLog({

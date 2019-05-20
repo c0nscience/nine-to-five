@@ -1,13 +1,13 @@
-import React, {useEffect} from 'react'
-import {connect} from 'react-redux'
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import ActivityItem from './ActivityItem'
-import {loadActivities, loadOvertime, loadRunningActivity} from '../actions'
-import {withStyles} from '@material-ui/core/styles'
+import moment from 'moment'
+import { loadActivities, loadOvertime, loadRunningActivity } from '../actions'
+import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import Typography from '@material-ui/core/Typography'
-import {DateTime, Duration} from 'luxon'
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+import Typography from "@material-ui/core/Typography";
 
 const styles = theme => ({
   weekSummaryCard: {
@@ -26,120 +26,102 @@ const styles = theme => ({
   }
 })
 
-const WeekSummary = ({weekNumber, totalHours}) =>
-  <Typography variant="h5">
-    Worked {totalHours} hrs in week {DateTime.fromISO(weekNumber).toFormat('W')}
-  </Typography>
+const weekDateFormat = 'GGGG-W'
 
-const OverTimeStatisticBlock = ({overtimeStatistics}) =>
-  <Typography variant="caption">
-    Overtime - Current: {Duration.fromISO(overtimeStatistics.overtime).as('hours').toFixed(1)} -
-    Total: {Duration.fromISO(overtimeStatistics.totalOvertime).as('hours').toFixed(1)}
-  </Typography>
+class ActivityList extends Component {
 
-const DaySummary = withStyles(styles)(({totalHours, date, classes}) =>
-  <Typography variant="subtitle1"
-              className={classes.dayHeadline}>
-    {totalHours} hrs on {DateTime.fromISO(date, {zone: 'utc'}).toLocal().toFormat('DD')}
-  </Typography>)
+  componentDidMount() {
+    this.props.loadActivities()
+    this.props.loadOvertime()
+    this.props.loadRunningActivity()
+  }
 
-const Day = withStyles(styles)(({date, totalDuration, classes, children}) =>
-  <React.Fragment>
-    <DaySummary totalHours={totalDuration} date={date}/>
-    <Card className={classes.card}>
-      <CardContent className={classes.cardContent}>
-        <List>
-          {children}
-        </List>
-      </CardContent>
-    </Card>
-  </React.Fragment>)
+  render() {
+    const { activitiesByWeek: byWeek, classes, overtimes } = this.props
+    return (
+      <div>
+        {Object.entries(byWeek)
+          .sort((a, b) => moment(b[0], weekDateFormat) - moment(a[0], weekDateFormat))
+          .map(v => {
+            const [weekNumber, weeks] = v
 
+            const totalWeekDurationAsHours = moment.duration(weeks.totalDuration).asHours().toPrecision(3)
+            const currentWeekDate = moment(weekNumber, weekDateFormat)
+            const overtimeStatistics = overtimes.find(o => {
+              const weekDate = moment(o.week)
+              const week = weekDate.isoWeek()
+              const year = weekDate.isoWeekYear()
 
-const Week = withStyles(styles)(({weekNumber, weeks, classes, overtimeStatistics, children}) => {
-  const totalWeekDurationAsHours = Duration.fromISO(weeks.totalDuration).as('hours').toFixed(1)
+              const currentWeek = currentWeekDate.isoWeek()
+              const currentYear = currentWeekDate.isoWeekYear()
 
-  return <React.Fragment>
-    <Card className={classes.weekSummaryCard}>
-      <CardContent>
-        <WeekSummary weekNumber={weekNumber} totalHours={totalWeekDurationAsHours}/>
-        {
-          overtimeStatistics && <OverTimeStatisticBlock overtimeStatistics={overtimeStatistics}/>
-        }
-      </CardContent>
-    </Card>
-
-    {children}
-  </React.Fragment>
-})
-
-const ActivityList = ({activitiesByWeek: byWeek, overtimes, loadActivities, loadOvertime, loadRunningActivity}) => {
-  useEffect(() => {
-    loadActivities()
-    loadOvertime()
-    loadRunningActivity()
-  }, [loadActivities, loadOvertime, loadRunningActivity])
-
-  return <React.Fragment>
-    {Object.entries(byWeek)
-      .sort((a, b) => DateTime.fromISO(b[0]).toSeconds() - DateTime.fromISO(a[0]).toSeconds())
-      .map(v => {
-        const [weekNumber, weeks] = v
-
-        const currentWeekDate = DateTime.fromISO(weekNumber)
-        const overtimeStatistics = overtimes.find(o => {
-          const weekDate = DateTime.fromISO(o.week)
-          const week = weekDate.weekNumber
-          const year = weekDate.weekYear
-
-          const currentWeek = currentWeekDate.weekNumber
-          const currentYear = currentWeekDate.weekYear
-
-          return currentWeek === week && currentYear === year
-        })
-        return (
-          <Week key={weekNumber} weekNumber={weekNumber} weeks={weeks} overtimeStatistics={overtimeStatistics}>
-            {Object.entries(weeks.days)
-              .filter(value => {
-                const activities = value[1].activities
-                return activities.filter(activity => activity.end !== undefined).length > 0
-              })
-              .sort((a, b) => DateTime.fromISO(b[0], {zone: 'utc'}).toLocal().toSeconds() - DateTime.fromISO(a[0], {zone: 'utc'}).toLocal().toSeconds())
-              .map(value => {
-                const [dayDate, day] = value
-                const activities = day.activities
-                const totalDurationAsHours = Duration.fromISO(day.totalDuration).as('hours').toFixed(1)
-                return (
-                  <Day key={dayDate} date={dayDate} activities={activities} totalDuration={totalDurationAsHours}>
+              return currentWeek === week && currentYear === year
+            })
+            return (
+              <div key={weekNumber}>
+                <Card className={classes.weekSummaryCard}>
+                  <CardContent>
+                    <Typography variant="h5">
+                      Worked {totalWeekDurationAsHours} hrs in week {moment(weekNumber, weekDateFormat).isoWeek()}
+                    </Typography>
                     {
-                      activities.sort((a, b) => DateTime.fromISO(b.start).toSeconds() - DateTime.fromISO(a.start).toSeconds())
-                        .filter(activity => activity.end !== undefined)
-                        .map(activity => (
-                          <ActivityItem key={`activity-${activity.id}`}
-                                        {...activity}/>
-                        ))
+                      overtimeStatistics && <Typography variant="caption">
+                        Overtime - Current: {moment.duration(overtimeStatistics.overtime).asHours().toPrecision(3)} -
+                        Total: {moment.duration(overtimeStatistics.totalOvertime).asHours().toPrecision(3)}
+                      </Typography>
                     }
-                  </Day>
-                )
-              })}
-          </Week>
-        )
-      })}
-  </React.Fragment>
+                  </CardContent>
+                </Card>
+
+                {Object.entries(weeks.days)
+                  .filter(value => {
+                    const activities = value[1].activities
+                    return activities.filter(activity => activity.end !== undefined).length > 0
+                  })
+                  .sort((a, b) => moment.utc(b[0]).local() - moment.utc(a[0]).local())
+                  .map(value => {
+                    const [dayDate, day] = value
+                    const activities = day.activities
+                    const totalDurationAsHours = moment.duration(day.totalDuration).asHours().toPrecision(2)
+                    return (
+                      <div key={dayDate}>
+                        <Typography variant="subtitle1" className={classes.dayHeadline}>
+                          {totalDurationAsHours} hrs on {moment.utc(dayDate).local().format('ll')}
+                        </Typography>
+                        <Card className={classes.card}>
+                          <CardContent className={classes.cardContent}>
+                            <List>
+                              {
+                                activities.sort((a, b) => moment(b.start) - moment(a.start))
+                                  .filter(activity => activity.end !== undefined)
+                                  .map(activity => (
+                                    <ActivityItem {...activity}
+                                                  key={`activity-${activity.id}`}/>
+                                  ))
+                              }
+                            </List>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )
+                  })}
+              </div>
+            )
+          })}
+      </div>
+    )
+  }
 }
 
 const mapStateToProps = state => ({
   activitiesByWeek: state.activity.activitiesByWeek,
   overtimes: state.activity.overtimes
 })
-
-const mapDispatchToProps = {
-  loadActivities,
-  loadOvertime,
-  loadRunningActivity
-}
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
-)(ActivityList)
+  {
+    loadActivities,
+    loadOvertime,
+    loadRunningActivity
+  }
+)(withStyles(styles)(ActivityList))

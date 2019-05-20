@@ -33,7 +33,7 @@ import {
   SWITCH_ACTIVITY,
   UPDATE_LOG,
 } from '../actions'
-import {DateTime} from 'luxon'
+import moment from 'moment/moment'
 import {goBack} from 'connected-react-router'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
@@ -90,8 +90,8 @@ const errors = (requestName, actionFailed) => error => {
 
 export const toActivityWithMoment = activity => ({
   ...activity,
-  start: DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal(),
-  end: activity.end && DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal()
+  start: moment.utc(activity.start).local(),
+  end: activity.end && moment.utc(activity.end).local()
 })
 
 const loadActivitiesEpic = action$ => (

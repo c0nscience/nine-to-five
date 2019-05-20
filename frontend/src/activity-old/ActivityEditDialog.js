@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
 import {deleteActivity, deselectActivity, saveActivity} from '../actions'
-import {DateTime} from 'luxon'
+import moment from 'moment'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Button from '@material-ui/core/Button/Button'
 import DialogActions from '@material-ui/core/DialogActions'
@@ -11,7 +11,9 @@ import DialogTitle from '@material-ui/core/DialogTitle/DialogTitle'
 import Dialog from '@material-ui/core/Dialog'
 import Grid from '@material-ui/core/Grid'
 
+const dateFormat = 'YYYY-MM-DD'
 const timeFormat = 'HH:mm'
+const dateTimeFormat = `${dateFormat}T${timeFormat}`
 
 class ActivityEditDialog extends Component {
 
@@ -39,13 +41,13 @@ class ActivityEditDialog extends Component {
   }
 
   handleDate = (string, stateValue) => {
-    const date = DateTime.fromISO(string)
-    return DateTime.fromISO(stateValue).set({year: date.year, month: date.month, day: date.day}).toISO()
+    const date = moment(string, dateFormat)
+    return moment(stateValue).year(date.year()).month(date.month()).date(date.date()).toISOString(true)
   }
 
   handleTime = (string, stateValue) => {
-    const time = DateTime.fromISO(string)
-    return DateTime.fromISO(stateValue).set({hour: time.hour, minute: time.minute}).toISO()
+    const time = moment(string, timeFormat)
+    return moment(stateValue).hour(time.hour()).minute(time.minute()).toISOString(true)
   }
 
   handleStartDateChange = (event) => {
@@ -74,8 +76,8 @@ class ActivityEditDialog extends Component {
       {
         id: this.state.id,
         name: this.state.name,
-        start: DateTime.fromISO(this.state.start, {zone: 'utc'}).toISO(),
-        end: DateTime.fromISO(this.state.end, {zone: 'utc'}).toISO()
+        start: moment(this.state.start, dateTimeFormat).utc(false).toISOString(),
+        end: moment(this.state.end, dateTimeFormat).utc(false).toISOString()
       },
       this.state.oldActivity)
   }
@@ -153,7 +155,7 @@ class ActivityEditDialog extends Component {
                     label="Start date"
                     margin="dense"
                     type="date"
-                    value={DateTime.fromISO(this.state.start).toISODate()}
+                    value={moment(this.state.start).format(dateFormat)}
                     onChange={this.handleStartDateChange}
                     InputLabelProps={{
                       shrink: true,
@@ -166,7 +168,7 @@ class ActivityEditDialog extends Component {
                     label="Time"
                     margin="dense"
                     type="time"
-                    value={DateTime.fromISO(this.state.start).toFormat(timeFormat)}
+                    value={moment(this.state.start).format(timeFormat)}
                     onChange={this.handleStartTimeChange}
                     InputLabelProps={{
                       shrink: true,
@@ -178,7 +180,7 @@ class ActivityEditDialog extends Component {
                   label="End date"
                   margin="dense"
                   type="date"
-                  value={DateTime.fromISO(this.state.end).toISODate()}
+                  value={moment(this.state.end).format(dateFormat)}
                   onChange={this.handleEndDateChange}
                   InputLabelProps={{
                     shrink: true,
@@ -189,7 +191,7 @@ class ActivityEditDialog extends Component {
                   label="Time"
                   margin="dense"
                   type="time"
-                  value={DateTime.fromISO(this.state.end).toFormat(timeFormat)}
+                  value={moment(this.state.end).format(timeFormat)}
                   onChange={this.handleEndTimeChange}
                   InputLabelProps={{
                     shrink: true,

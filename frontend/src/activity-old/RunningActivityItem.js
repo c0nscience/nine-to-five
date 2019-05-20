@@ -1,15 +1,15 @@
 import React from 'react'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import classNames from 'classnames'
-import {DateTime} from 'luxon'
-import {withStyles} from '@material-ui/core/styles'
+import moment from 'moment'
+import { withStyles } from '@material-ui/core/styles'
 import Edit from '@material-ui/icons/Edit'
-import {selectActivity} from '../actions'
+import { selectActivity } from '../actions'
 import StopButton from './ActivityStopButton'
-import IconButton from '@material-ui/core/IconButton'
-import Typography from '@material-ui/core/Typography'
-import Grid from '@material-ui/core/Grid'
-import Paper from '@material-ui/core/Paper'
+import IconButton from "@material-ui/core/IconButton";
+import Typography from "@material-ui/core/Typography";
+import Grid from "@material-ui/core/Grid";
+import Paper from "@material-ui/core/Paper";
 
 const styles = theme => ({
   paper: {
@@ -39,14 +39,14 @@ const styles = theme => ({
   }
 })
 
-const timeFormat = 'hh:mm'
+const timeFormat = 'HH:mm'
 
 const RunningActivityItem = (props) => {
   const { classes, id, name, start: startUtc, loading } = props
 
-  const localStart = DateTime.fromISO(startUtc, {zone: 'utc'}).toLocal()
+  const localStart = moment.utc(startUtc).local()
 
-  const duration = DateTime.local().diff(localStart)
+  const durationAsMilliseconds = moment.duration(moment().diff(localStart)).asMilliseconds()
   return (
     <Paper className={classNames({
       [classes.loadingPaper]: loading,
@@ -55,10 +55,10 @@ const RunningActivityItem = (props) => {
       <Grid container spacing={0}>
         <Grid item xs={4}>
           <Typography variant="h3">
-            {duration.toFormat(timeFormat)}
+            {moment.utc(durationAsMilliseconds).format(timeFormat)}
           </Typography>
           <Typography variant="caption">
-            since {localStart.toFormat(timeFormat)}
+            since {localStart.format(timeFormat)}
           </Typography>
         </Grid>
         <Grid item xs={7}>
