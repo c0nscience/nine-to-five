@@ -36,7 +36,7 @@ class StatisticsService(private val activityService: ActivityService,
             .with(weekFields.weekOfYear(), weekOfYear.toLong())
             .with(weekFields.dayOfWeek(), 1)
         }
-        .map { (week, activities) -> week to activities.map { it.duration() }.reduce { acc, duration -> acc.plus(duration) } }
+        .map { (week, activities) -> week to activities.map { it.duration() }.reduce(Duration::plus) }
         .map { (week, totalWorkTime) ->
           val workingHoursPerWeek = workTimeConfiguration.workingHoursPerWeek.let { Duration.of(it, ChronoUnit.HOURS) }
           val overtime = totalWorkTime.minus(workingHoursPerWeek)
