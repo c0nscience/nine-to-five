@@ -5,6 +5,8 @@ spring:
 
   jackson:
     default-property-inclusion: non_null
+#    serialization:
+#      WRITE_DURATIONS_AS_TIMESTAMPS: false
 
 auth0:
   issuer: https://ninetofive.eu.auth0.com/

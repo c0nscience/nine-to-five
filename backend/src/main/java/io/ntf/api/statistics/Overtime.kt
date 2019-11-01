@@ -6,4 +6,4 @@ import java.time.LocalDate
 data class Overtime(val week: LocalDate,
                     val totalWorkTime: Duration,
                     val overtime: Duration,
-                    val totalOvertime: Duration? = Duration.ZERO)
+                    val totalOvertime: Duration = Duration.ZERO)
