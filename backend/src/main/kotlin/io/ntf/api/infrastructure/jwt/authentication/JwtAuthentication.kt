@@ -1,14 +1,15 @@
-package io.ntf.api.infrastructure.jwt.authentication;
+package io.ntf.api.infrastructure.jwt.authentication
 
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import org.springframework.security.core.Authentication;
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.exceptions.JWTVerificationException
+import org.springframework.security.core.Authentication
 
-public interface JwtAuthentication {
+interface JwtAuthentication {
 
-    String getToken();
+    val token: String
 
-    String getKeyId();
+    val keyId: String
 
-    Authentication verify(JWTVerifier verifier) throws JWTVerificationException;
+    @Throws(JWTVerificationException::class)
+    fun verify(verifier: JWTVerifier): Authentication
 }

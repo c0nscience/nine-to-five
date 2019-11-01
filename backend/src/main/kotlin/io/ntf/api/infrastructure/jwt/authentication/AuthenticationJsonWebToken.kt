@@ -1,86 +1,66 @@
-package io.ntf.api.infrastructure.jwt.authentication;
+package io.ntf.api.infrastructure.jwt.authentication
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.interfaces.DecodedJWT
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+class AuthenticationJsonWebToken internal constructor(token: String, verifier: JWTVerifier?) : Authentication, JwtAuthentication {
+  private val decoded: DecodedJWT = if (verifier == null) JWT.decode(token) else verifier.verify(token)
 
-public class AuthenticationJsonWebToken implements Authentication, JwtAuthentication {
+  private var authenticated: Boolean = false
+  override val token: String = decoded.token
+  override val keyId: String = decoded.keyId
 
-    private final DecodedJWT decoded;
-    private boolean authenticated;
+  init {
+    this.authenticated = verifier != null
+  }
 
-    AuthenticationJsonWebToken(String token, JWTVerifier verifier) throws JWTVerificationException {
-        this.decoded = verifier == null ? JWT.decode(token) : verifier.verify(token);
-        this.authenticated = verifier != null;
+  @Throws(JWTVerificationException::class)
+  override fun verify(verifier: JWTVerifier): Authentication {
+    return AuthenticationJsonWebToken(token, verifier)
+  }
+
+  override fun getAuthorities(): Collection<GrantedAuthority> {
+    val scope = decoded.getClaim("scope").asString()
+    if (scope == null || scope.trim { it <= ' ' }.isEmpty()) {
+      return ArrayList()
     }
-
-    @Override
-    public String getToken() {
-        return decoded.getToken();
+    val scopes = scope.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    val authorities = ArrayList<SimpleGrantedAuthority>(scopes.size)
+    for (value in scopes) {
+      authorities.add(SimpleGrantedAuthority(value))
     }
+    return authorities
+  }
 
-    @Override
-    public String getKeyId() {
-        return decoded.getKeyId();
-    }
+  override fun getCredentials(): Any {
+    return decoded.token
+  }
 
-    @Override
-    public Authentication verify(JWTVerifier verifier) throws JWTVerificationException {
-        return new AuthenticationJsonWebToken(getToken(), verifier);
-    }
+  override fun getDetails(): Any {
+    return decoded
+  }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        String scope = decoded.getClaim("scope").asString();
-        if (scope == null || scope.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-        final String[] scopes = scope.split(" ");
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>(scopes.length);
-        for (String value : scopes) {
-            authorities.add(new SimpleGrantedAuthority(value));
-        }
-        return authorities;
-    }
+  override fun getPrincipal(): Any {
+    return decoded.subject
+  }
 
-    @Override
-    public Object getCredentials() {
-        return decoded.getToken();
-    }
+  override fun isAuthenticated(): Boolean {
+    return authenticated
+  }
 
-    @Override
-    public Object getDetails() {
-        return decoded;
-    }
+  @Throws(IllegalArgumentException::class)
+  override fun setAuthenticated(isAuthenticated: Boolean) {
+    require(!isAuthenticated) { "Must create a new instance to specify that the authentication is valid" }
+    this.authenticated = false
+  }
 
-    @Override
-    public Object getPrincipal() {
-        return decoded.getSubject();
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return authenticated;
-    }
-
-    @Override
-    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-        if (isAuthenticated) {
-            throw new IllegalArgumentException("Must create a new instance to specify that the authentication is valid");
-        }
-        this.authenticated = false;
-    }
-
-    @Override
-    public String getName() {
-        return decoded.getSubject();
-    }
+  override fun getName(): String {
+    return decoded.subject
+  }
 }

@@ -1,37 +1,36 @@
-package io.ntf.api.infrastructure.jwt;
+package io.ntf.api.infrastructure.jwt
 
-import io.ntf.api.infrastructure.jwt.authentication.PreAuthenticatedAuthenticationJsonWebToken;
-import org.slf4j.Logger;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import io.ntf.api.infrastructure.jwt.authentication.PreAuthenticatedAuthenticationJsonWebToken
+import org.slf4j.Logger
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 
 /**
  * @author Sebastien Astie
  */
-public class TokenUtils {
-  public static String tokenFromHeader(final String authorizationHeader) {
-    if (authorizationHeader == null || !authorizationHeader.toLowerCase().startsWith("bearer")) {
-      return null;
+object TokenUtils {
+    fun tokenFromHeader(authorizationHeader: String?): String? {
+        if (authorizationHeader == null || !authorizationHeader.toLowerCase().startsWith("bearer")) {
+            return null
+        }
+
+        val parts = authorizationHeader.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+        return if (parts.size < 2) {
+            null
+        } else parts[1].trim { it <= ' ' }
+
     }
 
-    String[] parts = authorizationHeader.split(" ");
 
-    if (parts.length < 2) {
-      return null;
+    fun createSecurityContext(token: String?, logger: Logger): SecurityContext {
+        val context = SecurityContextHolder.createEmptyContext()
+        val authentication = PreAuthenticatedAuthenticationJsonWebToken.usingToken(token)
+        if (authentication != null) {
+            context.authentication = authentication
+            logger.debug("Found bearer token in request. Saving it in SecurityContext")
+        }
+        return context
     }
-
-    return parts[1].trim();
-  }
-
-
-  public static SecurityContext createSecurityContext(String token, Logger logger){
-    SecurityContext context = SecurityContextHolder.createEmptyContext();
-    Authentication authentication = PreAuthenticatedAuthenticationJsonWebToken.usingToken(token);
-    if (authentication != null) {
-      context.setAuthentication(authentication);
-      logger.debug("Found bearer token in request. Saving it in SecurityContext");
-    }
-    return context;
-  }
 }

@@ -1,98 +1,99 @@
-package io.ntf.api.infrastructure.jwt;
+package io.ntf.api.infrastructure.jwt
 
-import com.auth0.jwk.*;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import io.ntf.api.infrastructure.jwt.authentication.JwtAuthentication;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import com.auth0.jwk.*
+import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.JWTVerificationException
+import io.ntf.api.infrastructure.jwt.authentication.JwtAuthentication
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.AuthenticationServiceException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
 
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.RSAPublicKey
 
-public class JwtAuthenticationProvider implements AuthenticationProvider {
+class JwtAuthenticationProvider : AuthenticationProvider {
 
-    private static Logger logger = LoggerFactory.getLogger(JwtAuthenticationProvider.class);
+    private val secret: ByteArray?
+    private val issuer: String
+    private val audience: String
+    private val jwkProvider: JwkProvider?
 
-    private final byte[] secret;
-    private final String issuer;
-    private final String audience;
-    private final JwkProvider jwkProvider;
-
-    public JwtAuthenticationProvider(byte[] secret, String issuer, String audience) {
-        this.secret = secret;
-        this.issuer = issuer;
-        this.audience = audience;
-        this.jwkProvider = null;
+    constructor(secret: ByteArray, issuer: String, audience: String) {
+        this.secret = secret
+        this.issuer = issuer
+        this.audience = audience
+        this.jwkProvider = null
     }
 
-    public JwtAuthenticationProvider(JwkProvider jwkProvider, String issuer, String audience) {
-        this.jwkProvider = jwkProvider;
-        this.secret = null;
-        this.issuer = issuer;
-        this.audience = audience;
+    constructor(jwkProvider: JwkProvider, issuer: String, audience: String) {
+        this.jwkProvider = jwkProvider
+        this.secret = null
+        this.issuer = issuer
+        this.audience = audience
     }
 
-    @Override
-    public boolean supports(Class<?> authentication) {
-        return JwtAuthentication.class.isAssignableFrom(authentication);
+    override fun supports(authentication: Class<*>): Boolean {
+        return JwtAuthentication::class.java.isAssignableFrom(authentication)
     }
 
-    @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        if (!supports(authentication.getClass())) {
-            return null;
+    @Throws(AuthenticationException::class)
+    override fun authenticate(authentication: Authentication): Authentication? {
+        if (!supports(authentication.javaClass)) {
+            return null
         }
 
-        JwtAuthentication jwt = (JwtAuthentication) authentication;
+        val jwt = authentication as JwtAuthentication
         try {
-            final Authentication jwtAuth = jwt.verify(jwtVerifier(jwt));
-            return jwtAuth;
-        } catch (JWTVerificationException e) {
-            throw new BadCredentialsException("Not a valid token", e);
+            return jwt.verify(jwtVerifier(jwt))
+        } catch (e: JWTVerificationException) {
+            throw BadCredentialsException("Not a valid token", e)
         }
+
     }
 
-    private JWTVerifier jwtVerifier(JwtAuthentication authentication) throws AuthenticationException {
+    @Throws(AuthenticationException::class)
+    private fun jwtVerifier(authentication: JwtAuthentication): JWTVerifier {
         if (secret != null) {
-            return providerForHS256(secret, issuer, audience);
+            return providerForHS256(secret, issuer, audience)
         }
-        final String kid = authentication.getKeyId();
-        if (kid == null) {
-            throw new BadCredentialsException("No kid found in jwt");
-        }
+        val kid = authentication.keyId ?: throw BadCredentialsException("No kid found in jwt")
         if (jwkProvider == null) {
-            throw new AuthenticationServiceException("Missing jwk provider");
+            throw AuthenticationServiceException("Missing jwk provider")
         }
         try {
-            final Jwk jwk = jwkProvider.get(kid);
-            return providerForRS256((RSAPublicKey) jwk.getPublicKey(), issuer, audience);
-        } catch (SigningKeyNotFoundException e) {
-            throw new AuthenticationServiceException("Could not retrieve jwks from issuer", e);
-        } catch (InvalidPublicKeyException e) {
-            throw new AuthenticationServiceException("Could not retrieve public key from issuer", e);
-        } catch (JwkException e) {
-            throw new AuthenticationServiceException("Cannot authenticate with jwt", e);
+            val jwk = jwkProvider.get(kid)
+            return providerForRS256(jwk.publicKey as RSAPublicKey, issuer, audience)
+        } catch (e: SigningKeyNotFoundException) {
+            throw AuthenticationServiceException("Could not retrieve jwks from issuer", e)
+        } catch (e: InvalidPublicKeyException) {
+            throw AuthenticationServiceException("Could not retrieve public key from issuer", e)
+        } catch (e: JwkException) {
+            throw AuthenticationServiceException("Cannot authenticate with jwt", e)
         }
+
     }
 
-    private static JWTVerifier providerForRS256(RSAPublicKey key, String issuer, String audience) {
-        return JWT.require(Algorithm.RSA256(key))
-                .withIssuer(issuer)
-                .withAudience(audience)
-                .build();
-    }
+    companion object {
 
-    private static JWTVerifier providerForHS256(byte[] secret, String issuer, String audience) {
-        return JWT.require(Algorithm.HMAC256(secret))
-                .withIssuer(issuer)
-                .withAudience(audience)
-                .build();
+        private val logger = LoggerFactory.getLogger(JwtAuthenticationProvider::class.java)
+
+        private fun providerForRS256(key: RSAPublicKey, issuer: String, audience: String): JWTVerifier {
+            return JWT.require(Algorithm.RSA256(key))
+                    .withIssuer(issuer)
+                    .withAudience(audience)
+                    .build()
+        }
+
+        private fun providerForHS256(secret: ByteArray, issuer: String, audience: String): JWTVerifier {
+            return JWT.require(Algorithm.HMAC256(secret))
+                    .withIssuer(issuer)
+                    .withAudience(audience)
+                    .build()
+        }
     }
 }

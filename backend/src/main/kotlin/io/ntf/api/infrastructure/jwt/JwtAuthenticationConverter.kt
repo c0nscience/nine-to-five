@@ -1,19 +1,18 @@
-package io.ntf.api.infrastructure.jwt;
+package io.ntf.api.infrastructure.jwt
 
-import io.ntf.api.infrastructure.jwt.authentication.PreAuthenticatedAuthenticationJsonWebToken;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
+import io.ntf.api.infrastructure.jwt.authentication.PreAuthenticatedAuthenticationJsonWebToken
+import org.springframework.http.HttpHeaders
+import org.springframework.security.core.Authentication
+import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
+import org.springframework.web.server.ServerWebExchange
+import reactor.core.publisher.Mono
 
-import java.util.function.Function;
+class JwtAuthenticationConverter : ServerAuthenticationConverter {
 
-public class JwtAuthenticationConverter implements Function<ServerWebExchange, Mono<Authentication>> {
-  @Override
-  public Mono<Authentication> apply(ServerWebExchange serverWebExchange) {
-    String token = TokenUtils.tokenFromHeader(serverWebExchange.getRequest()
-      .getHeaders()
-      .getFirst(HttpHeaders.AUTHORIZATION));
-    return Mono.justOrEmpty(PreAuthenticatedAuthenticationJsonWebToken.usingToken(token));
-  }
+    override fun convert(exchange: ServerWebExchange): Mono<Authentication> {
+        val token = TokenUtils.tokenFromHeader(exchange.request
+                .headers
+                .getFirst(HttpHeaders.AUTHORIZATION))
+        return Mono.justOrEmpty(PreAuthenticatedAuthenticationJsonWebToken.usingToken(token))
+    }
 }
