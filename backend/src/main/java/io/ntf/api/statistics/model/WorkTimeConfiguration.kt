@@ -1,17 +1,6 @@
-package io.ntf.api.statistics.model;
+package io.ntf.api.statistics.model
 
-import lombok.*;
-import lombok.experimental.Wither;
+import java.time.LocalDate
 
-import java.time.LocalDate;
-
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@Wither
-public class WorkTimeConfiguration {
-  private LocalDate beginOfOvertimeCalculation;
-  private Long workingHoursPerWeek;
-}
+data class WorkTimeConfiguration(val beginOfOvertimeCalculation: LocalDate,
+                                 val workingHoursPerWeek: Long)

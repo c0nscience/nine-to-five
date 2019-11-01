@@ -8,7 +8,12 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 @Document(collection = "activities")
-data class Activity(@Id val id: String? = null, val userId: String, val logId: String? = null, val name: String, val start: LocalDateTime, val end: LocalDateTime? = null) {
+data class Activity(@Id val id: String? = null,
+                    val userId: String,
+                    val logId: String? = null,
+                    val name: String,
+                    val start: LocalDateTime,
+                    val end: LocalDateTime? = null) {
 
     fun duration(): Duration {
         return Duration.between(this.start, Option.of<LocalDateTime>(this.end).getOrElse(LocalDateTime.now()))

@@ -3,15 +3,13 @@ package io.ntf.api.activity;
 import io.ntf.api.activity.model.Activity;
 import io.ntf.api.activity.model.ActivityRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
@@ -22,7 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 
-@RunWith(SpringRunner.class)
 @DataMongoTest
 @Import(ActivityService.class)
 @Slf4j
@@ -37,7 +34,7 @@ public class ActivityServiceTest {
   @Autowired
   private ActivityRepository activityRepository;
 
-  @Before
+  @BeforeAll
   public void setUp() {
     activityRepository.deleteAll().block();
     activityRepository.save(new Activity(null, USER_ID, null, "activity 1", NOW, null)).block();

@@ -1,20 +1,9 @@
-package io.ntf.api.statistics;
+package io.ntf.api.statistics
 
-import lombok.*;
-import lombok.experimental.Wither;
+import java.time.Duration
+import java.time.LocalDate
 
-import java.time.Duration;
-import java.time.LocalDate;
-
-@Builder
-@Wither
-@AllArgsConstructor
-@Getter
-@EqualsAndHashCode
-@ToString
-class Overtime {
-  private LocalDate week;
-  private Duration totalWorkTime;
-  private Duration overtime;
-  private Duration totalOvertime = Duration.ZERO;
-}
+data class Overtime(val week: LocalDate,
+                    val totalWorkTime: Duration,
+                    val overtime: Duration,
+                    val totalOvertime: Duration? = Duration.ZERO)
