@@ -82,40 +82,22 @@ export default (state = initialState, action) => {
   const activitiesByWeekReducer = reduceActivitiesByWeek(state)
 
   switch (action.type) {
-    case LOAD_ACTIVITIES:
-      return {
-        ...state,
-        loading: true
-      }
     case ACTIVITIES_LOADED:
       return {
         ...state,
         activitiesByWeek: action.payload,
-        loading: false
-      }
-    case START_ACTIVITY:
-      return {
-        ...state,
-        loading: true
       }
     case ACTIVITY_STARTED:
       return {
         ...state,
-        loading: false,
         running: action.payload,
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
           (dayActivities, activity) => ([activity, ...dayActivities]))
       }
-    case STOP_ACTIVITY:
-      return {
-        ...state,
-        loading: true
-      }
     case ACTIVITY_STOPPED: {
       return {
         ...state,
-        loading: false,
         running: undefined,
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
@@ -139,30 +121,18 @@ export default (state = initialState, action) => {
         selectedActivity: undefined,
         openEditDialog: false
       }
-    case SAVE_ACTIVITY:
-      return {
-        ...state,
-        loading: true
-      }
     case ACTIVITY_SAVED:
       return {
         ...state,
-        loading: false,
         running: action.payload.end === undefined ? action.payload : state.running,
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
           (dayActivities, activity) => ([activity, ...dayActivities])
         )
       }
-    case DELETE_ACTIVITY:
-      return {
-        ...state,
-        loading: true
-      }
     case ACTIVITY_DELETED:
       return {
         ...state,
-        loading: false,
         running: state.running && state.running.id === action.payload.id ? undefined : state.running,
         activitiesByWeek: activitiesByWeekReducer(
           action.payload,
@@ -175,21 +145,10 @@ export default (state = initialState, action) => {
           }
         )
       }
-    case LOAD_OVERTIME:
-      return {
-        ...state,
-        loading: true
-      }
     case OVERTIME_LOADED:
       return {
         ...state,
-        loading: false,
         overtimes: action.payload
-      }
-    case LOAD_RUNNING_ACTIVITY:
-      return {
-        ...state,
-        loading: true
       }
     case RUNNING_ACTIVITY_LOADED:
       return {
