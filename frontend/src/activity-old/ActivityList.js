@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import ActivityItem from './ActivityItem'
 import moment from 'moment'
-import { loadActivities, loadOvertime, loadRunningActivity } from '../actions'
+import {loadActivities, loadOvertime, loadRunningActivity, startUpdating} from '../actions'
 import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import Card from "@material-ui/core/Card";
@@ -11,15 +11,15 @@ import Typography from "@material-ui/core/Typography";
 
 const styles = theme => ({
   weekSummaryCard: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.unit * 2,
+    marginTop: theme.spacing(),
+    marginBottom: theme.spacing(2),
   },
   card: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.unit,
+    marginTop: theme.spacing(),
+    marginBottom: theme.spacing(),
   },
   dayHeadline: {
-    paddingLeft: theme.spacing.unit * 2
+    paddingLeft: theme.spacing(2)
   },
   cardContent: {
     padding: 0
@@ -87,6 +87,7 @@ class ActivityList extends Component {
     this.props.loadActivities()
     this.props.loadOvertime()
     this.props.loadRunningActivity()
+    this.props.startUpdating()
   }
 
   render() {
@@ -128,6 +129,7 @@ export default connect(
   {
     loadActivities,
     loadOvertime,
-    loadRunningActivity
+    loadRunningActivity,
+    startUpdating
   }
 )(ActivityList)

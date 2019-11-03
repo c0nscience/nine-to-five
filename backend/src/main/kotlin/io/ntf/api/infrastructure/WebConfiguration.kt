@@ -16,8 +16,8 @@ class WebConfiguration : WebFluxConfigurer {
 
   override fun addCorsMappings(registry: CorsRegistry) {
     registry.addMapping("/**")
-      .allowedOrigins("http://localhost:3000", "https://ntf-webapp.herokuapp.com", "https://nine-to-five-git-master.conscience.now.sh")
-      .allowedMethods("GET", "POST", "PUT", "DELETE")
+      .allowedOrigins("http://localhost:3000", "http://192.168.178.45:3000", "https://ntf-webapp.herokuapp.com", "https://nine-to-five-git-master.conscience.now.sh")
+      .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD")
   }
 
   @Bean

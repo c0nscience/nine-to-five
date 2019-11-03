@@ -69,7 +69,7 @@ const ActivityItem = (props) => {
           <ListItemIcon>
             <Replay/>
           </ListItemIcon>
-          <ListItemText inset primary='Replay'/>
+          <ListItemText primary='Replay'/>
         </MenuItem>}
         {isRunningActivity && <MenuItem onClick={() => {
           setAnchorEl(undefined)
@@ -79,7 +79,7 @@ const ActivityItem = (props) => {
           <ListItemIcon>
             <Shuffle/>
           </ListItemIcon>
-          <ListItemText inset primary='Switch'/>
+          <ListItemText primary='Switch'/>
         </MenuItem>}
         <MenuItem onClick={() => {
           setAnchorEl(undefined)
@@ -94,7 +94,7 @@ const ActivityItem = (props) => {
           <ListItemIcon>
             <Edit/>
           </ListItemIcon>
-          <ListItemText inset primary='Edit'/>
+          <ListItemText primary='Edit'/>
         </MenuItem>
       </Menu>
     </ListItemSecondaryAction>

@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
@@ -32,9 +35,16 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
     return transformTo(activityRepository.findByUserIdAndLogIdIsNullAndStartIsAfterOrderByStartDesc(userId, now().minusMonths(1)))
   }
 
+  fun getLastModifiedDate(name: String): Mono<LocalDateTime> {
+    return activityRepository.findByUserIdOrderByLastModifiedDateDesc(name)
+      .take(1)
+      .toMono()
+      .map { it.lastModifiedDate }
+  }
+
   fun start(userId: String, name: String): Mono<Activity> {
     return running(userId)
-      .flatMap { _ -> Mono.error<Activity>(ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not start new activity while another is running.")) }
+      .flatMap { Mono.error<Activity>(ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not start new activity while another is running.")) }
       .switchIfEmpty(startAndSaveActivityWith(userId, name))
   }
 

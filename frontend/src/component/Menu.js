@@ -1,6 +1,6 @@
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
-import {closeMenuDrawer, loadLogs, loadActivitiesOfRange} from '../actions'
+import {closeMenuDrawer, loadActivitiesOfRange, loadLogs} from '../actions'
 import {connect} from 'react-redux'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import {push, replace} from 'connected-react-router'
@@ -14,6 +14,7 @@ import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import IconButton from "@material-ui/core/IconButton";
 import {DateTime} from "luxon"
+import Divider from "@material-ui/core/Divider";
 
 const styles = {
   list: {
@@ -60,17 +61,20 @@ class Menu extends React.Component {
             <ListItemText primary="Today"/>
           </ListItem>
 
-          <ListItem button onClick={() => loadActivitiesOfRange(now.minus({ days: 1 }).startOf('day'), now.minus({ days: 1 }).endOf('day'))}>
+          <ListItem button
+                    onClick={() => loadActivitiesOfRange(now.minus({days: 1}).startOf('day'), now.minus({days: 1}).endOf('day'))}>
             <ListItemText primary="Yesterday"/>
           </ListItem>
-          <ListItem button onClick={() => loadActivitiesOfRange(now.set({ weekday: 1 }), now.set({ weekday: 7 }))}>
+          <ListItem button onClick={() => loadActivitiesOfRange(now.set({weekday: 1}), now.set({weekday: 7}))}>
             <ListItemText primary="This Week"/>
           </ListItem>
-          <ListItem button> {/* Open easy dialog to choose from and to date. Start pre-filled to beginning of month and end pre-filled to today*/}
+          <ListItem
+            button> {/* Open easy dialog to choose from and to date. Start pre-filled to beginning of month and end pre-filled to today*/}
             <ListItemText primary="Custom"/>
           </ListItem>
 
           {/*Only show while logged in*/}
+          <Divider/>
           <ListSubheader>Lists</ListSubheader>
           {logs.map(log =>
             <ListItem button key={log.id} onClick={() => {
@@ -92,7 +96,7 @@ class Menu extends React.Component {
           <ListItem button onClick={() => {
             push('/log/new')
           }}>
-            <ListItemText primary="Add"/>
+            <ListItemText primary="New List"/>
           </ListItem>
         </List>
       </div>

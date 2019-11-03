@@ -30,6 +30,7 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
       .pathMatchers(DELETE, "/activity/{id}").hasAuthority("delete:activity")
       .pathMatchers(DELETE, "/activity/{id}").hasAuthority("delete:activity")
       .pathMatchers(GET, "/activities").hasAuthority("read:activities")
+      .pathMatchers(HEAD, "/activities").hasAuthority("read:activities")
       .pathMatchers(GET, "/logs").hasAuthority("read:logs")
       .pathMatchers(POST, "/log").hasAuthority("create:log")
       .pathMatchers(PUT, "/log/{id}").hasAuthority("update:log")

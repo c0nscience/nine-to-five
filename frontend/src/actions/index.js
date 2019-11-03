@@ -143,3 +143,13 @@ export const SWITCH_ACTIVITY = 'SWITCH_ACTIVITY'
 
 export const switchActivity = activityName =>
   ({ type:SWITCH_ACTIVITY, payload: activityName })
+
+export const LAST_UPDATED = 'LAST_UPDATED'
+
+export const lastUpdated = lastUpdated =>
+  ({ type: LAST_UPDATED, payload: lastUpdated })
+
+export const START_UPDATING = 'START_UPDATING'
+
+export const startUpdating = () =>
+  ({ type: START_UPDATING })

@@ -10,8 +10,8 @@ const styles = theme => ({
     margin: 0,
     top: 'auto',
     right: 'auto',
-    left: theme.spacing.unit * 3,
-    bottom: -theme.spacing.unit * 3,
+    left: theme.spacing(3),
+    bottom: -theme.spacing(3),
     position: 'absolute'
   },
   fabProgress: {

@@ -10,19 +10,19 @@ import Paper from "@material-ui/core/Paper"
 
 const styles = theme => ({
   paper: {
-    paddingTop: theme.spacing.unit * 3,
-    paddingLeft: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 6,
-    marginBottom: theme.spacing.unit * 4,
+    paddingTop: theme.spacing(3),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(6),
+    marginBottom: theme.spacing(4),
     position: 'relative'
   },
   loadingPaper: {
-    paddingTop: theme.spacing.unit * 3 - 5,
-    paddingLeft: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 6,
-    marginBottom: theme.spacing.unit * 4,
+    paddingTop: theme.spacing(3) - 5,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(6),
+    marginBottom: theme.spacing(4),
     position: 'relative'
   }
 })

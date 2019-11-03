@@ -13,29 +13,29 @@ import Paper from "@material-ui/core/Paper";
 
 const styles = theme => ({
   paper: {
-    paddingTop: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 5,
-    marginBottom: theme.spacing.unit * 4,
+    paddingTop: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(5),
+    marginBottom: theme.spacing(4),
     position: 'relative'
   },
   loadingPaper: {
-    paddingTop: theme.spacing.unit * 2 - 5,
-    paddingLeft: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 6,
-    marginBottom: theme.spacing.unit * 4,
+    paddingTop: theme.spacing(2) - 5,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(6),
+    marginBottom: theme.spacing(4),
     position: 'relative'
   },
   name: {
-    paddingLeft: theme.spacing.unit,
+    paddingLeft: theme.spacing(),
   },
   editButton: {
     right: '4px',
     position: 'absolute',
     top: '50%',
-    marginTop: -theme.spacing.unit * 4
+    marginTop: -theme.spacing(4)
   }
 })
 

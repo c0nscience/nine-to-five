@@ -1,6 +1,16 @@
-import {concat, of as of$} from 'rxjs'
+import {concat, of as of$, timer} from 'rxjs'
 import {ajax} from 'rxjs/ajax'
-import {catchError as catchError$, flatMap as flatMap$, map as map$, switchMap as switchMap$} from 'rxjs/operators'
+import {
+  catchError as catchError$,
+  delay as delay$,
+  filter as filter$,
+  flatMap as flatMap$,
+  map as map$,
+  repeat as repeat$,
+  switchMap as switchMap$,
+  tap as tap$,
+  withLatestFrom as withLatestFrom$
+} from 'rxjs/operators'
 import {combineEpics, ofType as ofType$} from 'redux-observable'
 import {
   activitiesLoaded,
@@ -14,11 +24,13 @@ import {
   CREATE_LOG,
   DELETE_ACTIVITY,
   deselectActivity,
+  lastUpdated,
   LOAD_ACTIVITIES,
   LOAD_ACTIVITIES_OF_RANGE,
   LOAD_LOGS,
   LOAD_OVERTIME,
   LOAD_RUNNING_ACTIVITY,
+  loadActivities, loadOvertime, loadRunningActivity,
   logCreated,
   logsLoaded,
   logUpdated,
@@ -28,6 +40,7 @@ import {
   SAVE_ACTIVITY,
   showErrorMessage,
   START_ACTIVITY,
+  START_UPDATING,
   startActivity,
   STOP_ACTIVITY,
   SWITCH_ACTIVITY,
@@ -52,6 +65,14 @@ const authorizationHeader = () => {
 
 const get = (endpoint) => {
   return ajax.getJSON(url(endpoint), authorizationHeader())
+}
+
+export const head = (endpoint) => {
+  return ajax({
+    method: 'HEAD',
+    url: url(endpoint),
+    headers: {...authorizationHeader()}
+  })
 }
 
 const post = (endpoint, body) => {
@@ -85,7 +106,10 @@ const del = (endpoint) => {
 
 const errors = (requestName, actionFailed) => error => {
   console.error(error)
-  return of$(showErrorMessage(`${requestName} failed with status: ${error.status}`), actionFailed())
+  return concat(
+    of$(showErrorMessage(`${requestName} failed with status: ${error.status}`)),
+    of$(actionFailed())
+  )
 }
 
 export const toActivityWithMoment = activity => ({
@@ -102,6 +126,7 @@ const loadActivitiesEpic = action$ => (
       get('activities').pipe(
         flatMap$(activitiesByWeek => concat(
           of$(activitiesLoaded(activitiesByWeek)),
+          of$(lastUpdated(moment())),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
         ))
       ),
@@ -207,7 +232,10 @@ const loadRunningActivityEpic = action$ => (
     )),
     catchError$(e => {
       if (e.status === 404) {
-        return of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+        return concat(
+          of$(runningActivityLoaded(null)),
+          of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+        )
       }
 
       return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
@@ -311,6 +339,36 @@ const switchActivity = action$ => (
   )
 )
 
+const startUpdatingEpic = (action$, state$) => (
+  action$.pipe(
+    ofType$(START_UPDATING),
+    switchMap$(() => timer(0, 5000).pipe(
+      flatMap$(_ => head('activities')),
+      withLatestFrom$(state$),
+      flatMap$(([response, state]) => {
+        const lastModifiedDate = moment(response.xhr.getResponseHeader('last-modified'));
+        let lastUpdated = state.activity.lastUpdated;
+        console.log('response.xhr.getResponseHeader(\'last-modified\')', response.xhr.getResponseHeader('last-modified'))
+        console.log('lastModifiedDate', lastModifiedDate.format())
+        console.log('lastUpdated', lastUpdated.format())
+        console.log('lastModifiedDate.isSameOrAfter(lastUpdated)', lastModifiedDate.isSameOrAfter(lastUpdated))
+        return of$({})
+          .pipe(
+            filter$(() => lastModifiedDate.isSameOrAfter(lastUpdated)),
+            tap$(_ => console.log('we need to update')),
+            flatMap$(() => concat(
+              of$(loadActivities()),
+              of$(loadRunningActivity()),
+              of$(loadOvertime())
+            ))
+          )
+      })
+    )),
+    delay$(5000),
+    repeat$()
+  )
+)
+
 export const rootEpic = combineEpics(
   loadActivitiesEpic,
   startActivityEpic,
@@ -324,5 +382,6 @@ export const rootEpic = combineEpics(
   updateLog,
   loadActivitiesOfRange,
   continueActivity,
-  switchActivity
+  switchActivity,
+  startUpdatingEpic
 )

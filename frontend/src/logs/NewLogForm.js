@@ -15,7 +15,7 @@ const styles = theme => ({
     flexGrow: 1
   },
   card: {
-    marginBottom: theme.spacing.unit * 3,
+    marginBottom: theme.spacing(3),
   },
 })
 

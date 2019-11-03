@@ -5,20 +5,15 @@ import {
   ACTIVITY_STARTED,
   ACTIVITY_STOPPED,
   CLOSE_MENU_DRAWER,
-  DELETE_ACTIVITY,
   DESELECT_ACTIVITY,
-  LOAD_ACTIVITIES,
-  LOAD_OVERTIME,
-  LOAD_RUNNING_ACTIVITY,
-  LOG_CREATED, LOG_UPDATED,
+  LAST_UPDATED,
+  LOG_CREATED,
+  LOG_UPDATED,
   LOGS_LOADED,
   OPEN_MENU_DRAWER,
   OVERTIME_LOADED,
   RUNNING_ACTIVITY_LOADED,
-  SAVE_ACTIVITY,
   SELECT_ACTIVITY,
-  START_ACTIVITY,
-  STOP_ACTIVITY
 } from '../actions'
 import moment from 'moment/moment'
 
@@ -32,7 +27,8 @@ const initialState = {
   selectedLog: undefined,
   running: undefined,
   overtimes: [],
-  logs: []
+  logs: [],
+  lastUpdated: moment()
 }
 
 const reduceActivitiesByWeek = state => (activity, reducer) => {
@@ -182,6 +178,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         logs: state.logs.map(l => l.id === action.payload.id ? action.payload : l)
+      }
+    case LAST_UPDATED:
+      return {
+        ...state,
+        lastUpdated: action.payload,
       }
     default:
       return state
