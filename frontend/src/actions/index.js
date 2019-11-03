@@ -103,10 +103,8 @@ export const LOGS_LOADED = 'LOGS_LOADED'
 export const loadLogs = () =>
   ({ type: LOAD_LOGS })
 
-export const logsLoaded = logs => {
-  console.log("logsLoaded")
-  return ({type: LOGS_LOADED, payload: logs});
-}
+export const logsLoaded = logs =>
+  ({type: LOGS_LOADED, payload: logs})
 
 export const CREATE_LOG = 'CREATE_LOG'
 export const LOG_CREATED = 'LOG_CREATED'
