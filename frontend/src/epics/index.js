@@ -1,12 +1,11 @@
-import {concat, merge, of as of$, timer} from 'rxjs'
+import {concat, merge, of as of$, timer, EMPTY} from 'rxjs'
 import {ajax} from 'rxjs/ajax'
 import {
   catchError as catchError$,
-  delay as delay$,
   filter as filter$,
+  skipWhile as skipWhile$,
   flatMap as flatMap$,
   map as map$,
-  repeat as repeat$,
   switchMap as switchMap$,
   tap as tap$,
   withLatestFrom as withLatestFrom$
@@ -241,7 +240,7 @@ const loadRunningActivityEpic = action$ => (
           if (e.status === 404) {
             return concat(
               of$(lastUpdated(moment())),
-              of$(runningActivityLoaded(null)),
+              of$(runningActivityLoaded(undefined)),
               of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
             )
           }
@@ -354,8 +353,11 @@ const switchActivity = action$ => (
 const startUpdatingEpic = (action$, state$) => (
   action$.pipe(
     ofType$(START_UPDATING),
+    withLatestFrom$(state$),
     switchMap$(() => timer(0, 5000).pipe(
-      switchMap$(_ => head('activities')),
+      switchMap$(_ => head('activities').pipe(
+        catchError$(() => EMPTY)
+      )),
       withLatestFrom$(state$),
       switchMap$(([response, state]) => {
         const lastModifiedDate = moment(response.xhr.getResponseHeader('last-modified'));

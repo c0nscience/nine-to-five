@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
@@ -88,25 +87,27 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
 
   private fun transformTo(activities: Flux<Activity>): Mono<ByWeek> {
     val stopwatch = Stopwatch.createStarted()
-    return activities.reduce(emptyMap()) { result: ByWeek, activity: Activity ->
-      val weekDatePattern = DateTimeFormatter.ISO_WEEK_DATE
-      val dayDatePattern = DateTimeFormatter.ISO_LOCAL_DATE
-      val weekDate = activity.start.format(weekDatePattern).dropLast(2)
-      val dayDate = activity.start.format(dayDatePattern)
+    return activities
+      .reduce(emptyMap()) { result: ByWeek, activity: Activity ->
+        val weekDatePattern = DateTimeFormatter.ISO_WEEK_DATE
+        val dayDatePattern = DateTimeFormatter.ISO_LOCAL_DATE
+        val weekDate = activity.start.format(weekDatePattern).dropLast(2)
+        val dayDate = activity.start.format(dayDatePattern)
 
-      val end = activity.end ?: now()
-      val duration = Duration.between(activity.start, end)
+        val end = activity.end ?: now()
+        val duration = Duration.between(activity.start, end)
 
-      val week = result[weekDate] ?: unitWeek()
+        val week = result[weekDate] ?: unitWeek()
 
-      val day = week.days[dayDate] ?: unitDay()
+        val day = week.days[dayDate] ?: unitDay()
 
-      val days = week.days + (dayDate to day.copy(totalDuration = day.totalDuration + duration, activities = day.activities + activity))
+        val days = week.days + (dayDate to day.copy(totalDuration = day.totalDuration + duration, activities = day.activities + activity))
 
-      result + (weekDate to week.copy(totalDuration = week.totalDuration + duration, days = days))
-    }.doOnSuccess {
-      log.info("Transforming took ${stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)}ms")
-    }
+        result + (weekDate to week.copy(totalDuration = week.totalDuration + duration, days = days))
+      }
+      .doOnSuccess {
+        log.info("Transforming took ${stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)}ms")
+      }
   }
 
   private fun unitWeek(): WeekInformation {
