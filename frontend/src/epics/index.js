@@ -1,4 +1,4 @@
-import {concat, of as of$, timer} from 'rxjs'
+import {concat, merge, of as of$, timer} from 'rxjs'
 import {ajax} from 'rxjs/ajax'
 import {
   catchError as catchError$,
@@ -66,7 +66,9 @@ const authorizationHeader = () => {
 }
 
 const get = (endpoint) => {
-  return ajax.getJSON(url(endpoint), authorizationHeader())
+  return ajax.getJSON(url(endpoint), authorizationHeader()).pipe(
+    tap$(() => console.log(`received a result from '${endpoint}'`))
+  )
 }
 
 export const head = (endpoint) => {
@@ -127,13 +129,12 @@ const loadActivitiesEpic = action$ => (
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities').pipe(
         flatMap$(activitiesByWeek => concat(
-          of$(activitiesLoaded(activitiesByWeek)),
           of$(lastUpdated(moment())),
+          of$(activitiesLoaded(activitiesByWeek)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
         ))
       ),
     )),
-    tap$(_ => console.log('got activities')),
     catchError$(errors('Load activities', () => removeNetworkActivity(LOAD_ACTIVITIES)))
   )
 )
@@ -147,8 +148,8 @@ const startActivityEpic = action$ => (
           map$(result => result.response),
           map$(toActivityWithMoment),
           flatMap$(response => concat(
-            of$(activityStarted(response)),
             of$(lastUpdated(moment())),
+            of$(activityStarted(response)),
             of$(removeNetworkActivity(START_ACTIVITY))
           )))
       )),
@@ -165,8 +166,8 @@ const stopActivityEpic = action$ => (
           map$(result => result.response),
           map$(toActivityWithMoment),
           flatMap$(response => concat(
-            of$(activityStopped(response)),
             of$(lastUpdated(moment())),
+            of$(activityStopped(response)),
             of$(removeNetworkActivity(STOP_ACTIVITY))
           )))
       )),
@@ -184,9 +185,9 @@ const saveActivityEpic = action$ => (
         map$(result => result.response),
         map$(toActivityWithMoment),
         flatMap$(response => concat(
+          of$(lastUpdated(moment())),
           of$(activityDeleted(toActivityWithMoment(payload.oldActivity))),
           of$(activitySaved(response)),
-          of$(lastUpdated(moment())),
           of$(removeNetworkActivity(SAVE_ACTIVITY))
         )))
     )),
@@ -203,8 +204,8 @@ const deleteActivityEpic = action$ => (
         del(`activity/${payload}`).pipe(
           map$(result => result.response),
           flatMap$(response => concat(
-            of$(activityDeleted(toActivityWithMoment(response))),
             of$(lastUpdated(moment())),
+            of$(activityDeleted(toActivityWithMoment(response))),
             of$(removeNetworkActivity(DELETE_ACTIVITY))
           )))
       )),
@@ -219,12 +220,11 @@ const loadOvertimeEpic = action$ => (
         of$(addNetworkActivity(LOAD_OVERTIME)),
         get('statistics/overtime').pipe(
           flatMap$(overtime => concat(
-            of$(overtimeLoaded(overtime)),
             of$(lastUpdated(moment())),
+            of$(overtimeLoaded(overtime)),
             of$(removeNetworkActivity(LOAD_OVERTIME))
           )))
       )),
-      tap$(_ => console.log('got overtime')),
       catchError$(errors('Load overtime', () => removeNetworkActivity(LOAD_OVERTIME)))
     )
 )
@@ -232,26 +232,26 @@ const loadOvertimeEpic = action$ => (
 const loadRunningActivityEpic = action$ => (
   action$.pipe(
     ofType$(LOAD_RUNNING_ACTIVITY),
+    tap$((s) => console.log(`before switchmap load running '${s}'`)),
     switchMap$(() => concat(
       of$(addNetworkActivity(LOAD_RUNNING_ACTIVITY)),
       get('activity/running').pipe(
         map$(runningActivity => runningActivityLoaded(runningActivity)),
+        catchError$(e => {
+          if (e.status === 404) {
+            return concat(
+              of$(lastUpdated(moment())),
+              of$(runningActivityLoaded(null)),
+              of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+            )
+          }
+
+          return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
+        })
       ),
       of$(lastUpdated(moment())),
       of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
     )),
-    tap$(_ => console.log('got running activity')),
-    catchError$(e => {
-      if (e.status === 404) {
-        return concat(
-          of$(runningActivityLoaded(null)),
-          of$(lastUpdated(moment())),
-          of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
-        )
-      }
-
-      return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
-    })
   )
 )
 
@@ -360,23 +360,19 @@ const startUpdatingEpic = (action$, state$) => (
       switchMap$(([response, state]) => {
         const lastModifiedDate = moment(response.xhr.getResponseHeader('last-modified'));
         let lastUpdated = state.activity.lastUpdated;
-        console.log('lastModifiedDate', lastModifiedDate.format())
-        console.log('lastUpdated', lastUpdated.format())
         console.log('lastModifiedDate.isSameOrAfter(lastUpdated)', lastModifiedDate.isSameOrAfter(lastUpdated))
         return of$({})
           .pipe(
             filter$(() => lastModifiedDate.isSameOrAfter(lastUpdated)),
-            tap$(_ => console.log('we need to update')),
-            switchMap$(() => concat(
+            switchMap$(() => merge(
               of$(loadActivities()),
               of$(loadRunningActivity()),
               of$(loadOvertime())
-            ))
+            )),
+            catchError$(() => of$({}))
           )
       })
     )),
-    delay$(5000),
-    repeat$()
   )
 )
 
