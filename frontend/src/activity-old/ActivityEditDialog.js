@@ -1,6 +1,6 @@
-import React, {Component} from 'react'
-import {connect} from 'react-redux'
-import {deleteActivity, deselectActivity, saveActivity} from '../actions'
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { deleteActivity, deselectActivity, saveActivity } from '../actions'
 import moment from 'moment'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Button from '@material-ui/core/Button/Button'
@@ -110,9 +110,6 @@ class ActivityEditDialog extends Component {
   render() {
 
     const { fullScreen } = this.props
-
-    console.log(`render called: ${this.state.name}`)
-
     const ConfirmDialog = () => (
       <Dialog open={this.state.confirmDialogOpen}
               onClose={this.handleCloseConfirmDialog}>

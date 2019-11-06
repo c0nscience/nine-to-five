@@ -1,16 +1,15 @@
-import {concat, merge, of as of$, timer, EMPTY} from 'rxjs'
-import {ajax} from 'rxjs/ajax'
+import { concat, EMPTY, merge, of as of$, timer } from 'rxjs'
+import { ajax } from 'rxjs/ajax'
 import {
   catchError as catchError$,
   filter as filter$,
-  skipWhile as skipWhile$,
   flatMap as flatMap$,
   map as map$,
   switchMap as switchMap$,
   tap as tap$,
   withLatestFrom as withLatestFrom$
 } from 'rxjs/operators'
-import {combineEpics, ofType as ofType$} from 'redux-observable'
+import { combineEpics, ofType as ofType$ } from 'redux-observable'
 import {
   activitiesLoaded,
   activitiesOfRangeLoaded,
@@ -48,7 +47,7 @@ import {
   UPDATE_LOG,
 } from '../actions'
 import moment from 'moment/moment'
-import {goBack} from 'connected-react-router'
+import { goBack } from 'connected-react-router'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
 
@@ -362,7 +361,7 @@ const startUpdatingEpic = (action$, state$) => (
       switchMap$(([response, state]) => {
         const lastModifiedDate = moment(response.xhr.getResponseHeader('last-modified'));
         let lastUpdated = state.activity.lastUpdated;
-        console.log('lastModifiedDate.isSameOrAfter(lastUpdated)', lastModifiedDate.isSameOrAfter(lastUpdated))
+        console.log(`${lastModifiedDate}.isSameOrAfter(${lastUpdated})`, lastModifiedDate.isSameOrAfter(lastUpdated))
         return of$({})
           .pipe(
             filter$(() => lastModifiedDate.isSameOrAfter(lastUpdated)),
