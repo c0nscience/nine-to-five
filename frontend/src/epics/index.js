@@ -127,7 +127,7 @@ const loadActivitiesEpic = action$ => (
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities').pipe(
         flatMap$(activitiesByWeek => concat(
-          of$(lastUpdated(moment())),
+          of$(lastUpdated(moment.utc())),
           of$(activitiesLoaded(activitiesByWeek)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
         ))
@@ -146,7 +146,7 @@ const startActivityEpic = action$ => (
           map$(result => result.response),
           map$(toActivityWithMoment),
           flatMap$(response => concat(
-            of$(lastUpdated(moment())),
+            of$(lastUpdated(moment.utc())),
             of$(activityStarted(response)),
             of$(removeNetworkActivity(START_ACTIVITY))
           )))
@@ -164,7 +164,7 @@ const stopActivityEpic = action$ => (
           map$(result => result.response),
           map$(toActivityWithMoment),
           flatMap$(response => concat(
-            of$(lastUpdated(moment())),
+            of$(lastUpdated(moment.utc())),
             of$(activityStopped(response)),
             of$(removeNetworkActivity(STOP_ACTIVITY))
           )))
@@ -183,7 +183,7 @@ const saveActivityEpic = action$ => (
         map$(result => result.response),
         map$(toActivityWithMoment),
         flatMap$(response => concat(
-          of$(lastUpdated(moment())),
+          of$(lastUpdated(moment.utc())),
           of$(activityDeleted(toActivityWithMoment(payload.oldActivity))),
           of$(activitySaved(response)),
           of$(removeNetworkActivity(SAVE_ACTIVITY))
@@ -202,7 +202,7 @@ const deleteActivityEpic = action$ => (
         del(`activity/${payload}`).pipe(
           map$(result => result.response),
           flatMap$(response => concat(
-            of$(lastUpdated(moment())),
+            of$(lastUpdated(moment.utc())),
             of$(activityDeleted(toActivityWithMoment(response))),
             of$(removeNetworkActivity(DELETE_ACTIVITY))
           )))
@@ -218,7 +218,7 @@ const loadOvertimeEpic = action$ => (
         of$(addNetworkActivity(LOAD_OVERTIME)),
         get('statistics/overtime').pipe(
           flatMap$(overtime => concat(
-            of$(lastUpdated(moment())),
+            of$(lastUpdated(moment.utc())),
             of$(overtimeLoaded(overtime)),
             of$(removeNetworkActivity(LOAD_OVERTIME))
           )))
@@ -238,7 +238,7 @@ const loadRunningActivityEpic = action$ => (
         catchError$(e => {
           if (e.status === 404) {
             return concat(
-              of$(lastUpdated(moment())),
+              of$(lastUpdated(moment.utc())),
               of$(runningActivityLoaded(undefined)),
               of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
             )
@@ -247,7 +247,7 @@ const loadRunningActivityEpic = action$ => (
           return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
         })
       ),
-      of$(lastUpdated(moment())),
+      of$(lastUpdated(moment.utc())),
       of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
     )),
   )
@@ -359,7 +359,7 @@ const startUpdatingEpic = (action$, state$) => (
       )),
       withLatestFrom$(state$),
       switchMap$(([response, state]) => {
-        const lastModifiedDate = moment(response.xhr.getResponseHeader('last-modified'));
+        const lastModifiedDate = moment.utc(response.xhr.getResponseHeader('last-modified'));
         let lastUpdated = state.activity.lastUpdated;
         console.log(`${lastModifiedDate}.isSameOrAfter(${lastUpdated})`, lastModifiedDate.isSameOrAfter(lastUpdated))
         return of$({})
