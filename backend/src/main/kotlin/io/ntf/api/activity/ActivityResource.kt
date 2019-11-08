@@ -7,13 +7,8 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.util.function.component1
-import reactor.kotlin.core.util.function.component2
-
 import java.security.Principal
-import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @RestController
@@ -25,14 +20,21 @@ class ActivityResource(private val activityService: ActivityService) {
       .flatMapMany { userId -> activityService.findByLogIdAndUserId(logId, userId) }
   }
 
+  @RequestMapping(value = ["/activities"], method = [RequestMethod.HEAD])
+  fun headLastModified(principal: Mono<Principal>) =
+    principal
+      .map { it.name }
+      .flatMap { activityService.getLastModifiedDate(it) }
+      .log()
+      .map { lastModifiedDate -> ResponseEntity.ok()
+        .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
+        .build<Unit>()}
+
   @GetMapping("/activities")
-  fun allFromDefault(principal: Mono<Principal>): Mono<ResponseEntity<Map<String, ActivityService.WeekInformation>>> {
+  fun allFromDefault(principal: Mono<Principal>): Mono<Map<String, ActivityService.WeekInformation>> {
     return principal
       .map { it.name }
-      .flatMap { name -> activityService.all(name).zipWith(activityService.getLastModifiedDate(name)) }
-      .map { (activities, lastModifiedDate) -> ResponseEntity.ok()
-        .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
-        .body(activities) }
+      .flatMap { name -> activityService.all(name) }
   }
 
   @PostMapping("/activity")
