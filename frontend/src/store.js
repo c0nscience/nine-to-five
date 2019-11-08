@@ -10,10 +10,6 @@ import { connectRouter, routerMiddleware } from 'connected-react-router'
 import { createEpicMiddleware } from 'redux-observable'
 import { rootEpic } from './epics'
 
-const composeEnhancers = composeWithDevTools({
-  trace: true
-})
-
 export const history = createBrowserHistory()
 
 const reducers = history => combineReducers({
@@ -27,7 +23,7 @@ const reducers = history => combineReducers({
 const epicMiddleware = createEpicMiddleware()
 const store = createStore(
   reducers(history),
-  composeEnhancers(
+  composeWithDevTools(
     applyMiddleware(
       epicMiddleware,
       thunkMiddleware,
