@@ -73,7 +73,7 @@ export const head = (endpoint) => {
   return ajax({
     method: 'HEAD',
     url: url(endpoint),
-    headers: {...authorizationHeader()}
+    headers: { ...authorizationHeader() }
   })
 }
 
@@ -82,7 +82,7 @@ const post = (endpoint, body) => {
     method: 'POST',
     url: url(endpoint),
     body,
-    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authorizationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -92,7 +92,7 @@ const put = (endpoint, body) => {
     method: 'PUT',
     url: url(endpoint),
     body,
-    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authorizationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -101,7 +101,7 @@ const del = (endpoint) => {
   return ajax({
     method: 'DELETE',
     url: url(endpoint),
-    headers: {...authorizationHeader(), 'Content-Type': 'application/json'},
+    headers: { ...authorizationHeader(), 'Content-Type': 'application/json' },
     crossDomain: true
   })
 }
@@ -140,9 +140,9 @@ const loadActivitiesEpic = action$ => (
 const startActivityEpic = action$ => (
   action$.ofType(START_ACTIVITY)
     .pipe(
-      switchMap$(({payload}) => concat(
+      switchMap$(({ payload }) => concat(
         of$(addNetworkActivity(START_ACTIVITY)),
-        post('activity', {name: payload}).pipe(
+        post('activity', { name: payload }).pipe(
           map$(result => result.response),
           map$(toActivityWithMoment),
           flatMap$(response => concat(
@@ -176,7 +176,7 @@ const stopActivityEpic = action$ => (
 const saveActivityEpic = action$ => (
   action$.pipe(
     ofType$(SAVE_ACTIVITY),
-    switchMap$(({payload}) => concat(
+    switchMap$(({ payload }) => concat(
       of$(addNetworkActivity(SAVE_ACTIVITY)),
       of$(deselectActivity()),
       put(`activity/${payload.activity.id}`, payload.activity).pipe(
@@ -196,7 +196,7 @@ const saveActivityEpic = action$ => (
 const deleteActivityEpic = action$ => (
   action$.ofType(DELETE_ACTIVITY)
     .pipe(
-      switchMap$(({payload}) => concat(
+      switchMap$(({ payload }) => concat(
         of$(addNetworkActivity(DELETE_ACTIVITY)),
         of$(deselectActivity()),
         del(`activity/${payload}`).pipe(
@@ -230,26 +230,27 @@ const loadOvertimeEpic = action$ => (
 const loadRunningActivityEpic = action$ => (
   action$.pipe(
     ofType$(LOAD_RUNNING_ACTIVITY),
-    tap$((s) => console.log(`before switchmap load running '${s}'`)),
     switchMap$(() => concat(
       of$(addNetworkActivity(LOAD_RUNNING_ACTIVITY)),
       get('activity/running').pipe(
-        map$(runningActivity => runningActivityLoaded(runningActivity)),
-        catchError$(e => {
-          if (e.status === 404) {
-            return concat(
-              of$(lastUpdated(moment.utc())),
-              of$(runningActivityLoaded(undefined)),
-              of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
-            )
-          }
-
-          return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
-        })
+        flatMap$(runningActivity => concat(
+          of$(lastUpdated(moment.utc())),
+          of$(runningActivityLoaded(runningActivity)),
+          of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+        )),
       ),
-      of$(lastUpdated(moment.utc())),
-      of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
     )),
+    catchError$(e => {
+      if (e.status === 404) {
+        return concat(
+          of$(lastUpdated(moment.utc())),
+          of$(runningActivityLoaded(undefined)),
+          of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
+        )
+      } else {
+        return errors('Load running activity', () => removeNetworkActivity(LOAD_RUNNING_ACTIVITY))(e)
+      }
+    })
   )
 )
 
@@ -272,7 +273,7 @@ const loadLogs = action$ => (
 const createLog = action$ => (
   action$.ofType(CREATE_LOG)
     .pipe(
-      switchMap$(({payload}) => concat(
+      switchMap$(({ payload }) => concat(
         of$(addNetworkActivity(CREATE_LOG)),
         post('log', payload).pipe(
           map$(result => result.response),
@@ -291,7 +292,7 @@ const createLog = action$ => (
 const updateLog = action$ => (
   action$.ofType(UPDATE_LOG)
     .pipe(
-      switchMap$(({payload}) => concat(
+      switchMap$(({ payload }) => concat(
         of$(addNetworkActivity(UPDATE_LOG)),
         put(`log/${payload.id}`, payload).pipe(
           map$(result => result.response),
@@ -310,7 +311,7 @@ const updateLog = action$ => (
 const loadActivitiesOfRange = action$ => (
   action$.pipe(
     ofType$(LOAD_ACTIVITIES_OF_RANGE),
-    switchMap$(({payload}) => concat(
+    switchMap$(({ payload }) => concat(
       of$(addNetworkActivity(LOAD_ACTIVITIES_OF_RANGE)),
       get(`activities/${payload.from}/${payload.to}`).pipe(
         map$(result => result.response),
@@ -326,7 +327,7 @@ const loadActivitiesOfRange = action$ => (
 const continueActivity = action$ => (
   action$.pipe(
     ofType$(CONTINUE_ACTIVITY),
-    switchMap$(({payload}) => concat(
+    switchMap$(({ payload }) => concat(
       of$(startActivity(payload))
     ))
   )
@@ -335,7 +336,7 @@ const continueActivity = action$ => (
 const switchActivity = action$ => (
   action$.pipe(
     ofType$(SWITCH_ACTIVITY),
-    switchMap$(({payload}) => concat(
+    switchMap$(({ payload }) => concat(
       of$(addNetworkActivity(STOP_ACTIVITY)),
       post('activity/stop').pipe(
         map$(result => result.response),
