@@ -6,7 +6,6 @@ import {
   flatMap as flatMap$,
   map as map$,
   switchMap as switchMap$,
-  tap as tap$,
   withLatestFrom as withLatestFrom$
 } from 'rxjs/operators'
 import { combineEpics, ofType as ofType$ } from 'redux-observable'
@@ -64,9 +63,7 @@ const authorizationHeader = () => {
 }
 
 const get = (endpoint) => {
-  return ajax.getJSON(url(endpoint), authorizationHeader()).pipe(
-    tap$(() => console.log(`received a result from '${endpoint}'`))
-  )
+  return ajax.getJSON(url(endpoint), authorizationHeader())
 }
 
 export const head = (endpoint) => {
@@ -362,8 +359,7 @@ const pollingEpic = (action$, state$) => (
       withLatestFrom$(state$),
       switchMap$(([response, state]) => {
         const lastModifiedDate = moment.utc(response.xhr.getResponseHeader('last-modified'));
-        let lastUpdated = state.activity.lastUpdated;
-        console.log(`${lastModifiedDate}.isSameOrAfter(${lastUpdated})`, lastModifiedDate.isSameOrAfter(lastUpdated))
+        const lastUpdated = state.activity.lastUpdated;
         return of$({})
           .pipe(
             filter$(() => lastModifiedDate.isSameOrAfter(lastUpdated)),

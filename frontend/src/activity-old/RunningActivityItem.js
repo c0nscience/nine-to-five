@@ -50,7 +50,6 @@ const calculateDurationFromStart = (start) => {
 
 const ElapsedTime = ({ start }) => {
   const [duration, setDuration] = useState(calculateDurationFromStart(start));
-  console.log('duration', duration)
 
   useEffect(() => {
     updateTimer = setInterval(() => {
