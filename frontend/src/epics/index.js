@@ -40,7 +40,7 @@ import {
   SAVE_ACTIVITY,
   showErrorMessage,
   START_ACTIVITY,
-  START_UPDATING,
+  START_POLLING,
   startActivity,
   STOP_ACTIVITY,
   SWITCH_ACTIVITY,
@@ -120,6 +120,8 @@ export const toActivityWithMoment = activity => ({
   end: activity.end && moment.utc(activity.end).local()
 })
 
+const now = () => moment.utc()
+
 const loadActivitiesEpic = action$ => (
   action$.pipe(
     ofType$(LOAD_ACTIVITIES),
@@ -127,7 +129,7 @@ const loadActivitiesEpic = action$ => (
       of$(addNetworkActivity(LOAD_ACTIVITIES)),
       get('activities').pipe(
         flatMap$(activitiesByWeek => concat(
-          of$(lastUpdated(moment.utc())),
+          of$(lastUpdated(now())),
           of$(activitiesLoaded(activitiesByWeek)),
           of$(removeNetworkActivity(LOAD_ACTIVITIES))
         ))
@@ -146,7 +148,7 @@ const startActivityEpic = action$ => (
           map$(result => result.response),
           map$(toActivityWithMoment),
           flatMap$(response => concat(
-            of$(lastUpdated(moment.utc())),
+            of$(lastUpdated(now())),
             of$(activityStarted(response)),
             of$(removeNetworkActivity(START_ACTIVITY))
           )))
@@ -164,7 +166,7 @@ const stopActivityEpic = action$ => (
           map$(result => result.response),
           map$(toActivityWithMoment),
           flatMap$(response => concat(
-            of$(lastUpdated(moment.utc())),
+            of$(lastUpdated(now())),
             of$(activityStopped(response)),
             of$(removeNetworkActivity(STOP_ACTIVITY))
           )))
@@ -183,7 +185,7 @@ const saveActivityEpic = action$ => (
         map$(result => result.response),
         map$(toActivityWithMoment),
         flatMap$(response => concat(
-          of$(lastUpdated(moment.utc())),
+          of$(lastUpdated(now())),
           of$(activityDeleted(toActivityWithMoment(payload.oldActivity))),
           of$(activitySaved(response)),
           of$(removeNetworkActivity(SAVE_ACTIVITY))
@@ -202,7 +204,7 @@ const deleteActivityEpic = action$ => (
         del(`activity/${payload}`).pipe(
           map$(result => result.response),
           flatMap$(response => concat(
-            of$(lastUpdated(moment.utc())),
+            of$(lastUpdated(now())),
             of$(activityDeleted(toActivityWithMoment(response))),
             of$(removeNetworkActivity(DELETE_ACTIVITY))
           )))
@@ -218,7 +220,7 @@ const loadOvertimeEpic = action$ => (
         of$(addNetworkActivity(LOAD_OVERTIME)),
         get('statistics/overtime').pipe(
           flatMap$(overtime => concat(
-            of$(lastUpdated(moment.utc())),
+            of$(lastUpdated(now())),
             of$(overtimeLoaded(overtime)),
             of$(removeNetworkActivity(LOAD_OVERTIME))
           )))
@@ -234,7 +236,7 @@ const loadRunningActivityEpic = action$ => (
       of$(addNetworkActivity(LOAD_RUNNING_ACTIVITY)),
       get('activity/running').pipe(
         flatMap$(runningActivity => concat(
-          of$(lastUpdated(moment.utc())),
+          of$(lastUpdated(now())),
           of$(runningActivityLoaded(runningActivity)),
           of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
         )),
@@ -243,7 +245,7 @@ const loadRunningActivityEpic = action$ => (
     catchError$(e => {
       if (e.status === 404) {
         return concat(
-          of$(lastUpdated(moment.utc())),
+          of$(lastUpdated(now())),
           of$(runningActivityLoaded(undefined)),
           of$(removeNetworkActivity(LOAD_RUNNING_ACTIVITY))
         )
@@ -350,10 +352,9 @@ const switchActivity = action$ => (
   )
 )
 
-const startUpdatingEpic = (action$, state$) => (
+const pollingEpic = (action$, state$) => (
   action$.pipe(
-    ofType$(START_UPDATING),
-    withLatestFrom$(state$),
+    ofType$(START_POLLING),
     switchMap$(() => timer(0, 5000).pipe(
       switchMap$(_ => head('activities').pipe(
         catchError$(() => EMPTY)
@@ -392,5 +393,5 @@ export const rootEpic = combineEpics(
   loadActivitiesOfRange,
   continueActivity,
   switchActivity,
-  startUpdatingEpic
+  pollingEpic
 )

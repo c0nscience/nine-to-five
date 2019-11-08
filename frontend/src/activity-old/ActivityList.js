@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import ActivityItem from './ActivityItem'
 import moment from 'moment'
-import {loadActivities, loadOvertime, loadRunningActivity, startUpdating} from '../actions'
+import { loadActivities, loadOvertime, loadRunningActivity, startPolling } from '../actions'
 import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import Card from "@material-ui/core/Card";
@@ -130,6 +130,6 @@ export default connect(
     loadActivities,
     loadOvertime,
     loadRunningActivity,
-    startUpdating
+    startUpdating: startPolling
   }
 )(ActivityList)

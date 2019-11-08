@@ -147,7 +147,7 @@ export const LAST_UPDATED = 'LAST_UPDATED'
 export const lastUpdated = lastUpdated =>
   ({ type: LAST_UPDATED, payload: lastUpdated })
 
-export const START_UPDATING = 'START_UPDATING'
+export const START_POLLING = 'START_POLLING'
 
-export const startUpdating = () =>
-  ({ type: START_UPDATING })
+export const startPolling = () =>
+  ({ type: START_POLLING })
