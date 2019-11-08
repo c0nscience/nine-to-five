@@ -17,12 +17,16 @@ export default (state = initialState, action) => {
     case REMOVE_NETWORK_ACTIVITY:
       const index = state.runningRequests.indexOf(action.payload)
       console.log(`Found index ${index} for ${action.payload}`)
-      return {
-        ...state,
-        runningRequests: [
-          ...state.runningRequests.slice(0, index),
-          ...state.runningRequests.slice(index + 1)
-        ]
+      if (index >= -1) {
+        return {
+          ...state,
+          runningRequests: [
+            ...state.runningRequests.slice(0, index),
+            ...state.runningRequests.slice(index + 1)
+          ]
+        }
+      } else {
+        return state
       }
     default:
       return state
