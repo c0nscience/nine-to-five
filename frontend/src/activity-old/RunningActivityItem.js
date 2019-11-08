@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames'
 import moment from 'moment'
@@ -10,6 +10,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
+
 
 const styles = theme => ({
   paper: {
@@ -40,13 +41,38 @@ const styles = theme => ({
 })
 
 const timeFormat = 'HH:mm'
+let updateTimer
+
+const calculateDurationFromStart = (start) => {
+  const localStart = moment.utc(start).local()
+  return moment.duration(moment().diff(localStart)).asMilliseconds()
+}
+
+const ElapsedTime = ({ start }) => {
+  const [duration, setDuration] = useState(calculateDurationFromStart(start));
+  console.log('duration', duration)
+
+  useEffect(() => {
+    updateTimer = setInterval(() => {
+      setDuration(calculateDurationFromStart(start))
+    }, 60000)
+
+    return () => {
+      if (updateTimer) {
+        clearInterval(updateTimer)
+      }
+    }
+  })
+
+  return <Typography variant="h3">
+    {moment.utc(duration).format(timeFormat)}
+  </Typography>
+}
 
 const RunningActivityItem = (props) => {
   const { classes, id, name, start: startUtc, loading } = props
-
   const localStart = moment.utc(startUtc).local()
 
-  const durationAsMilliseconds = moment.duration(moment().diff(localStart)).asMilliseconds()
   return (
     <Paper className={classNames({
       [classes.loadingPaper]: loading,
@@ -54,9 +80,7 @@ const RunningActivityItem = (props) => {
     })}>
       <Grid container spacing={0}>
         <Grid item xs={4}>
-          <Typography variant="h3">
-            {moment.utc(durationAsMilliseconds).format(timeFormat)}
-          </Typography>
+          <ElapsedTime start={startUtc}/>
           <Typography variant="caption">
             since {localStart.format(timeFormat)}
           </Typography>
