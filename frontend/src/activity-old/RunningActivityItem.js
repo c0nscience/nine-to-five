@@ -41,6 +41,7 @@ const styles = theme => ({
 })
 
 const timeFormat = 'HH:mm'
+const updateTimerInterval = 10000
 let updateTimer
 
 const calculateDurationFromStart = (start) => {
@@ -52,9 +53,10 @@ const ElapsedTime = ({ start }) => {
   const [duration, setDuration] = useState(calculateDurationFromStart(start));
 
   useEffect(() => {
+
     updateTimer = setInterval(() => {
       setDuration(calculateDurationFromStart(start))
-    }, 60000)
+    }, updateTimerInterval)
 
     return () => {
       if (updateTimer) {
