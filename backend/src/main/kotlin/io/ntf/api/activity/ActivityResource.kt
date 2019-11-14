@@ -25,7 +25,6 @@ class ActivityResource(private val activityService: ActivityService) {
     principal
       .map { it.name }
       .flatMap { activityService.getLastModifiedDate(it) }
-      .log()
       .map { lastModifiedDate -> ResponseEntity.ok()
         .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
         .build<Unit>()}

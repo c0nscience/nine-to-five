@@ -2,7 +2,6 @@ package io.ntf.api.activity
 
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.activity.model.ActivityRepository
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -18,8 +17,6 @@ typealias ByWeek = Map<String, ActivityService.WeekInformation>
 @Service
 class ActivityService(private val activityRepository: ActivityRepository, private val logService: LogService) : TimeTrait {
 
-  private val log = LoggerFactory.getLogger(javaClass)
-
   fun findByUserId(userId: String): Flux<Activity> {
     return activityRepository.findByUserIdOrderByStartDesc(userId)
   }
@@ -30,8 +27,6 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
 
   fun all(userId: String): Mono<ByWeek> {
     return activityRepository.findByUserIdAndLogIdIsNullAndStartIsAfterOrderByStartDesc(userId, now().minusMonths(1))
-      .name("activities")
-      .log()
       .reduce(emptyMap()) { result: ByWeek, activity: Activity ->
       val weekDatePattern = DateTimeFormatter.ISO_WEEK_DATE
       val dayDatePattern = DateTimeFormatter.ISO_LOCAL_DATE
