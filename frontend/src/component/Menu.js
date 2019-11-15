@@ -1,9 +1,9 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
-import {closeMenuDrawer, loadActivitiesOfRange, loadLogs} from '../actions'
-import {connect} from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
+import { adjustActivities, closeMenuDrawer, loadActivitiesOfRange, loadLogs } from '../actions'
+import { connect } from 'react-redux'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import {push, replace} from 'connected-react-router'
+import { push, replace } from 'connected-react-router'
 import Edit from '@material-ui/icons/Edit'
 import Drawer from "@material-ui/core/Drawer";
 import List from "@material-ui/core/List";
@@ -13,7 +13,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import IconButton from "@material-ui/core/IconButton";
-import {DateTime} from "luxon"
+import { DateTime } from "luxon"
 import Divider from "@material-ui/core/Divider";
 
 const styles = {
@@ -37,7 +37,7 @@ class Menu extends React.Component {
   }
 
   render() {
-    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace, loadActivitiesOfRange} = this.props
+    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace, loadActivitiesOfRange, adjustActivities} = this.props
 
     const now = DateTime.utc()
 
@@ -54,6 +54,9 @@ class Menu extends React.Component {
             <ListItemIcon>
               <RefreshIcon/>
             </ListItemIcon>
+          </ListItem>
+          <ListItem button onClick={() => adjustActivities()}>
+            <ListItemText primary="ADJUST"/>
           </ListItem>
 
           {/*TODO only show while logged int*/}
@@ -115,7 +118,8 @@ const mapDispatchToProps = {
   loadLogs,
   push,
   replace,
-  loadActivitiesOfRange
+  loadActivitiesOfRange,
+  adjustActivities
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Menu))
