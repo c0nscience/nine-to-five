@@ -2,7 +2,6 @@ package io.ntf.api.activity
 
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.activity.model.ActivityRepository
-import io.ntf.api.logger
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -18,28 +17,12 @@ typealias ByWeek = Map<String, ActivityService.WeekInformation>
 @Service
 class ActivityService(private val activityRepository: ActivityRepository, private val logService: LogService) : TimeTrait {
 
-  private val log = logger()
-
   fun findByUserId(userId: String): Flux<Activity> {
     return activityRepository.findByUserIdOrderByStartDesc(userId)
   }
 
   private fun findByUserIdAndId(userId: String, id: String): Mono<Activity> {
     return activityRepository.findByUserIdAndId(userId, id)
-  }
-
-  fun adjustAll(userId: String): Flux<Activity> {
-    val adjustedActivities = activityRepository.findByUserIdOrderByStartDesc(userId)
-      .filter {
-        it.start.isNotAdjusted() || it.end?.isNotAdjusted() == true
-      }
-      .map {
-        it.copy(start = it.start.adjustAndTruncate(),
-          end = it.end?.adjustAndTruncate())
-      }.doOnEach {
-        log.info("adjusted activity: $it")
-      }
-    return activityRepository.saveAll(adjustedActivities)
   }
 
   fun all(userId: String): Mono<ByWeek> {

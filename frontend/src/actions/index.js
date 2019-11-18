@@ -151,8 +151,3 @@ export const START_POLLING = 'START_POLLING'
 
 export const startPolling = () =>
   ({ type: START_POLLING })
-
-export const ADJUST_ACTIVITIES = 'ADJUST_ACTIVITIES'
-
-export const adjustActivities = () =>
-  ({ type: ADJUST_ACTIVITIES })

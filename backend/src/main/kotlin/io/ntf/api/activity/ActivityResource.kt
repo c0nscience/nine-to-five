@@ -3,7 +3,6 @@ package io.ntf.api.activity
 import io.ntf.api.activity.model.Activity
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.http.ResponseEntity.ok
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
@@ -26,21 +25,16 @@ class ActivityResource(private val activityService: ActivityService) {
     principal
       .map { it.name }
       .flatMap { activityService.getLastModifiedDate(it) }
-      .map { lastModifiedDate -> ok()
+      .map { lastModifiedDate -> ResponseEntity.ok()
         .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
         .build<Unit>()}
 
   @GetMapping("/activities")
-  fun allFromDefault(principal: Mono<Principal>) =
-    principal
+  fun allFromDefault(principal: Mono<Principal>): Mono<Map<String, ActivityService.WeekInformation>> {
+    return principal
       .map { it.name }
       .flatMap { name -> activityService.all(name) }
-
-  @GetMapping("/activities/adjust")
-  fun adjustAllFromDefault(principal: Mono<Principal>) =
-    principal
-      .map { it.name }
-      .flatMap { name -> activityService.adjustAll(name).then().map { ok().body(null) } }
+  }
 
   @PostMapping("/activity")
   fun start(@RequestBody startActivity: Mono<StartActivity>, principal: Mono<Principal>): Mono<ResponseEntity<Activity>> {

@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
+import java.time.temporal.Temporal
 
 interface TimeTrait {
 
@@ -12,30 +13,19 @@ interface TimeTrait {
   fun now(): LocalDateTime {
     return LocalDateTime.now(ZoneOffset.UTC)
       .truncatedTo(ChronoUnit.MINUTES)
-      .adjustToNearestTenth()
+      .with(adjustToNearestTenth())
   }
 
-  fun LocalDateTime.adjustToNearestTenth(): LocalDateTime {
-    val minute = this.get(ChronoField.MINUTE_OF_HOUR)
-    val remainder = minute % roundingThreshold
-    val adjustBy = if (remainder < 3) {
-      remainder * -1
-    } else {
-      roundingThreshold - remainder
+  fun adjustToNearestTenth(): (Temporal) -> Temporal {
+    return { temporal: Temporal ->
+      val minute = temporal.get(ChronoField.MINUTE_OF_HOUR)
+      val remainder = minute % roundingThreshold
+      val adjustBy = if (remainder < 3) {
+        remainder * -1
+      } else {
+        roundingThreshold - remainder
+      }
+      temporal.plus(adjustBy, ChronoUnit.MINUTES)
     }
-
-    return this.plus(adjustBy, ChronoUnit.MINUTES)
-  }
-
-  fun LocalDateTime.adjustAndTruncate(): LocalDateTime {
-    return this.truncatedTo(ChronoUnit.MINUTES)
-      .adjustToNearestTenth()
-  }
-
-  fun LocalDateTime.isNotAdjusted(): Boolean {
-    val minute = this.get(ChronoField.MINUTE_OF_HOUR)
-    val seconds = this.get(ChronoField.SECOND_OF_MINUTE)
-    val remainder = minute % roundingThreshold
-    return remainder > 0 || seconds > 0
   }
 }

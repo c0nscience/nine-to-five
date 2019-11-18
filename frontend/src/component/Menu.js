@@ -1,6 +1,6 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import { adjustActivities, closeMenuDrawer, loadActivitiesOfRange, loadLogs } from '../actions'
+import { closeMenuDrawer, loadActivitiesOfRange, loadLogs } from '../actions'
 import { connect } from 'react-redux'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import { push, replace } from 'connected-react-router'
@@ -37,7 +37,7 @@ class Menu extends React.Component {
   }
 
   render() {
-    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace, loadActivitiesOfRange, adjustActivities} = this.props
+    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace, loadActivitiesOfRange} = this.props
 
     const now = DateTime.utc()
 
@@ -54,9 +54,6 @@ class Menu extends React.Component {
             <ListItemIcon>
               <RefreshIcon/>
             </ListItemIcon>
-          </ListItem>
-          <ListItem button onClick={() => adjustActivities()}>
-            <ListItemText primary="ADJUST"/>
           </ListItem>
 
           {/*TODO only show while logged int*/}
@@ -118,8 +115,7 @@ const mapDispatchToProps = {
   loadLogs,
   push,
   replace,
-  loadActivitiesOfRange,
-  adjustActivities
+  loadActivitiesOfRange
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Menu))

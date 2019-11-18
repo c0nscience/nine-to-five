@@ -29,7 +29,7 @@ class TimeAdjusterTestTest: TimeTrait {
 
       val time = LocalDateTime.of(LocalDate.now(), LocalTime.of(16, value, 0))
 
-      val roundedTime = time.adjustToNearestTenth()
+      val roundedTime = time.with(adjustToNearestTenth())
       assertions.assertThat(roundedTime).isEqualTo(LocalDateTime.of(LocalDate.now(), LocalTime.of(16, expectedValue, 0)))
       assertions
     }

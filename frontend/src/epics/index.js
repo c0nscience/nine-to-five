@@ -17,7 +17,6 @@ import {
   activityStarted,
   activityStopped,
   addNetworkActivity,
-  ADJUST_ACTIVITIES,
   CONTINUE_ACTIVITY,
   CREATE_LOG,
   DELETE_ACTIVITY,
@@ -376,21 +375,6 @@ const pollingEpic = (action$, state$) => (
   )
 )
 
-const adjustActivities = action$ => (
-  action$.pipe(
-    ofType$(ADJUST_ACTIVITIES),
-    switchMap$(() => concat(
-      of$(addNetworkActivity(ADJUST_ACTIVITIES)),
-      get('activities/adjust').pipe(
-        map$(() => removeNetworkActivity(ADJUST_ACTIVITIES))
-      )
-    )),
-    catchError$(e => {
-      return errors('ADJUST activities', () => removeNetworkActivity(ADJUST_ACTIVITIES))(e)
-    })
-  )
-)
-
 export const rootEpic = combineEpics(
   loadActivitiesEpic,
   startActivityEpic,
@@ -405,6 +389,5 @@ export const rootEpic = combineEpics(
   loadActivitiesOfRange,
   continueActivity,
   switchActivity,
-  pollingEpic,
-  adjustActivities
+  pollingEpic
 )
