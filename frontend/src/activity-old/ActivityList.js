@@ -27,8 +27,8 @@ const styles = theme => ({
 })
 
 const OvertimeStatistics = ({overtimeStatistics}) => <Typography variant="caption">
-  Overtime - Current: {moment.duration(overtimeStatistics.overtime).asHours().toPrecision(3)} -
-  Total: {moment.duration(overtimeStatistics.totalOvertime).asHours().toPrecision(3)}
+  Overtime - Current: {moment.duration(overtimeStatistics.overtime).asHours().toFixed(1)} -
+  Total: {moment.duration(overtimeStatistics.totalOvertime).asHours().toFixed(1)}
 </Typography>
 
 const runningActivities = value => {
