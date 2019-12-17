@@ -1,17 +1,17 @@
-import React, {useState} from 'react'
-import {connect} from 'react-redux'
-import {withStyles} from '@material-ui/core/styles'
+import React, { useState } from 'react'
+import { connect } from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
 import Edit from '@material-ui/icons/Edit'
 import Replay from '@material-ui/icons/Replay'
 import More from '@material-ui/icons/MoreVert'
 import Shuffle from '@material-ui/icons/Shuffle'
-import {continueActivity, selectActivity, switchActivity} from '../actions'
-import {amber, green} from '@material-ui/core/colors'
+import { continueActivity, selectActivity, switchActivity } from '../actions'
+import { amber, green } from '@material-ui/core/colors'
 import IconButton from '@material-ui/core/IconButton'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListItem from '@material-ui/core/ListItem/ListItem'
-import {DateTime} from 'luxon'
+import { DateTime } from 'luxon'
 import moment from 'moment'
 import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
@@ -42,12 +42,13 @@ const ActivityItem = (props) => {
 
   const end = _end && DateTime.fromISO(handleMoment(_end), {zone: 'utc'}).toLocal()
   const start = DateTime.fromISO(handleMoment(_start), {zone: 'utc'}).toLocal()
+  const isInTheFuture = DateTime.local() < start
   const endOrNow = end || DateTime.local()
   const duration = endOrNow.diff(start).as('hours')
   const period = `${duration.toFixed(1)} hrs from ${start.toFormat(timeFormat)} ${end === undefined ? '' : `to ${end.toFormat(timeFormat)}`}`
 
-  return <ListItem>
-    <ListItemText primary={name} secondary={period}/>
+  return <ListItem disabled={isInTheFuture}>
+    <ListItemText primary={name} secondary={period} color={}/>
     <ListItemSecondaryAction>
       <IconButton aria-label="Menu"
                   aria-haspopup="true"
