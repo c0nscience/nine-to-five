@@ -48,7 +48,7 @@ const ActivityItem = (props) => {
   const period = `${duration.toFixed(1)} hrs from ${start.toFormat(timeFormat)} ${end === undefined ? '' : `to ${end.toFormat(timeFormat)}`}`
 
   return <ListItem disabled={isInTheFuture}>
-    <ListItemText primary={name} secondary={period} color={}/>
+    <ListItemText primary={name} secondary={period}/>
     <ListItemSecondaryAction>
       <IconButton aria-label="Menu"
                   aria-haspopup="true"
