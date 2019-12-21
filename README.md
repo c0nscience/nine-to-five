@@ -2,5 +2,9 @@
 
 ### Frontend
 
+Used technologies:
+* React
+* RxJS
+
 ### Backend
 
