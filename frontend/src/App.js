@@ -5,7 +5,7 @@ import {connect} from 'react-redux'
 import withRoot from './component/withRoot'
 import {handleAuthentication} from './reducers/auth'
 import {closeMenuDrawer} from './actions'
-import NavBar from './NavBar/NavBar'
+import Index from './NavBar'
 import Callback from './Callback/Callback'
 import Activity from './activity-old/Activity'
 import NewLogForm from './logs/NewLogForm'
@@ -23,7 +23,7 @@ const App = ({history, handleAuthentication, menuDrawerOpen, closeMenuDrawer}) =
 
   return (
     <div>
-      <NavBar/>
+      <Index/>
       <Menu open={menuDrawerOpen} onClose={closeMenuDrawer}/>
       <LoadingIndicator/>
       <ConnectedRouter history={history}>

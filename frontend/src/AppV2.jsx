@@ -3,18 +3,18 @@ import {Route, Router, Switch} from 'react-router'
 import withRoot from './component/withRoot'
 import Activity from './activity'
 import LoadingIndicator from './component/LoadingIndicator'
-import BottomBar from './NavBar/BottomBar'
+import NavBar from './NavBar'
 
 const App = ({history}) => {
   return (
     <>
+      <NavBar/>
       <LoadingIndicator/>
       <Router history={history}>
         <Switch>
           <Route exact path="/" component={Activity}/>
         </Switch>
       </Router>
-      <BottomBar/>
     </>
   )
 }
