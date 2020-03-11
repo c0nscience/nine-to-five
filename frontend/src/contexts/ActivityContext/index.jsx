@@ -5,16 +5,16 @@ import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 
 const ActivityContext = createContext()
 
-export const ActivityProvider = ({addNetworkActivity, removeNetworkActivity, children}) => {
+export const ActivityProvider = ({addNetworkActivity, removeNetworkActivity, getToken, children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
 
   const loadActivities = () => {
-    get('activities').then(activitiesByWeek => dispatch(activitiesLoaded(activitiesByWeek)))
+    get('activities', getToken).then(activitiesByWeek => dispatch(activitiesLoaded(activitiesByWeek)))
   }
 
   const startActivity = name => {
     //TODO maintain running network activities state
-    post('activity', {name}).then(activity => dispatch(activityStarted(activity)))
+    post('activity', {name}, getToken).then(activity => dispatch(activityStarted(activity)))
   }
 
   useEffect(() => {

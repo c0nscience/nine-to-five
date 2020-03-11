@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import ActivityEditDialog from './ActivityEditDialog'
-import {logout} from '../reducers/auth'
+// import {logout} from '../reducers/auth'
 import ErrorMessage from '../component/ErrorMessage'
 import Grid from '@material-ui/core/Grid'
 
@@ -15,16 +15,16 @@ const styles = theme => ({
 
 class Activity extends Component {
 
-  componentDidMount() {
-    const { isAuthenticated, logout } = this.props
-
-    if (!isAuthenticated) {
-      logout()
-    }
-  }
+  // componentDidMount() {
+  //   const { isAuthenticated } = this.props
+  //
+  //   if (!isAuthenticated) {
+  //     logout()
+  //   }
+  // }
 
   render() {
-    const { classes, isAuthenticated, runningRequests, runningActivity, selectedActivity } = this.props
+    const {classes, isAuthenticated, runningRequests, runningActivity, selectedActivity} = this.props
     const loading = runningRequests.length > 0
     return (
       <div>
@@ -53,7 +53,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  logout
+  // logout
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Activity))

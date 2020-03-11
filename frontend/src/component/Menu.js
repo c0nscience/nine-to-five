@@ -1,24 +1,24 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import { closeMenuDrawer, loadActivitiesOfRange, loadLogs } from '../actions'
-import { connect } from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
+import {closeMenuDrawer, loadActivitiesOfRange, loadLogs} from '../actions'
+import {connect} from 'react-redux'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import { push, replace } from 'connected-react-router'
+// import { push, replace } from 'connected-react-router'
 import Edit from '@material-ui/icons/Edit'
-import Drawer from "@material-ui/core/Drawer";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import ListSubheader from "@material-ui/core/ListSubheader";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import IconButton from "@material-ui/core/IconButton";
-import { DateTime } from "luxon"
-import Divider from "@material-ui/core/Divider";
+import Drawer from '@material-ui/core/Drawer'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListSubheader from '@material-ui/core/ListSubheader'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
+import IconButton from '@material-ui/core/IconButton'
+import {DateTime} from 'luxon'
+import Divider from '@material-ui/core/Divider'
 
 const styles = {
   list: {
-    width: 250,
+    width: 250
   }
 }
 
@@ -37,7 +37,7 @@ class Menu extends React.Component {
   }
 
   render() {
-    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, push, replace, loadActivitiesOfRange} = this.props
+    const {menuDrawerOpen: open, closeMenuDrawer, classes, logs, loadActivitiesOfRange} = this.props
 
     const now = DateTime.utc()
 
@@ -78,23 +78,23 @@ class Menu extends React.Component {
           <ListSubheader>Lists</ListSubheader>
           {logs.map(log =>
             <ListItem button key={log.id} onClick={() => {
-              replace(`/log/${log.id}`)
+              // replace(`/log/${log.id}`)
             }}>
               <ListItemText primary={log.name}/>
               <ListItemSecondaryAction>
                 <IconButton aria-label={`Edit '${log.name}' log`} onClick={() => {
-                  push(`/log/${log.id}/edit`)
+                  // push(`/log/${log.id}/edit`)
                 }}>
                   <Edit/>
                 </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
           )}
-          <ListItem button onClick={() => replace('/')}>
-            <ListItemText primary="Default"/>
-          </ListItem>
+          {/*<ListItem button onClick={() => replace('/')}>*/}
+          {/*  <ListItemText primary="Default"/>*/}
+          {/*</ListItem>*/}
           <ListItem button onClick={() => {
-            push('/log/new')
+            // push('/log/new')
           }}>
             <ListItemText primary="New List"/>
           </ListItem>
@@ -113,8 +113,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
   closeMenuDrawer,
   loadLogs,
-  push,
-  replace,
+  // push,
+  // replace,
   loadActivitiesOfRange
 }
 

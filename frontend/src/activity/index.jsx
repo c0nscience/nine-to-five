@@ -1,9 +1,11 @@
 import React from 'react'
 import List from './List'
 import {ActivityProvider} from 'contexts/ActivityContext'
+import {useAuth} from 'contexts/AuthenticationContext'
 
 export default () => {
-  return <ActivityProvider>
+  const {getTokenSilently} = useAuth()
+  return <ActivityProvider getToken={getTokenSilently}>
     {/*TODO fix error message component*/}
     {/*<ErrorMessage/>*/}
 

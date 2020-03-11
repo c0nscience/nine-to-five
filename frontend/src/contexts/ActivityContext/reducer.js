@@ -1,4 +1,5 @@
-import moment from 'moment'
+// import moment from 'moment'
+import {extendedDayjs as dayjs} from 'extendedDayjs'
 import {
   ACTIVITIES_LOADED,
   ACTIVITY_DELETED,
@@ -24,7 +25,7 @@ export const initialState = {
   running: undefined,
   overtimes: [],
   logs: [],
-  lastUpdated: moment()
+  lastUpdated: dayjs
 }
 
 const reduceActivitiesByWeek = state => (activity, reducer) => {
@@ -32,12 +33,12 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
   const dayDate = activity.start.format('YYYY-MM-DD')
 
   const week = state.activitiesByWeek[weekDate] || {
-    totalDuration: moment.duration(0),
+    // totalDuration: moment.duration(0),
     days: {}
   }
 
   const day = week.days[dayDate] || {
-    totalDuration: moment.duration(0),
+    // totalDuration: moment.duration(0),
     activities: []
   }
 
@@ -47,24 +48,24 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
     ...week.days,
     [dayDate]: {
       ...day,
-      totalDuration: activities.reduce((result, activity) => {
-        const end = moment(activity.end) || moment()
-        const diff = end.diff(activity.start)
-        return result + diff
-      }, moment.duration(0)),
+      // totalDuration: activities.reduce((result, activity) => {
+      //   const end = moment(activity.end) || moment()
+      //   const diff = end.diff(activity.start)
+      //   return result + diff
+      // }, moment.duration(0)),
       activities: activities
     }
   }
 
 
-  const totalDuration = Object.values(days).reduce((result, day) => {
-    return (result + moment.duration(day.totalDuration))
-  }, moment.duration(0))
+  // const totalDuration = Object.values(days).reduce((result, day) => {
+  //   return (result + moment.duration(day.totalDuration))
+  // }, moment.duration(0))
   return {
     ...state.activitiesByWeek,
     [weekDate]: {
       ...week,
-      totalDuration: totalDuration,
+      totalDuration: 0,
       days: days
     }
   }

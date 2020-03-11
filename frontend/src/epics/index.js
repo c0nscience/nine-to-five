@@ -1,5 +1,5 @@
-import { concat, EMPTY, merge, of as of$, timer } from 'rxjs'
-import { ajax } from 'rxjs/ajax'
+import {concat, EMPTY, merge, of as of$, timer} from 'rxjs'
+import {ajax} from 'rxjs/ajax'
 import {
   catchError as catchError$,
   filter as filter$,
@@ -8,7 +8,7 @@ import {
   switchMap as switchMap$,
   withLatestFrom as withLatestFrom$
 } from 'rxjs/operators'
-import { combineEpics, ofType as ofType$ } from 'redux-observable'
+import {combineEpics, ofType as ofType$} from 'redux-observable'
 import {
   activitiesLoaded,
   activitiesOfRangeLoaded,
@@ -43,10 +43,11 @@ import {
   startActivity,
   STOP_ACTIVITY,
   SWITCH_ACTIVITY,
-  UPDATE_LOG,
+  UPDATE_LOG
 } from '../actions'
-import moment from 'moment/moment'
-import { goBack } from 'connected-react-router'
+import {extendedDayjs as dayjs} from 'extendedDayjs'
+// import moment from 'moment/moment'
+// import { goBack } from 'connected-react-router'
 
 const BASE_URL = process.env.REACT_APP_API_HOST
 
@@ -112,12 +113,12 @@ const errors = (requestName, actionFailed) => error => {
 }
 
 export const toActivityWithMoment = activity => ({
-  ...activity,
-  start: moment.utc(activity.start).local(),
-  end: activity.end && moment.utc(activity.end).local()
+  ...activity
+  // start: moment.utc(activity.start).local(),
+  // end: activity.end && moment.utc(activity.end).local()
 })
 
-const now = () => moment.utc()
+const now = () => ({})
 
 const loadActivitiesEpic = action$ => (
   action$.pipe(
@@ -279,7 +280,7 @@ const createLog = action$ => (
           flatMap$(log => concat(
             of$(logCreated(log)),
             of$(removeNetworkActivity(CREATE_LOG)),
-            of$(goBack())
+            // of$(goBack())
           )))
       )),
       catchError$(e => {
@@ -298,7 +299,7 @@ const updateLog = action$ => (
           flatMap$(log => concat(
             of$(logUpdated(log)),
             of$(removeNetworkActivity(UPDATE_LOG)),
-            of$(goBack())
+            // of$(goBack())
           )))
       )),
       catchError$(e => {
@@ -358,8 +359,8 @@ const pollingEpic = (action$, state$) => (
       )),
       withLatestFrom$(state$),
       switchMap$(([response, state]) => {
-        const lastModifiedDate = moment.utc(response.xhr.getResponseHeader('last-modified'));
-        const lastUpdated = state.activity.lastUpdated;
+        const lastModifiedDate = dayjs.utc(response.xhr.getResponseHeader('last-modified'))
+        const lastUpdated = state.activity.lastUpdated
         return of$({})
           .pipe(
             filter$(() => lastModifiedDate.isSameOrAfter(lastUpdated)),
