@@ -99,8 +99,6 @@ export const reducer = (state = initialState, action) => {
           )))
       }
     }
-    case 'LOGOUT_SUCCESS':
-      return initialState
     case SELECT_ACTIVITY:
       return {
         ...state,

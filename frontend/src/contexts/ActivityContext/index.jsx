@@ -1,6 +1,6 @@
-import React, {createContext, useContext, useReducer} from 'react'
+import React, {createContext, useContext, useEffect, useReducer} from 'react'
 import {get, post} from 'api'
-import {activitiesLoaded} from './actions'
+import {activitiesLoaded, activityStarted} from './actions'
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 
 const ActivityContext = createContext()
@@ -14,10 +14,14 @@ export const ActivityProvider = ({addNetworkActivity, removeNetworkActivity, chi
 
   const startActivity = name => {
     //TODO maintain running network activities state
-    post('activity', {name})
+    post('activity', {name}).then(activity => dispatch(activityStarted(activity)))
   }
 
-  return <ActivityContext.Provider value={}>
+  useEffect(() => {
+    loadActivities()
+  }, [])
+
+  return <ActivityContext.Provider value={{...state}}>
     {children}
   </ActivityContext.Provider>
 

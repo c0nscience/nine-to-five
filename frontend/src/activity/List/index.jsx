@@ -1,13 +1,29 @@
 import React from 'react'
 import WeekCard from './WeekCard'
 import {extendedDayjs as dayjs} from 'extendedDayjs'
+import {useActivity} from 'contexts/ActivityContext'
+import {Duration} from 'luxon'
+
+const weekDateFormat = 'GGGG-W'
+
+const fromWeekDate = s => dayjs(s, weekDateFormat)
 
 const List = () => {
-  const minutes = dayjs.utc('2020-03-11T17:25:00Z').diff(dayjs.utc('2020-03-10T16:20:00Z'), 'minute')
+  const {activitiesByWeek: byWeek} = useActivity()
+
   return <>
-    <WeekCard
-      totalDurationInMinutes={minutes}
-      weekNumber={11}/>
+    {Object.entries(byWeek)
+      .sort((a, b) => fromWeekDate(b[0]).diff(fromWeekDate(a[0])))
+      .map(v => {
+        const [weekNumber, week] = v
+
+        const totalWeekDurationAsMinutes = Duration.fromISO(week.totalDuration).as('minutes')
+
+        return <WeekCard key={weekNumber}
+                         totalDurationInMinutes={totalWeekDurationAsMinutes}
+                         weekNumber={weekNumber}
+                         days={week.days}/>
+      })}
   </>
 }
 

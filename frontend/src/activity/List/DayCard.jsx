@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
     }
   })
 )
-const DayCard = ({totalDurationAsMinutes, date}) => {
+const DayCard = ({totalDurationAsMinutes, date, activities}) => {
   const classes = useStyles()
 
   return <>
@@ -23,11 +23,14 @@ const DayCard = ({totalDurationAsMinutes, date}) => {
     </Typography>
 
     <List className={classes.list}>
-      {/*iterate over a list of tasks of this day then*/}
-      <ActivityItem id={10} name={'This was a task'} start={'2020-03-09T09:00:00Z'} end={'2020-03-09T10:00:00Z'}/>
-      <ActivityItem id={10} name={'This was a task'} start={'2020-03-09T09:00:00Z'} end={'2020-03-09T10:00:00Z'}/>
-      <ActivityItem id={10} name={'This was a task'} start={'2020-03-09T09:00:00Z'} end={'2020-03-09T10:00:00Z'}/>
-      <ActivityItem id={10} name={'This was a task'} start={'2020-03-09T09:00:00Z'} end={'2020-03-09T10:00:00Z'}/>
+      {
+        activities.sort((a, b) => dayjs(b.start).diff(dayjs(a.start)))
+          .filter(activity => activity.end !== undefined)
+          .map(activity => (
+            <ActivityItem {...activity}
+                          key={`activity-${activity.id}`}/>
+          ))
+      }
     </List>
   </>
 }

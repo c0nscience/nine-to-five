@@ -1,11 +1,13 @@
 import utc from 'dayjs/plugin/utc'
 import isoWeek from 'dayjs/plugin/isoWeek'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
 import dayjs from 'dayjs'
 
 export const extendedDayjs =
   dayjs
     .extend(utc)
     .extend(isoWeek)
+    .extend(customParseFormat)
 
 export const formatMinutesAsHours = totalDurationInMinutes => {
   const hours = Math.floor(totalDurationInMinutes / 60)
