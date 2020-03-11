@@ -15,10 +15,11 @@ const authorizationHeader = async (getToken = () => '') => {
 const asJson = res => res.json()
 
 export const get = (endpoint, getToken) => {
-  return authorizationHeader(getToken)
+  return authorizationHeader(getToken)//TODO well that is odd ... not every request has 'Access-Control-Allow-Origin http://localhost:3000' set
     .then(token => fetch(url(endpoint), {
         method: 'GET',
-        headers: {...token}
+        headers: {...token},
+        mode: 'cors'
       }).then(asJson)
     )
 }
