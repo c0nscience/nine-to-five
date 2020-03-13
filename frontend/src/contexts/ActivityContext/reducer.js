@@ -1,4 +1,3 @@
-// import moment from 'moment'
 import {extendedDayjs as dayjs} from 'extendedDayjs'
 import {
   ACTIVITIES_LOADED,
@@ -29,9 +28,10 @@ export const initialState = {
 }
 
 const reduceActivitiesByWeek = state => (activity, reducer) => {
-  const weekDate = activity.start.format('GGGG-[W]W')
-  const dayDate = activity.start.format('YYYY-MM-DD')
-
+  const weekDate = dayjs.utc(activity.start).local().format('gggg-[W]w')
+  const dayDate = dayjs.utc(activity.start).local().format('YYYY-MM-DD')
+  console.log('weekDate', weekDate)
+  console.log('dayDate', dayDate)
   const week = state.activitiesByWeek[weekDate] || {
     // totalDuration: moment.duration(0),
     days: {}

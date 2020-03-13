@@ -1,17 +1,21 @@
 import React from 'react'
+import {useActivity} from 'contexts/ActivityContext'
 import List from './List'
-import {ActivityProvider} from 'contexts/ActivityContext'
-import {useAuth} from 'contexts/AuthenticationContext'
+import CreateForm from 'activity/CreateForm'
+import RunningActivity from 'activity/RunningActivity'
+import {useNetworkActivity} from 'contexts/NetworkContext'
 
 export default () => {
-  const {getTokenSilently} = useAuth()
-  return <ActivityProvider getToken={getTokenSilently}>
+  const {running} = useActivity()
+  const {runningRequests} = useNetworkActivity()
+
+  return <>
     {/*TODO fix error message component*/}
     {/*<ErrorMessage/>*/}
 
-    {/*<CreateForm/>*/}
-    {/*<RunningActivity name={'This is a running activity and it is very very very long ... the fox jumps over the fence'}*/}
-    {/*                 start={'2020-03-10T22:00:00Z'}/>*/}
+    {!running && <CreateForm/>}
+    {running && <RunningActivity {...running} loading={runningRequests.length > 0}/>}
+
     <List/>
-  </ActivityProvider>
+  </>
 }

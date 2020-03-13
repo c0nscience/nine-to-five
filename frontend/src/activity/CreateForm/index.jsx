@@ -4,6 +4,8 @@ import TextField from '@material-ui/core/TextField'
 import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import makeStyles from '@material-ui/core/styles/makeStyles'
+import {useNetworkActivity} from 'contexts/NetworkContext'
+import {useActivity} from 'contexts/ActivityContext'
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -24,44 +26,21 @@ const useStyles = makeStyles(theme => ({
     }
   })
 )
-const CreateActivityForm = () => {
-
-  // constructor() {
-  //   super()
-  //   this.state = {
-  //     name: ''
-  //   }
-  //
-  //   this.handleNameChange = this.handleNameChange.bind(this)
-  //   this.handleRequestSave = this.handleRequestSave.bind(this)
-  // }
-  //
-  // handleNameChange(event) {
-  //   const name = event.target.value
-  //   this.setState({name})
-  // }
-  //
-  // handleRequestSave(event) {
-  //   event.preventDefault()
-  //   this.setState({name: ''})
-  //   this.props.startActivity(this.state.name)
-  // }
-
-
-  // render() {
+const CreateForm = () => {
   const [name, setName] = useState('')
-  const {loading} = false //TODO fetch from network context
+  const {runningRequests} = useNetworkActivity()
+  const {startActivity} = useActivity()
   const classes = useStyles()
 
-  const startActivity = e => {
+  const handleSubmit = e => {
     e.preventDefault()
+    startActivity(name)
     setName('')
-    //TODO call 'startActivity' functionality
   }
 
   return (
-    <Paper className={loading ? classes.loadingPaper : classes.paper}>
-      <form onSubmit={startActivity}>
+    <Paper className={runningRequests.length > 0 ? classes.loadingPaper : classes.paper}>
+      <form onSubmit={handleSubmit}>
         <Grid container spacing={0}>
           <Grid item xs={12}>
             <TextField
@@ -74,11 +53,11 @@ const CreateActivityForm = () => {
             />
           </Grid>
         </Grid>
-        <StartButton disabled={name.length < 3} onClick={startActivity}/>
+        <StartButton disabled={name.length < 3} onClick={handleSubmit}/>
       </form>
     </Paper>
   )
   // }
 }
 
-export default CreateActivityForm
+export default CreateForm

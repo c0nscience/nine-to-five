@@ -6,6 +6,9 @@ import NavBar from './NavBar'
 import {AuthProvider} from 'contexts/AuthenticationContext'
 import {AUTH_CONFIG} from 'contexts/AuthenticationContext/auth0-config'
 import PrivateRoute from 'component/PrivateRoute'
+import {NetworkActivityProvider} from 'contexts/NetworkContext'
+import LoadingIndicator from 'component/LoadingIndicator'
+import {ActivityProvider} from 'contexts/ActivityContext'
 
 const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
@@ -14,13 +17,18 @@ const App = ({history}) => {
                        audience={'https://api.ntf.io'}
                        scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log update:log'}
   >
-    <NavBar/>
-    {/*<LoadingIndicator/>*/}
-    <Router history={history}>
-      <Switch>
-        <PrivateRoute exact path="/" component={Activity}/>
-      </Switch>
-    </Router>
+    <NetworkActivityProvider>
+      <NavBar/>
+      <LoadingIndicator/>
+
+      <Router history={history}>
+        <Switch>
+          <PrivateRoute exact path="/" component={() => <ActivityProvider>
+            <Activity/>
+          </ActivityProvider>}/>
+        </Switch>
+      </Router>
+    </NetworkActivityProvider>
   </AuthProvider>
 
 }

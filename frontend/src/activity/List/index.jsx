@@ -4,7 +4,7 @@ import {extendedDayjs as dayjs} from 'extendedDayjs'
 import {useActivity} from 'contexts/ActivityContext'
 import {Duration} from 'luxon'
 
-const weekDateFormat = 'GGGG-W'
+const weekDateFormat = 'gggg-w'
 
 const fromWeekDate = s => dayjs(s, weekDateFormat)
 
