@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react'
 import Typography from '@material-ui/core/Typography'
 import makeStyles from '@material-ui/core/styles/makeStyles'
-import {extendedDayjs as dayjs, formatMinutesAsHours} from 'extendedDayjs'
 import Paper from '@material-ui/core/Paper'
 import Grid from '@material-ui/core/Grid'
 import StopButton from 'activity/RunningActivity/StopButton'
+import {DateTime} from 'luxon'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -25,20 +25,17 @@ const useStyles = makeStyles(theme => ({
     }
   })
 )
-const timeFormat = 'HH:mm'
 const updateTimerInterval = 10000
 let updateTimer
 
-const calculateDurationFromStart = (start) => {
-  const localStart = dayjs.utc(start).local()
-  return dayjs().diff(localStart, 'minute')
+const calculateDurationFromStart = start => {
+  return DateTime.local().diff(start)
 }
 
 const ElapsedTime = ({start}) => {
   const [duration, setDuration] = useState(calculateDurationFromStart(start))
 
   useEffect(() => {
-
     updateTimer = setInterval(() => {
       setDuration(calculateDurationFromStart(start))
     }, updateTimerInterval)
@@ -51,26 +48,30 @@ const ElapsedTime = ({start}) => {
   })
 
   return <Typography variant="h3">
-    {formatMinutesAsHours(duration)}
+    {duration.toFormat('hh:mm')}
   </Typography>
 }
+
+const cut = str => ({
+  after: length => `${str.slice(0, length)}${str.length >= length ? ' ...' : ''}`
+})
 
 const RunningActivity = (props) => {
   const {id, name, start: startUtc, loading} = props
   const classes = useStyles()
-  const localStart = dayjs.utc(startUtc).local()
+  const localStart = DateTime.fromISO(startUtc, {zone: 'utc'}).toLocal()
 
   return <Paper className={loading ? classes.loadingPaper : classes.paper}>
     <Grid container spacing={0}>
       <Grid item xs={4}>
-        <ElapsedTime start={startUtc}/>
+        <ElapsedTime start={localStart}/>
         <Typography variant="caption">
-          since {localStart.format(timeFormat)}
+          since {localStart.toFormat('HH:mm')}
         </Typography>
       </Grid>
       <Grid item xs={7}>
         <Typography variant="h6">
-          {name.slice(0, 57)}{name.length >= 57 ? ' ...' : ''}
+          {cut(name).after(57)}
         </Typography>
       </Grid>
     </Grid>

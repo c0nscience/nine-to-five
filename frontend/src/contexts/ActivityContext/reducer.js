@@ -1,4 +1,3 @@
-import {extendedDayjs as dayjs} from 'extendedDayjs'
 import {
   ACTIVITIES_LOADED,
   ACTIVITY_DELETED,
@@ -14,6 +13,7 @@ import {
   RUNNING_ACTIVITY_LOADED,
   SELECT_ACTIVITY
 } from './actions'
+import {DateTime} from 'luxon'
 
 export const initialState = {
   openEditDialog: false,
@@ -24,14 +24,13 @@ export const initialState = {
   running: undefined,
   overtimes: [],
   logs: [],
-  lastUpdated: dayjs
+  lastUpdated: DateTime.local()
 }
 
 const reduceActivitiesByWeek = state => (activity, reducer) => {
-  const weekDate = dayjs.utc(activity.start).local().format('gggg-[W]w')
-  const dayDate = dayjs.utc(activity.start).local().format('YYYY-MM-DD')
-  console.log('weekDate', weekDate)
-  console.log('dayDate', dayDate)
+  let localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
+  const weekDate = localStart.toFormat('kkkk-[W]WW')
+  const dayDate = localStart.toISODate()
   const week = state.activitiesByWeek[weekDate] || {
     // totalDuration: moment.duration(0),
     days: {}

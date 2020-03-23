@@ -1,13 +1,8 @@
 import React from 'react'
 import WeekCard from './WeekCard'
-import {extendedDayjs as dayjs} from 'extendedDayjs'
 import {useActivity} from 'contexts/ActivityContext'
-import {Duration} from 'luxon'
 import {useStatistics} from 'contexts/StatisticContext'
-
-const weekDateFormat = 'gggg-w'
-
-const fromWeekDate = s => dayjs(s, weekDateFormat)
+import {DateTime} from 'luxon'
 
 const List = () => {
   const {activitiesByWeek: byWeek} = useActivity()
@@ -15,14 +10,12 @@ const List = () => {
 
   return <>
     {Object.entries(byWeek)
-      .sort((a, b) => fromWeekDate(b[0]).diff(fromWeekDate(a[0])))
+      .sort((a, b) => DateTime.fromISO(b[0]).diff(DateTime.fromISO(a[0])).valueOf())
       .map(v => {
         const [weekNumber, week] = v
 
-        const totalWeekDurationAsMinutes = Duration.fromISO(week.totalDuration).as('minutes')
-
         return <WeekCard key={weekNumber}
-                         totalDurationInMinutes={totalWeekDurationAsMinutes}
+                         totalDuration={week.totalDuration}
                          weekNumber={weekNumber}
                          days={week.days}/>
       })}

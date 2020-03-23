@@ -1,11 +1,11 @@
 import React from 'react'
-import {extendedDayjs as dayjs, formatMinutesAsHours} from 'extendedDayjs'
 import Typography from '@material-ui/core/Typography'
 import CardContent from '@material-ui/core/CardContent'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListItem from '@material-ui/core/ListItem'
 import Card from '@material-ui/core/Card'
 import makeStyles from '@material-ui/core/styles/makeStyles'
+import {DateTime} from 'luxon'
 
 const useStyles = makeStyles(theme => ({
   itemText: {
@@ -16,17 +16,17 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const ActivityItem = ({id, name, start: _start, end: _end, isRunningActivity}) => {
+const ActivityItem = ({name, start: _start, end: _end}) => {
   const classes = useStyles()
 
-  const end = _end && dayjs.utc(_end).local()
-  const start = dayjs.utc(_start).local()
-  const isInTheFuture = dayjs().isBefore(start)
-  const endOrNow = end || dayjs()
-  const duration = endOrNow.diff(start, 'minute')
-  const period = ` for ${formatMinutesAsHours(duration)}`
+  const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
+  const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
+  const isInTheFuture = DateTime.local() < start
+  const endOrNow = end || DateTime.local()
+  const duration = endOrNow.diff(start)
+  const period = ` for ${duration.toFormat('hh:mm')}`
 
-  return <ListItem disableGutters>
+  return <ListItem disableGutters disabled={isInTheFuture}>
     <ListItemText className={classes.itemText}>
       <Card>
         <CardContent className={classes.content}>

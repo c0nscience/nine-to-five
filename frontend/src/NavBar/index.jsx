@@ -26,7 +26,7 @@ const Index = () => {
   return <>
     <Menu open={isDrawerOpen} closeDrawer={() => setIsDrawerOpen(false)}/>
     <div className={classes.root}>
-      <AppBar position="static">
+      <AppBar position="static" elevation={0}>
         <Toolbar disableGutters>
           <div className={classes.flex}/>
           <IconButton className={classes.menuButton}

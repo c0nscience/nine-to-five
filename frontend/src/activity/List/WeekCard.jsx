@@ -1,10 +1,9 @@
 import React from 'react'
 import Typography from '@material-ui/core/Typography'
 import {makeStyles} from '@material-ui/core/styles'
-import {extendedDayjs as dayjs, formatMinutesAsHours} from 'extendedDayjs'
 import DayCard from 'activity/List/DayCard'
 import Paper from '@material-ui/core/Paper'
-import {Duration} from 'luxon'
+import {DateTime, Duration} from 'luxon'
 
 const useStyles = makeStyles(theme => ({
     weekSummaryCard: {
@@ -14,28 +13,26 @@ const useStyles = makeStyles(theme => ({
     }
   })
 )
-const WeekCard = ({totalDurationInMinutes, weekNumber, days}) => {
+const WeekCard = ({totalDuration, weekNumber, days}) => {
   const classes = useStyles()
-  const week = dayjs(weekNumber, 'gggg-[W]w') //TODO that does not work ... lets find something else
-  console.log('weekNumber', weekNumber)
-  console.log('week', week)
-  const firstDay = week.startOf('isoWeek').format('DD.')
-  const lastDay = week.endOf('isoWeek').format('DD. MMM, YYYY')
+  const week = DateTime.fromISO(weekNumber)
+  const formattedTotalDuration = Duration.fromISO(totalDuration).toFormat('hh:mm')
+  const firstDay = week.set({weekday: 1}).toFormat('dd.')
+  const lastDay = week.set({weekday: 7}).toFormat('dd. MMM, yyyy')
+
   return <>
     <Paper className={classes.weekSummaryCard} elevation={3}>
       <Typography variant="h5">
-        {formatMinutesAsHours(totalDurationInMinutes)} in {`${firstDay} - ${lastDay}`}
+        {formattedTotalDuration} in {`${firstDay} - ${lastDay}`}
       </Typography>
     </Paper>
 
     {Object.entries(days)
-      // .filter(runningActivities)
-      .sort((a, b) => dayjs.utc(b[0]).local().diff(dayjs.utc(a[0]).local()))
+      .sort((a, b) => DateTime.fromISO(b[0]).diff(DateTime.fromISO(a[0])).valueOf())
       .map(value => {
         const [date, day] = value
-        const totalDurationAsMinutes = Duration.fromISO(day.totalDuration).as('minutes')
         return <DayCard key={date}
-                        totalDurationAsMinutes={totalDurationAsMinutes}
+                        totalDuration={day.totalDuration}
                         date={date}
                         activities={day.activities}/>
       })}

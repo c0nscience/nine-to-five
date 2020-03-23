@@ -2,8 +2,8 @@ import React from 'react'
 import Typography from '@material-ui/core/Typography'
 import List from '@material-ui/core/List'
 import {makeStyles} from '@material-ui/core/styles'
-import {extendedDayjs as dayjs, formatMinutesAsHours} from 'extendedDayjs'
 import ActivityItem from 'activity/List/ActivityItem'
+import {DateTime, Duration} from 'luxon'
 
 const useStyles = makeStyles(theme => ({
     dayHeadline: {
@@ -14,17 +14,19 @@ const useStyles = makeStyles(theme => ({
     }
   })
 )
-const DayCard = ({totalDurationAsMinutes, date, activities}) => {
+const DayCard = ({totalDuration, date, activities}) => {
   const classes = useStyles()
+  const formattedDuration = Duration.fromISO(totalDuration).toFormat('hh:mm')
 
   return <>
     <Typography variant="subtitle1" className={classes.dayHeadline}>
-      {formatMinutesAsHours(totalDurationAsMinutes)} @ {dayjs(date).format('dd DD.')}
+      {formattedDuration} @ {DateTime.fromISO(date).toFormat('dd. MMM, yyyy')}
     </Typography>
 
     <List className={classes.list}>
       {
-        activities.sort((a, b) => dayjs(b.start).diff(dayjs(a.start)))
+        activities
+          .sort((a, b) => DateTime.fromISO(b.start).diff(DateTime.fromISO(a.start)).valueOf())
           .filter(activity => activity.end !== undefined)
           .map(activity => (
             <ActivityItem {...activity}
