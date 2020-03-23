@@ -4,9 +4,11 @@ import {
   activitiesLoaded,
   activityStarted,
   activityStopped,
+  deselectActivity as deselectActivityAction,
   LOAD_ACTIVITIES,
   LOAD_RUNNING_ACTIVITY,
   runningActivityLoaded,
+  selectActivity as selectActivityAction,
   START_ACTIVITY,
   STOP_ACTIVITY
 } from './actions'
@@ -34,6 +36,11 @@ export const ActivityProvider = ({children}) => {
     ).with(LOAD_RUNNING_ACTIVITY)
   }
 
+  useEffect(() => {
+    loadActivities()
+    loadRunning()
+  }, [])
+
   const startActivity = name => {
     request(post('activity', {name})
       .then(activity => dispatch(activityStarted(activity)))
@@ -46,15 +53,20 @@ export const ActivityProvider = ({children}) => {
     ).with(STOP_ACTIVITY)
   }
 
-  useEffect(() => {
-    loadActivities()
-    loadRunning()
-  }, [])
+  const selectActivity = activity => {
+    dispatch(selectActivityAction(activity))
+  }
+
+  const deselectActivity = () => {
+    dispatch(deselectActivityAction())
+  }
 
   return <ActivityContext.Provider value={{
     ...state,
     startActivity,
-    stopActivity
+    stopActivity,
+    selectActivity,
+    deselectActivity
   }}>
     {children}
   </ActivityContext.Provider>

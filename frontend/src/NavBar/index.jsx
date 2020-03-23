@@ -6,7 +6,7 @@ import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
 import Menu from './Menu'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
     root: {
       display: 'flex'
     },
@@ -14,11 +14,10 @@ const useStyles = makeStyles({
       flex: 1
     },
     menuButton: {
-      marginLeft: 12,
-      marginRight: 20
+      marginRight: theme.spacing(2)
     }
   }
-)
+))
 const Index = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const classes = useStyles()

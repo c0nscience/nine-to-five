@@ -16,8 +16,6 @@ import {
 import {DateTime} from 'luxon'
 
 export const initialState = {
-  openEditDialog: false,
-  openCreateDialog: false,
   selectedActivity: undefined,
   activitiesByWeek: {},
   selectedLog: undefined,
@@ -102,14 +100,12 @@ export const reducer = (state = initialState, action) => {
     case SELECT_ACTIVITY:
       return {
         ...state,
-        openEditDialog: true,
         selectedActivity: action.payload
       }
     case DESELECT_ACTIVITY:
       return {
         ...state,
         selectedActivity: undefined,
-        openEditDialog: false
       }
     case ACTIVITY_SAVED:
       return {
