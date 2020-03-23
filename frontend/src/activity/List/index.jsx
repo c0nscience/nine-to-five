@@ -3,6 +3,7 @@ import WeekCard from './WeekCard'
 import {extendedDayjs as dayjs} from 'extendedDayjs'
 import {useActivity} from 'contexts/ActivityContext'
 import {Duration} from 'luxon'
+import {useStatistics} from 'contexts/StatisticContext'
 
 const weekDateFormat = 'gggg-w'
 
@@ -10,6 +11,7 @@ const fromWeekDate = s => dayjs(s, weekDateFormat)
 
 const List = () => {
   const {activitiesByWeek: byWeek} = useActivity()
+  const {overtimes} = useStatistics()
 
   return <>
     {Object.entries(byWeek)

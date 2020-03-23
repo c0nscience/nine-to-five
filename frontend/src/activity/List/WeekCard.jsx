@@ -16,7 +16,9 @@ const useStyles = makeStyles(theme => ({
 )
 const WeekCard = ({totalDurationInMinutes, weekNumber, days}) => {
   const classes = useStyles()
-  const week = dayjs(weekNumber, 'gggg-w')
+  const week = dayjs(weekNumber, 'gggg-[W]w') //TODO that does not work ... lets find something else
+  console.log('weekNumber', weekNumber)
+  console.log('week', week)
   const firstDay = week.startOf('isoWeek').format('DD.')
   const lastDay = week.endOf('isoWeek').format('DD. MMM, YYYY')
   return <>

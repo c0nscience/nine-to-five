@@ -19,8 +19,9 @@ const asJson = res => {
   }
 }
 
-export const createApi = getToken => ({
-    createNetworkActivityDecorator: (addNetworkActivity, removeNetworkActivity) => promise => {
+export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) => {
+  return {
+    request: promise => {
       return {
         with: networkActivity => {
           addNetworkActivity(networkActivity)
@@ -89,5 +90,5 @@ export const createApi = getToken => ({
       }).then(asJson)
     }
   }
-)
+}
 

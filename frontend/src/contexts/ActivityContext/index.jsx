@@ -17,11 +17,10 @@ import {useAuth} from 'contexts/AuthenticationContext'
 const ActivityContext = createContext()
 
 export const ActivityProvider = ({children}) => {
-  const {getTokenSilently} = useAuth()
   const [state, dispatch] = useReducer(reducer, initialState)
+  const {getTokenSilently} = useAuth()
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
-  const {get, post, createNetworkActivityDecorator} = createApi(getTokenSilently)
-  const request = createNetworkActivityDecorator(addNetworkActivity, removeNetworkActivity)
+  const {get, post, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadActivities = () => {
     request(get('activities')
