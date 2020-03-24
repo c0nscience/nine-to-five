@@ -13,7 +13,7 @@ import {
   RUNNING_ACTIVITY_LOADED,
   SELECT_ACTIVITY
 } from './actions'
-import {DateTime} from 'luxon'
+import {DateTime, Duration} from 'luxon'
 
 export const initialState = {
   selectedActivity: undefined,
@@ -26,16 +26,17 @@ export const initialState = {
 }
 
 const reduceActivitiesByWeek = state => (activity, reducer) => {
-  let localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
-  const weekDate = localStart.toFormat('kkkk-[W]WW')
+  console.log('activity.start', activity.start)
+  const localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
+  const weekDate = localStart.toISOWeekDate().slice(0, -2)
   const dayDate = localStart.toISODate()
   const week = state.activitiesByWeek[weekDate] || {
-    // totalDuration: moment.duration(0),
+    totalDuration: Duration.fromMillis(0),
     days: {}
   }
 
   const day = week.days[dayDate] || {
-    // totalDuration: moment.duration(0),
+    totalDuration: Duration.fromMillis(0),
     activities: []
   }
 
@@ -45,24 +46,26 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
     ...week.days,
     [dayDate]: {
       ...day,
-      // totalDuration: activities.reduce((result, activity) => {
-      //   const end = moment(activity.end) || moment()
-      //   const diff = end.diff(activity.start)
-      //   return result + diff
-      // }, moment.duration(0)),
+      totalDuration: activities.reduce((result, activity) => {
+        const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
+        const end = DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
+        const diff = end.diff(start)
+        return result.plus(diff)
+      }, Duration.fromMillis(0)),
       activities: activities
     }
   }
 
 
-  // const totalDuration = Object.values(days).reduce((result, day) => {
-  //   return (result + moment.duration(day.totalDuration))
-  // }, moment.duration(0))
+  const totalDuration = Object.values(days)
+    .reduce((result, day) => {
+      return result.plus(Duration.fromISO(day.totalDuration))
+    }, Duration.fromMillis(0))
   return {
     ...state.activitiesByWeek,
     [weekDate]: {
       ...week,
-      totalDuration: 0,
+      totalDuration,
       days: days
     }
   }
@@ -105,7 +108,7 @@ export const reducer = (state = initialState, action) => {
     case DESELECT_ACTIVITY:
       return {
         ...state,
-        selectedActivity: undefined,
+        selectedActivity: undefined
       }
     case ACTIVITY_SAVED:
       return {

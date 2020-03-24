@@ -1,23 +1,28 @@
-import React from 'react'
-import Typography from '@material-ui/core/Typography'
-import CardContent from '@material-ui/core/CardContent'
+import React, {useState} from 'react'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListItem from '@material-ui/core/ListItem'
 import Card from '@material-ui/core/Card'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import {DateTime} from 'luxon'
+import IconButton from '@material-ui/core/IconButton'
+import {Edit, MoreVert as More, Replay, Shuffle} from '@material-ui/icons'
+import Menu from '@material-ui/core/Menu'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import MenuItem from '@material-ui/core/MenuItem'
+import {useActivity} from 'contexts/ActivityContext'
+import {CardHeader} from '@material-ui/core'
 
 const useStyles = makeStyles(theme => ({
   itemText: {
     margin: 0
-  },
-  content: {
-    padding: `${theme.spacing(2)}px !important`
   }
 }))
 
-const ActivityItem = ({name, start: _start, end: _end}) => {
+const ActivityItem = ({id, name, start: _start, end: _end}) => {
   const classes = useStyles()
+  const [anchorEl, setAnchorEl] = useState(undefined)
+  const {running, selectActivity} = useActivity()
+  const isActivityRunning = typeof running !== 'undefined'
 
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
@@ -29,15 +34,56 @@ const ActivityItem = ({name, start: _start, end: _end}) => {
   return <ListItem disableGutters disabled={isInTheFuture}>
     <ListItemText className={classes.itemText}>
       <Card>
-        <CardContent className={classes.content}>
-          <Typography component='span'>
-            {name}
-          </Typography>
-          <Typography component='span' color='textSecondary' variant='body2'>
-            {period}
-          </Typography>
-        </CardContent>
+        <CardHeader title={name} subheader={period}
+                    action={<IconButton aria-label="Menu"
+                                        aria-haspopup="true"
+                                        onClick={(event) => {
+                                          setAnchorEl(event.currentTarget)
+                                        }}>
+                      <More/>
+                    </IconButton>}/>
       </Card>
+      <Menu
+        id={`item-menu-${id}`}
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(undefined)}>
+        {!isActivityRunning && <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          // props.continueActivity(name)
+        }}>
+          <ListItemIcon>
+            <Replay/>
+          </ListItemIcon>
+          <ListItemText primary='Replay'/>
+        </MenuItem>}
+        {isActivityRunning && <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          // props.switchActivity(name)
+        }}>
+          <ListItemIcon>
+            <Shuffle/>
+          </ListItemIcon>
+          <ListItemText primary='Switch'/>
+        </MenuItem>}
+        <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          selectActivity({
+            id,
+            name,
+            start: start.toISO(),
+            end: end.toISO()
+          })
+        }}>
+          <ListItemIcon>
+            <Edit/>
+          </ListItemIcon>
+          <ListItemText primary='Edit'/>
+        </MenuItem>
+      </Menu>
     </ListItemText>
   </ListItem>
 }

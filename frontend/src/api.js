@@ -35,59 +35,62 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
     get: (endpoint) => {
       return authorizationHeader(getToken)
         .then(token => fetch(url(endpoint), {
-            method: 'GET',
-            headers: {...token},
-            mode: 'cors'
-          })
-        )
+          method: 'GET',
+          headers: {...token},
+          mode: 'cors'
+        }))
         .then(asJson)
     },
 
     head: (endpoint) => {
-      return fetch(url(endpoint), {
-        method: 'HEAD',
-        headers: {
-          ...authorizationHeader(getToken)
-        }
-      })
+      return authorizationHeader(getToken)
+        .then(token => fetch(url(endpoint), {
+          method: 'HEAD',
+          headers: {
+            ...token
+          }
+        }))
     },
 
     post: (endpoint, body) => {
       return authorizationHeader(getToken)
         .then(token => fetch(url(endpoint), {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-              ...token,
-              'Content-Type': 'application/json'
-            },
-            mode: 'cors'
-          })
-        )
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: {
+            ...token,
+            'Content-Type': 'application/json'
+          },
+          mode: 'cors'
+        }))
         .then(asJson)
     },
 
     put: (endpoint, body) => {
-      return fetch(url(endpoint), {
-        method: 'PUT',
-        body: JSON.stringify(body),
-        headers: {
-          ...authorizationHeader(getToken),
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors'
-      }).then(asJson)
+      return authorizationHeader(getToken)
+        .then(token => fetch(url(endpoint), {
+          method: 'PUT',
+          body: JSON.stringify(body),
+          headers: {
+            ...token,
+            'Content-Type': 'application/json'
+          },
+          mode: 'cors'
+        }))
+        .then(asJson)
     },
 
     del: (endpoint) => {
-      return fetch(url(endpoint), {
-        method: 'DELETE',
-        headers: {
-          ...authorizationHeader(getToken),
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors'
-      }).then(asJson)
+      return authorizationHeader(getToken)
+        .then(token => fetch(url(endpoint), {
+          method: 'DELETE',
+          headers: {
+            ...token,
+            'Content-Type': 'application/json'
+          },
+          mode: 'cors'
+        }))
+        .then(asJson)
     }
   }
 }

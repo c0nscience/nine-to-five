@@ -3,10 +3,11 @@ import {useActivity} from 'contexts/ActivityContext'
 import List from './List'
 import CreateForm from 'activity/CreateForm'
 import RunningActivity from 'activity/RunningActivity'
+import EditDialog from 'activity/EditDialog'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 
 export default () => {
-  const {running} = useActivity()
+  const {running, selectedActivity} = useActivity()
   const {runningRequests} = useNetworkActivity()
 
   return <>
@@ -17,5 +18,6 @@ export default () => {
     {running && <RunningActivity {...running} loading={runningRequests.length > 0}/>}
 
     <List/>
+    <EditDialog/>
   </>
 }

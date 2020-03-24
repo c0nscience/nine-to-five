@@ -2,12 +2,15 @@ import React, {createContext, useContext, useEffect, useReducer} from 'react'
 import {createApi} from 'api'
 import {
   activitiesLoaded,
+  activityDeleted,
+  activitySaved,
   activityStarted,
   activityStopped,
   deselectActivity as deselectActivityAction,
   LOAD_ACTIVITIES,
   LOAD_RUNNING_ACTIVITY,
   runningActivityLoaded,
+  SAVE_ACTIVITY,
   selectActivity as selectActivityAction,
   START_ACTIVITY,
   STOP_ACTIVITY
@@ -22,7 +25,7 @@ export const ActivityProvider = ({children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const {getTokenSilently} = useAuth()
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
-  const {get, post, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
+  const {get, post, put, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadActivities = () => {
     request(get('activities')
@@ -61,12 +64,23 @@ export const ActivityProvider = ({children}) => {
     dispatch(deselectActivityAction())
   }
 
+  const saveActivity = (changedActivity, oldActivity) => {
+    dispatch(deselectActivityAction())
+    request(put(`activity/${changedActivity.id}`, changedActivity)
+      .then(savedActivity => {
+        dispatch(activityDeleted(oldActivity))
+        dispatch(activitySaved(savedActivity))
+      }))
+      .with(SAVE_ACTIVITY)
+  }
+
   return <ActivityContext.Provider value={{
     ...state,
     startActivity,
     stopActivity,
     selectActivity,
-    deselectActivity
+    deselectActivity,
+    saveActivity
   }}>
     {children}
   </ActivityContext.Provider>
