@@ -7,7 +7,7 @@ import EditDialog from 'activity/EditDialog'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 
 export default () => {
-  const {running, selectedActivity} = useActivity()
+  const {running, selectActivity} = useActivity()
   const {runningRequests} = useNetworkActivity()
 
   return <>
@@ -15,7 +15,7 @@ export default () => {
     {/*<ErrorMessage/>*/}
 
     {!running && <CreateForm/>}
-    {running && <RunningActivity {...running} loading={runningRequests.length > 0}/>}
+    {running && <RunningActivity {...running} selectActivity={selectActivity} loading={runningRequests.length > 0}/>}
 
     <List/>
     <EditDialog/>

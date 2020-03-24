@@ -5,16 +5,18 @@ import Paper from '@material-ui/core/Paper'
 import Grid from '@material-ui/core/Grid'
 import StopButton from 'activity/RunningActivity/StopButton'
 import {DateTime} from 'luxon'
+import {Edit} from '@material-ui/icons'
+import Fab from '@material-ui/core/Fab'
 
 const useStyles = makeStyles(theme => ({
-  paper: {
-    paddingTop: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    paddingBottom: theme.spacing(3),
-    marginBottom: theme.spacing(4),
-    position: 'relative'
-  },
+    paper: {
+      paddingTop: theme.spacing(2),
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      paddingBottom: theme.spacing(3),
+      marginBottom: theme.spacing(4),
+      position: 'relative'
+    },
     loadingPaper: {
       paddingTop: theme.spacing(2) - 5,
       paddingLeft: theme.spacing(2),
@@ -22,6 +24,14 @@ const useStyles = makeStyles(theme => ({
       paddingBottom: theme.spacing(4),
       marginBottom: theme.spacing(4),
       position: 'relative'
+    },
+    editButton: {
+      margin: 0,
+      top: 'auto',
+      left: 'auto',
+      right: theme.spacing(13),
+      bottom: -theme.spacing(3),
+      position: 'absolute'
     }
   })
 )
@@ -57,7 +67,7 @@ const cut = str => ({
 })
 
 const RunningActivity = (props) => {
-  const {id, name, start: startUtc, loading} = props
+  const {id, name, start: startUtc, loading, selectActivity} = props
   const classes = useStyles()
   const localStart = DateTime.fromISO(startUtc, {zone: 'utc'}).toLocal()
 
@@ -75,6 +85,17 @@ const RunningActivity = (props) => {
         </Typography>
       </Grid>
     </Grid>
+    <Fab className={classes.editButton}
+         aria-label="Edit"
+         onClick={() => {
+           selectActivity({
+             id,
+             name,
+             start: localStart
+           })
+         }}>
+      <Edit/>
+    </Fab>
     <StopButton/>
   </Paper>
 

@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 const BASE_URL = process.env.REACT_APP_API_HOST
 
 const url = (endpoint) => {
@@ -12,11 +14,7 @@ const authorizationHeader = async (getToken) => {
 }
 
 const asJson = res => {
-  if (res.ok) {
-    return res.json()
-  } else {
-    return Promise.reject()
-  }
+  return res.data
 }
 
 export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) => {
@@ -33,13 +31,17 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
     },
 
     get: (endpoint) => {
-      return authorizationHeader(getToken)
-        .then(token => fetch(url(endpoint), {
-          method: 'GET',
-          headers: {...token},
-          mode: 'cors'
-        }))
+      //TODO find a bloody solution for reliable http requests
+      //TODO handle 401 responses properly and retry request transparently
+      return axios.get(url(endpoint))
+        .catch(e => console.log('error2', e))
         .then(asJson)
+      // return authorizationHeader(getToken)
+      //   .then(token => axios.get(url(endpoint), {
+      //     headers: {...token}
+      //   }).catch(e => console.log('error2', e.response)))
+      //   .catch(e => console.log('error', e.response))
+      //   .then(asJson)
     },
 
     head: (endpoint) => {

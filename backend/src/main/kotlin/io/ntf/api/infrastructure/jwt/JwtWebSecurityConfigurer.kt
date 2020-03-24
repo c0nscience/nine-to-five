@@ -1,13 +1,11 @@
 package io.ntf.api.infrastructure.jwt
 
-import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import org.apache.commons.codec.binary.Base64
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.Authentication
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
 import org.springframework.security.web.server.authorization.ExceptionTranslationWebFilter
 import reactor.core.publisher.Mono
@@ -31,7 +29,7 @@ class JwtWebSecurityConfigurer private constructor(internal val audience: String
         val authenticationManager = ReactiveAuthenticationManager { authentication -> try {
             Mono.justOrEmpty(provider.authenticate(authentication))
           } catch (t: Throwable) {
-            Mono.error<Authentication>(t)
+            Mono.error(t)
           }
         }
         val exceptionHandling = ExceptionTranslationWebFilter()

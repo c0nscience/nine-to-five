@@ -26,7 +26,6 @@ export const initialState = {
 }
 
 const reduceActivitiesByWeek = state => (activity, reducer) => {
-  console.log('activity.start', activity.start)
   const localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
   const weekDate = localStart.toISOWeekDate().slice(0, -2)
   const dayDate = localStart.toISODate()
@@ -48,7 +47,7 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
       ...day,
       totalDuration: activities.reduce((result, activity) => {
         const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
-        const end = DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
+        const end = activity.end && DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
         const diff = end.diff(start)
         return result.plus(diff)
       }, Duration.fromMillis(0)),

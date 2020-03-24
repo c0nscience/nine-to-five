@@ -1,20 +1,19 @@
 import React from 'react'
 import StopIcon from '@material-ui/icons/Stop'
-// import {stopActivity} from '../actions'
 import {Fab} from '@material-ui/core'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {useActivity} from 'contexts/ActivityContext'
 
 const useStyles = makeStyles(theme => ({
-  button: {
-    margin: 0,
-    top: 'auto',
-    left: 'auto',
-    right: theme.spacing(3),
-    bottom: -theme.spacing(3),
-    position: 'absolute'
-  },
+    button: {
+      margin: 0,
+      top: 'auto',
+      left: 'auto',
+      right: theme.spacing(3),
+      bottom: -theme.spacing(3),
+      position: 'absolute'
+    },
     fabProgress: {
       position: 'absolute',
       top: -6,
@@ -28,18 +27,16 @@ const StopButton = () => {
   const {stopActivity} = useActivity()
   const loading = runningRequests.length > 0
   const classes = useStyles()
-  return (
-    <div className={classes.button}>
-      <Fab disabled={loading}
-           color="secondary"
-           aria-label="stop"
-           onClick={() => {
-             stopActivity()
-           }}>
-        <StopIcon/>
-      </Fab>
-    </div>
-  )
+  return <Fab disabled={loading}
+              className={classes.button}
+              color="secondary"
+              aria-label="stop"
+              onClick={() => {
+                stopActivity()
+              }}>
+    <StopIcon/>
+  </Fab>
+
 }
 
 export default StopButton
