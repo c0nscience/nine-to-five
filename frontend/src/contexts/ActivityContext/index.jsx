@@ -6,6 +6,7 @@ import {
   activitySaved,
   activityStarted,
   activityStopped,
+  DELETE_ACTIVITY,
   deselectActivity as deselectActivityAction,
   LOAD_ACTIVITIES,
   LOAD_RUNNING_ACTIVITY,
@@ -25,7 +26,7 @@ export const ActivityProvider = ({children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const {getTokenSilently} = useAuth()
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
-  const {get, post, put, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
+  const {get, post, put, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadActivities = () => {
     request(get('activities')
@@ -45,13 +46,13 @@ export const ActivityProvider = ({children}) => {
   }, [])
 
   const startActivity = name => {
-    request(post('activity', {name})
+    return request(post('activity', {name})
       .then(activity => dispatch(activityStarted(activity)))
     ).with(START_ACTIVITY)
   }
 
   const stopActivity = () => {
-    request(post('activity/stop')
+    return request(post('activity/stop')
       .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
     ).with(STOP_ACTIVITY)
   }
@@ -74,13 +75,32 @@ export const ActivityProvider = ({children}) => {
       .with(SAVE_ACTIVITY)
   }
 
+  const deleteActivity = id => {
+    dispatch(deselectActivityAction())
+    request(del(`activity/${id}`)
+      .then(deletedActivity => dispatch(activityDeleted(deletedActivity))))
+      .with(DELETE_ACTIVITY)
+  }
+
+  const switchActivity = name => {
+    stopActivity()
+      .then(() => startActivity(name))
+  }
+
+  const continueActivity = name => {
+    startActivity(name)
+  }
+
   return <ActivityContext.Provider value={{
     ...state,
     startActivity,
     stopActivity,
     selectActivity,
     deselectActivity,
-    saveActivity
+    saveActivity,
+    deleteActivity,
+    switchActivity,
+    continueActivity
   }}>
     {children}
   </ActivityContext.Provider>

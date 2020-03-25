@@ -5,67 +5,72 @@ import {
   ACTIVITY_STARTED,
   ACTIVITY_STOPPED,
   DESELECT_ACTIVITY,
-  LAST_UPDATED,
-  LOG_CREATED,
-  LOG_UPDATED,
-  LOGS_LOADED,
-  OVERTIME_LOADED,
   RUNNING_ACTIVITY_LOADED,
   SELECT_ACTIVITY
 } from './actions'
 import {DateTime, Duration} from 'luxon'
+import {ZERO_DURATION} from 'functions'
 
 export const initialState = {
   selectedActivity: undefined,
   activitiesByWeek: {},
-  selectedLog: undefined,
   running: undefined,
-  overtimes: [],
-  logs: [],
-  lastUpdated: DateTime.local()
 }
 
+//TODO well its time to write some tests for this
 const reduceActivitiesByWeek = state => (activity, reducer) => {
   const localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
   const weekDate = localStart.toISOWeekDate().slice(0, -2)
   const dayDate = localStart.toISODate()
   const week = state.activitiesByWeek[weekDate] || {
-    totalDuration: Duration.fromMillis(0),
+    totalDuration: ZERO_DURATION(),
     days: {}
   }
 
   const day = week.days[dayDate] || {
-    totalDuration: Duration.fromMillis(0),
+    totalDuration: ZERO_DURATION(),
     activities: []
   }
 
   const activities = reducer(day.activities, activity)
 
-  const days = {
-    ...week.days,
-    [dayDate]: {
-      ...day,
-      totalDuration: activities.reduce((result, activity) => {
-        const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
-        const end = activity.end && DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
-        const diff = end.diff(start)
-        return result.plus(diff)
-      }, Duration.fromMillis(0)),
-      activities: activities
+  let days
+  if (activities.length > 0) {
+    days = {
+      ...week.days,
+      [dayDate]: {
+        ...day,
+        totalDuration: activities.reduce((result, activity) => {
+          const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
+          const end = activity.end && DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
+          const diff = end.diff(start)
+          return result.plus(diff)
+        }, ZERO_DURATION()),
+        activities: activities
+      }
     }
+  } else {
+    delete week.days[dayDate]
+    days = week.days
   }
 
-
-  const totalDuration = Object.values(days)
-    .reduce((result, day) => {
-      return result.plus(Duration.fromISO(day.totalDuration))
-    }, Duration.fromMillis(0))
-  return {
-    ...state.activitiesByWeek,
-    [weekDate]: {
-      ...week,
-      totalDuration,
-      days: days
+  if (Object.keys(days).length > 0) {
+    const totalDuration = Object.values(days)
+      .reduce((result, day) => {
+        return result.plus(Duration.fromISO(day.totalDuration))
+      }, ZERO_DURATION())
+    return {
+      ...state.activitiesByWeek,
+      [weekDate]: {
+        ...week,
+        totalDuration,
+        days: days
+      }
+    }
+  } else {
+    delete state.activitiesByWeek[weekDate]
+    return {
+      ...state.activitiesByWeek
     }
   }
 }
@@ -133,38 +138,10 @@ export const reducer = (state = initialState, action) => {
           }
         )
       }
-    case OVERTIME_LOADED:
-      return {
-        ...state,
-        overtimes: action.payload
-      }
     case RUNNING_ACTIVITY_LOADED:
       return {
         ...state,
         running: action.payload
-      }
-    case LOGS_LOADED:
-      return {
-        ...state,
-        logs: action.payload
-      }
-    case LOG_CREATED:
-      return {
-        ...state,
-        logs: [
-          ...state.logs,
-          action.payload
-        ]
-      }
-    case LOG_UPDATED:
-      return {
-        ...state,
-        logs: state.logs.map(l => l.id === action.payload.id ? action.payload : l)
-      }
-    case LAST_UPDATED:
-      return {
-        ...state,
-        lastUpdated: action.payload
       }
     default:
       return state

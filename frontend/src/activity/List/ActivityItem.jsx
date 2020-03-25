@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 const ActivityItem = ({id, name, start: _start, end: _end}) => {
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(undefined)
-  const {running, selectActivity} = useActivity()
+  const {running, selectActivity, switchActivity, continueActivity} = useActivity()
   const isActivityRunning = typeof running !== 'undefined'
 
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
@@ -51,7 +51,7 @@ const ActivityItem = ({id, name, start: _start, end: _end}) => {
         {!isActivityRunning && <MenuItem onClick={() => {
           setAnchorEl(undefined)
           window.scroll(0, 0)
-          // props.continueActivity(name)
+          continueActivity(name)
         }}>
           <ListItemIcon>
             <Replay/>
@@ -61,7 +61,7 @@ const ActivityItem = ({id, name, start: _start, end: _end}) => {
         {isActivityRunning && <MenuItem onClick={() => {
           setAnchorEl(undefined)
           window.scroll(0, 0)
-          // props.switchActivity(name)
+          switchActivity(name)
         }}>
           <ListItemIcon>
             <Shuffle/>

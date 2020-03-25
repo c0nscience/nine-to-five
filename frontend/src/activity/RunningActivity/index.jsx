@@ -7,6 +7,7 @@ import StopButton from 'activity/RunningActivity/StopButton'
 import {DateTime} from 'luxon'
 import {Edit} from '@material-ui/icons'
 import Fab from '@material-ui/core/Fab'
+import {ZERO_DURATION} from 'functions'
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -39,7 +40,12 @@ const updateTimerInterval = 10000
 let updateTimer
 
 const calculateDurationFromStart = start => {
-  return DateTime.local().diff(start)
+  const duration = DateTime.local().diff(start)
+  if (duration.valueOf() > 0) {
+    return duration
+  } else {
+    return ZERO_DURATION()
+  }
 }
 
 const ElapsedTime = ({start}) => {

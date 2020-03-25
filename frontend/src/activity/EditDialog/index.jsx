@@ -11,22 +11,18 @@ import TextField from '@material-ui/core/TextField'
 import {useActivity} from 'contexts/ActivityContext'
 import {DateTime} from 'luxon'
 
-const dateFormat = 'YYYY-MM-DD'
-const timeFormat = 'HH:mm'
-const dateTimeFormat = `${dateFormat}T${timeFormat}`
-
-// const ConfirmDeleteDialog = ({open}) => <Dialog open={open}
-//                                                 onClose={this.handleCloseConfirmDialog}>
-//   <DialogTitle>Are you sure?</DialogTitle>
-//   <DialogActions>
-//     <Button onClick={this.handleCloseConfirmDialog}>
-//       No, close!
-//     </Button>
-//     <Button onClick={this.handleRequestDelete} color="secondary">
-//       Yes, delete!
-//     </Button>
-//   </DialogActions>
-// </Dialog>
+const ConfirmDeleteDialog = ({open, handleCloseDialog, handleDelete}) => <Dialog open={open}
+                                                                                 onClose={handleCloseDialog}>
+  <DialogTitle>Are you sure?</DialogTitle>
+  <DialogActions>
+    <Button onClick={handleCloseDialog}>
+      No, close!
+    </Button>
+    <Button onClick={handleDelete} color="secondary">
+      Yes, delete!
+    </Button>
+  </DialogActions>
+</Dialog>
 
 const DateTimeField = ({name, date, handleInputChange}) => {
   const dateValue = DateTime.fromISO(date).toISODate()
@@ -96,7 +92,7 @@ const determineValueHandler = s => {
 const EditDialog = () => {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
-  const {deselectActivity, selectedActivity, saveActivity} = useActivity()
+  const {deselectActivity, selectedActivity, saveActivity, deleteActivity} = useActivity()
   const {id, name, start, end} = selectedActivity || {id: '', name: '', start: '', end: ''}
   const [state, setState] = useState({
     id, name, start, end,
@@ -124,9 +120,13 @@ const EditDialog = () => {
       [name]: value
     })
   }
-  //TODO put selected activity into local component state
-  //TODO handle delete and save requests in activity context
   return <>
+    <ConfirmDeleteDialog open={state.deleteConfirmDialogOpen}
+                         handleCloseDialog={() => setState({...state, deleteConfirmDialogOpen: false})}
+                         handleDelete={() => {
+                           setState({...state, deleteConfirmDialogOpen: false})
+                           deleteActivity(state.id)
+                         }}/>
     <Dialog fullScreen={fullScreen}
             open={typeof selectedActivity !== 'undefined'}
             onClose={deselectActivity}>
@@ -157,8 +157,8 @@ const EditDialog = () => {
         </form>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => {
-        }} color="secondary">
+        <Button onClick={() => setState({...state, deleteConfirmDialogOpen: true})}
+                color="secondary">
           Delete
         </Button>
         <Button onClick={deselectActivity}>
