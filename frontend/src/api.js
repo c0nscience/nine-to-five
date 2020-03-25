@@ -4,6 +4,7 @@ const url = (endpoint) => {
   return `${BASE_URL}/${endpoint}`
 }
 
+//TODO handle expired token properly
 const authorizationHeader = async (getToken) => {
   const token = await getToken()
   return {
