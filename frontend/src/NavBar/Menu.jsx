@@ -9,6 +9,7 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle'
 import TagIcon from '@material-ui/icons/LocalOffer'
 import SettingsIcon from '@material-ui/icons/Settings'
 import {ListItemText} from '@material-ui/core'
+import {useAuth} from 'contexts/AuthenticationContext'
 
 const useStyles = makeStyles({
   list: {
@@ -18,6 +19,7 @@ const useStyles = makeStyles({
 
 const Menu = ({open, closeDrawer}) => {
   const classes = useStyles()
+  const {isAuthenticated, loginWithRedirect, logout} = useAuth()
 
   return <Drawer open={open} onClose={closeDrawer} anchor="right">
     <div
@@ -49,12 +51,23 @@ const Menu = ({open, closeDrawer}) => {
           <ListItemText primary="Tags"/>
         </ListItem>
 
-        <ListItem button>
+        {!isAuthenticated && <ListItem button onClick={() => {
+          loginWithRedirect()
+        }}>
           <ListItemIcon>
             <AccountCircleIcon/>
           </ListItemIcon>
           <ListItemText primary="Login"/>
-        </ListItem>
+        </ListItem>}
+
+        {isAuthenticated && <ListItem button onClick={() => {
+          logout()
+        }}>
+          <ListItemIcon>
+            <AccountCircleIcon/>
+          </ListItemIcon>
+          <ListItemText primary="Logout"/>
+        </ListItem>}
       </List>
     </div>
   </Drawer>
