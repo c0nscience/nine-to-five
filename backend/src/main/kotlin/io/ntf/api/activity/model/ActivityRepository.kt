@@ -19,4 +19,6 @@ interface ActivityRepository : ReactiveMongoRepository<Activity, String> {
   fun findByLogIdAndUserId(logId: String, userId: String): Flux<Activity>
 
   fun findByUserIdOrderByLastModifiedDateDesc(userId: String): Flux<Activity>
+
+  fun findByUserIdAndStartBetweenOrderByStartDesc(userId: String, from: LocalDateTime, to: LocalDateTime): Flux<Activity>
 }

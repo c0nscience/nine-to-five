@@ -9,7 +9,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 typealias ByWeek = Map<String, ActivityService.WeekInformation>
@@ -26,15 +28,14 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
   }
 
   fun all(userId: String): Mono<ByWeek> {
-    return activityRepository.findByUserIdAndLogIdIsNullAndStartIsAfterOrderByStartDesc(userId, now().minusMonths(1))
+    return allInRange(userId, now().minusDays(7).toLocalDate(), now().toLocalDate())
       .reduce(emptyMap()) { result: ByWeek, activity: Activity ->
       val weekDatePattern = DateTimeFormatter.ISO_WEEK_DATE
       val dayDatePattern = DateTimeFormatter.ISO_LOCAL_DATE
       val weekDate = activity.start.format(weekDatePattern).dropLast(2)
       val dayDate = activity.start.format(dayDatePattern)
 
-      val end = activity.end ?: now()
-      val duration = Duration.between(activity.start, end)
+      val duration = activity.duration()
 
       val week = result[weekDate] ?: unitWeek()
 
@@ -103,6 +104,10 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
 
   private fun unitDay(): DayInformation {
     return DayInformation(Duration.ZERO, emptyList())
+  }
+
+  fun allInRange(name: String, from: LocalDate, to: LocalDate): Flux<Activity> {
+    return activityRepository.findByUserIdAndStartBetweenOrderByStartDesc(name, from.atStartOfDay(), to.plusDays(1).atTime(LocalTime.MIDNIGHT))
   }
 
   data class WeekInformation(val totalDuration: Duration, val days: Map<String, DayInformation>)

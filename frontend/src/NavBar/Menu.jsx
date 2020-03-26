@@ -37,19 +37,19 @@ const Menu = ({open, closeDrawer}) => {
           <ListItemText primary="Refresh"/>
         </ListItem>
 
-        <ListItem button>
-          <ListItemIcon>
-            <SettingsIcon/>
-          </ListItemIcon>
-          <ListItemText primary="Settings"/>
-        </ListItem>
+        {/*<ListItem button>*/}
+        {/*  <ListItemIcon>*/}
+        {/*    <SettingsIcon/>*/}
+        {/*  </ListItemIcon>*/}
+        {/*  <ListItemText primary="Settings"/>*/}
+        {/*</ListItem>*/}
 
-        <ListItem button>
-          <ListItemIcon>
-            <TagIcon/>
-          </ListItemIcon>
-          <ListItemText primary="Tags"/>
-        </ListItem>
+        {/*<ListItem button>*/}
+        {/*  <ListItemIcon>*/}
+        {/*    <TagIcon/>*/}
+        {/*  </ListItemIcon>*/}
+        {/*  <ListItemText primary="Tags"/>*/}
+        {/*</ListItem>*/}
 
         {!isAuthenticated && <ListItem button onClick={() => {
           loginWithRedirect()

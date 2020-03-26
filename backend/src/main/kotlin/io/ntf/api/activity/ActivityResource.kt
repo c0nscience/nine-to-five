@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.security.Principal
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -34,6 +35,13 @@ class ActivityResource(private val activityService: ActivityService) {
     return principal
       .map { it.name }
       .flatMap { name -> activityService.all(name) }
+  }
+
+  @GetMapping("/activities/{from}/{to}")
+  fun allInRange(principal: Mono<Principal>, @PathVariable from: String, @PathVariable to: String): Mono<List<Activity>> {
+    return principal
+      .map { it.name }
+      .flatMap { name -> activityService.allInRange(name, LocalDate.parse(from), LocalDate.parse(to)).collectList() }
   }
 
   @PostMapping("/activity")
