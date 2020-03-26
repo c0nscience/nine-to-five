@@ -21,7 +21,7 @@ const List = () => {
                          weekNumber={weekNumber}
                          days={week.days}/>
       })}
-    {(weeks.length = 0) && <NoEntriesFound/>}
+    {(weeks.length === 0) && <NoEntriesFound/>}
   </>
 }
 
