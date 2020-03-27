@@ -1,8 +1,12 @@
 export const LOAD_ACTIVITIES = 'LOAD_ACTIVITIES'
+export const LOAD_ACTIVITIES_IN_RANGE = 'LOAD_ACTIVITIES_IN_RANGE'
 export const ACTIVITIES_LOADED = 'ACTIVITIES_LOADED'
+export const ACTIVITIES_IN_RANGE_LOADED = 'ACTIVITIES_IN_RANGE_LOADED'
 
 export const activitiesLoaded = activities =>
   ({type: ACTIVITIES_LOADED, payload: activities})
+export const activitiesInRangeLoaded = activities =>
+  ({type: ACTIVITIES_IN_RANGE_LOADED, payload: activities})
 
 export const START_ACTIVITY = 'START_ACTIVITY'
 export const ACTIVITY_STARTED = 'ACTIVITY_STARTED'

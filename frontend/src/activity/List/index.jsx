@@ -13,10 +13,11 @@ const List = () => {
   return <>
     {(weeks.length > 0) && weeks
       .sort((a, b) => DateTime.fromISO(b[0]).diff(DateTime.fromISO(a[0])).valueOf())
-      .map(v => {
+      .map((v, index) => {
         const [weekNumber, week] = v
 
         return <WeekCard key={weekNumber}
+                         lastElement={index + 1 === weeks.length}
                          totalDuration={week.totalDuration}
                          weekNumber={weekNumber}
                          days={week.days}/>

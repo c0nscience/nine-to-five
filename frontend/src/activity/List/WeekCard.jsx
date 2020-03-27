@@ -14,13 +14,14 @@ const useStyles = makeStyles(theme => ({
     }
   })
 )
-const WeekCard = ({totalDuration, weekNumber, days}) => {
+const WeekCard = ({totalDuration, weekNumber, days, lastElement}) => {
   const classes = useStyles()
   const week = DateTime.fromISO(weekNumber)
   const formattedTotalDuration = positiveDurationFrom(totalDuration).toFormat('hh:mm')
   const firstDay = week.set({weekday: 1}).toFormat('dd.')
   const lastDay = week.set({weekday: 7}).toFormat('dd. MMM, yyyy')
 
+  const dayEntries = Object.entries(days)
   return <>
     <Paper className={classes.weekSummaryCard} elevation={3}>
       <Typography variant="h5">
@@ -28,11 +29,12 @@ const WeekCard = ({totalDuration, weekNumber, days}) => {
       </Typography>
     </Paper>
 
-    {Object.entries(days)
+    {dayEntries
       .sort((a, b) => DateTime.fromISO(b[0]).diff(DateTime.fromISO(a[0])).valueOf())
-      .map(value => {
+      .map((value, index) => {
         const [date, day] = value
         return <DayCard key={date}
+                        lastElement={index + 1 === dayEntries.length && lastElement}
                         totalDuration={day.totalDuration}
                         date={date}
                         activities={day.activities}/>
