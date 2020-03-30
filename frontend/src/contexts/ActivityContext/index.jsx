@@ -9,7 +9,8 @@ import {
   activityStopped,
   DELETE_ACTIVITY,
   deselectActivity as deselectActivityAction,
-  LOAD_ACTIVITIES, LOAD_ACTIVITIES_IN_RANGE,
+  LOAD_ACTIVITIES,
+  LOAD_ACTIVITIES_IN_RANGE,
   LOAD_RUNNING_ACTIVITY,
   runningActivityLoaded,
   SAVE_ACTIVITY,
@@ -20,7 +21,6 @@ import {
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {useAuth} from 'contexts/AuthenticationContext'
-import {DateTime} from 'luxon'
 
 const ActivityContext = createContext()
 

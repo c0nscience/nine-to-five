@@ -15,13 +15,11 @@ import {ZERO_DURATION} from 'functions'
 export const initialState = {
   selectedActivity: undefined,
   activitiesByWeek: {},
-  running: undefined
+  running: undefined,
+  hasMore: true
 }
 
 const updateActivityIn = (state, activity, reducer) => {
-  // console.log('updateActivityIn - state', state)
-  // console.log('updateActivityIn - activity', activity)
-  // console.log('updateActivityIn - reducer', reducer)
   const localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
   const weekDate = localStart.toISOWeekDate().slice(0, -2)
   const dayDate = localStart.toISODate()
@@ -78,14 +76,10 @@ const updateActivityIn = (state, activity, reducer) => {
   }
 }
 
-
-//TODO well its time to write some tests for this
 const reduceActivitiesByWeek = state => (activity, reducer) => {
   if (Array.isArray(activity)) {
     return activity.reduce((resultingState, a) => {
       const byWeek = updateActivityIn(resultingState, a, reducer)
-      console.log('the new subreducer routine - resultingState', resultingState)
-      console.log('the new subreducer routine - byWeek', byWeek)
       return {
         ...resultingState,
         activitiesByWeek: byWeek
@@ -94,60 +88,6 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
   } else {
     return updateActivityIn(state, activity, reducer)
   }
-  // const localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
-  // const weekDate = localStart.toISOWeekDate().slice(0, -2)
-  // const dayDate = localStart.toISODate()
-  // const week = state.activitiesByWeek[weekDate] || {
-  //   totalDuration: ZERO_DURATION(),
-  //   days: {}
-  // }
-  //
-  // const day = week.days[dayDate] || {
-  //   totalDuration: ZERO_DURATION(),
-  //   activities: []
-  // }
-  //
-  // const activities = reducer(day.activities, activity)
-  //
-  // let days
-  // if (activities.length > 0) {
-  //   days = {
-  //     ...week.days,
-  //     [dayDate]: {
-  //       ...day,
-  //       totalDuration: activities.reduce((result, activity) => {
-  //         const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
-  //         const end = activity.end && DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
-  //         const diff = end.diff(start)
-  //         return result.plus(diff)
-  //       }, ZERO_DURATION()),
-  //       activities: activities
-  //     }
-  //   }
-  // } else {
-  //   delete week.days[dayDate]
-  //   days = week.days
-  // }
-  //
-  // if (Object.keys(days).length > 0) {
-  //   const totalDuration = Object.values(days)
-  //     .reduce((result, day) => {
-  //       return result.plus(Duration.fromISO(day.totalDuration))
-  //     }, ZERO_DURATION())
-  //   return {
-  //     ...state.activitiesByWeek,
-  //     [weekDate]: {
-  //       ...week,
-  //       totalDuration,
-  //       days: days
-  //     }
-  //   }
-  // } else {
-  //   delete state.activitiesByWeek[weekDate]
-  //   return {
-  //     ...state.activitiesByWeek
-  //   }
-  // }
 }
 
 export const reducer = (state = initialState, action) => {
@@ -219,15 +159,15 @@ export const reducer = (state = initialState, action) => {
         running: action.payload
       }
     case ACTIVITIES_IN_RANGE_LOADED:
-      const newVar = activitiesByWeekReducer(
-        action.payload,
-        //TODO we must remove redundant items ...
-        //TODO but hey where does the redundant items come from?
-        (dayActivities, activity) => ([activity, ...dayActivities])//TODO it works ... its yanky, but it works sofar
+      const newState = activitiesByWeekReducer(
+        action.payload.entries,
+        (dayActivities, activity) => ([activity, ...dayActivities])
 
       )
-      console.log('ACTIVITIES_IN_RANGE_LOADED', newVar)
-      return newVar
+      return {
+        ...newState,
+        hasMore: action.payload.remainingEntries > 0
+      }
     default:
       return state
   }

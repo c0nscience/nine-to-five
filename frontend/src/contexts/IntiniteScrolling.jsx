@@ -7,7 +7,7 @@ const InfiniteScrollingContext = createContext()
 
 export const InfiniteScrollingProvider = ({children}) => {
   const {runningRequests} = useNetworkActivity()
-  const {loadActivitiesInRange} = useActivity()
+  const {loadActivitiesInRange, hasMore} = useActivity()
   const [page, setPage] = useState(0)
 
   let controller, signal
@@ -16,7 +16,7 @@ export const InfiniteScrollingProvider = ({children}) => {
     controller = new AbortController()
     signal = controller.signal
 
-    if (page > 0) {
+    if (hasMore && page > 0) {
       const now = DateTime.local()
       const from = now.minus({day: 7 * (page + 1)})
       const to = now.minus({day: 7 * page})
@@ -25,7 +25,7 @@ export const InfiniteScrollingProvider = ({children}) => {
       loadActivitiesInRange(from, to, signal)
     }
     return () => controller.abort()
-  }, [page])
+  }, [page, hasMore])
 
   const observer = useRef()
   const lastElementRef = useCallback(node => {
@@ -40,7 +40,6 @@ export const InfiniteScrollingProvider = ({children}) => {
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
         setPage(previousPageNumber => previousPageNumber + 1)
-        console.log('saw entry', entries[0])
       }
     })
 
