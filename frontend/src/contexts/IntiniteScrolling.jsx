@@ -11,11 +11,9 @@ export const InfiniteScrollingProvider = ({children}) => {
   const [page, setPage] = useState(0)
   const [loadingNewEntries, setLoadingNewEntries] = useState(false)
 
-  let controller, signal
-
   useEffect(() => {
-    controller = new AbortController()
-    signal = controller.signal
+    const controller = new AbortController()
+    const signal = controller.signal
 
     if (hasMore && page > 0) {
       const now = DateTime.local()

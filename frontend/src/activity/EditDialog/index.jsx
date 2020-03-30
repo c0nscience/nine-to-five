@@ -101,12 +101,12 @@ const EditDialog = () => {
   })
 
   useEffect(() => {
-    setState({
-      ...state,
+    setState(s => ({
+      ...s,
       id, name, start, end,
       oldActivity: {id, name, start, end}
-    })
-  }, [selectedActivity])
+    }))
+  }, [id, name, start, end])
 
   const handleInputChange = event => {
     const target = event.target
