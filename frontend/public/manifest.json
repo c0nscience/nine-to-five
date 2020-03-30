@@ -3,7 +3,7 @@
   "short_name": "NTF",
   "theme_color": "#2196f3",
   "background_color": "#2196f3",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "icons": [
     {
