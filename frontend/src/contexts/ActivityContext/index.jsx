@@ -1,6 +1,7 @@
 import React, {createContext, useContext, useEffect, useReducer} from 'react'
 import {createApi} from 'api'
 import {
+  activitiesInRangeLoaded,
   activitiesLoaded,
   activityDeleted,
   activitySaved,
@@ -9,6 +10,7 @@ import {
   DELETE_ACTIVITY,
   deselectActivity as deselectActivityAction,
   LOAD_ACTIVITIES,
+  LOAD_ACTIVITIES_IN_RANGE,
   LOAD_RUNNING_ACTIVITY,
   runningActivityLoaded,
   SAVE_ACTIVITY,
@@ -32,6 +34,12 @@ export const ActivityProvider = ({children}) => {
     request(get('activities')
       .then(activitiesByWeek => dispatch(activitiesLoaded(activitiesByWeek)))
     ).with(LOAD_ACTIVITIES)
+  }
+
+  const loadActivitiesInRange = (from, to, signal) => {
+    request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
+      .then(activities => dispatch(activitiesInRangeLoaded(activities)))
+    ).with(LOAD_ACTIVITIES_IN_RANGE)
   }
 
   const loadRunning = () => {
@@ -100,7 +108,8 @@ export const ActivityProvider = ({children}) => {
     saveActivity,
     deleteActivity,
     switchActivity,
-    continueActivity
+    continueActivity,
+    loadActivitiesInRange
   }}>
     {children}
   </ActivityContext.Provider>

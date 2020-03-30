@@ -6,7 +6,7 @@ import RunningActivity from 'activity/RunningActivity'
 import EditDialog from 'activity/EditDialog'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 
-export default () => {
+const Activity = () => {
   const {running, selectActivity} = useActivity()
   const {runningRequests} = useNetworkActivity()
 
@@ -17,7 +17,9 @@ export default () => {
     {!running && <CreateForm/>}
     {running && <RunningActivity {...running} selectActivity={selectActivity} loading={runningRequests.length > 0}/>}
 
+
     <List/>
     <EditDialog/>
   </>
 }
+export default Activity

@@ -10,6 +10,7 @@ import {NetworkActivityProvider} from 'contexts/NetworkContext'
 import LoadingIndicator from 'component/LoadingIndicator'
 import {ActivityProvider} from 'contexts/ActivityContext'
 import {StatisticProvider} from 'contexts/StatisticContext'
+import {InfiniteScrollingProvider} from 'contexts/IntiniteScrolling'
 
 const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
@@ -25,7 +26,9 @@ const App = ({history}) => {
         <Switch>
           <PrivateRoute exact path="/" component={() => <StatisticProvider>
             <ActivityProvider>
-              <Activity/>
+              <InfiniteScrollingProvider>
+                <Activity/>
+              </InfiniteScrollingProvider>
             </ActivityProvider>
           </StatisticProvider>}/>
         </Switch>

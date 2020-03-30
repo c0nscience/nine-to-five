@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.util.function.component1
+import reactor.kotlin.core.util.function.component2
 import java.security.Principal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,9 +28,11 @@ class ActivityResource(private val activityService: ActivityService) {
     principal
       .map { it.name }
       .flatMap { activityService.getLastModifiedDate(it) }
-      .map { lastModifiedDate -> ResponseEntity.ok()
-        .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
-        .build<Unit>()}
+      .map { lastModifiedDate ->
+        ResponseEntity.ok()
+          .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
+          .build<Unit>()
+      }
 
   @GetMapping("/activities")
   fun allFromDefault(principal: Mono<Principal>): Mono<Map<String, ActivityService.WeekInformation>> {
@@ -38,10 +42,18 @@ class ActivityResource(private val activityService: ActivityService) {
   }
 
   @GetMapping("/activities/{from}/{to}")
-  fun allInRange(principal: Mono<Principal>, @PathVariable from: String, @PathVariable to: String): Mono<List<Activity>> {
-    return principal
-      .map { it.name }
-      .flatMap { name -> activityService.allInRange(name, LocalDate.parse(from), LocalDate.parse(to)).collectList() }
+  fun allInRange(principal: Mono<Principal>, @PathVariable from: String, @PathVariable to: String): Mono<Map<String, Any>> {
+    return principal.map { it.name }
+      .zipWith(principal.flatMap { activityService.countBefore(it.name, LocalDate.parse(from)) })
+      .flatMap { (name, remainingEntries) ->
+        activityService.allInRange(name, LocalDate.parse(from), LocalDate.parse(to)).collectList()
+          .map {
+            mapOf(
+              "entries" to it,
+              "remainingEntries" to remainingEntries
+            )
+          }
+      }
   }
 
   @PostMapping("/activity")

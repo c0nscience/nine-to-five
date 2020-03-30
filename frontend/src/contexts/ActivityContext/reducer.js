@@ -1,4 +1,5 @@
 import {
+  ACTIVITIES_IN_RANGE_LOADED,
   ACTIVITIES_LOADED,
   ACTIVITY_DELETED,
   ACTIVITY_SAVED,
@@ -15,10 +16,10 @@ export const initialState = {
   selectedActivity: undefined,
   activitiesByWeek: {},
   running: undefined,
+  hasMore: true
 }
 
-//TODO well its time to write some tests for this
-const reduceActivitiesByWeek = state => (activity, reducer) => {
+const updateActivityIn = (state, activity, reducer) => {
   const localStart = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
   const weekDate = localStart.toISOWeekDate().slice(0, -2)
   const dayDate = localStart.toISODate()
@@ -72,6 +73,20 @@ const reduceActivitiesByWeek = state => (activity, reducer) => {
     return {
       ...state.activitiesByWeek
     }
+  }
+}
+
+const reduceActivitiesByWeek = state => (activity, reducer) => {
+  if (Array.isArray(activity)) {
+    return activity.reduce((resultingState, a) => {
+      const byWeek = updateActivityIn(resultingState, a, reducer)
+      return {
+        ...resultingState,
+        activitiesByWeek: byWeek
+      }
+    }, {...state})
+  } else {
+    return updateActivityIn(state, activity, reducer)
   }
 }
 
@@ -142,6 +157,16 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         running: action.payload
+      }
+    case ACTIVITIES_IN_RANGE_LOADED:
+      const newState = activitiesByWeekReducer(
+        action.payload.entries,
+        (dayActivities, activity) => ([activity, ...dayActivities])
+
+      )
+      return {
+        ...newState,
+        hasMore: action.payload.remainingEntries > 0
       }
     default:
       return state
