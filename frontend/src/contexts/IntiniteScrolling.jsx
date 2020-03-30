@@ -9,6 +9,7 @@ export const InfiniteScrollingProvider = ({children}) => {
   const {runningRequests} = useNetworkActivity()
   const {loadActivitiesInRange, hasMore} = useActivity()
   const [page, setPage] = useState(0)
+  const [loadingNewEntries, setLoadingNewEntries] = useState(false)
 
   let controller, signal
 
@@ -38,6 +39,7 @@ export const InfiniteScrollingProvider = ({children}) => {
     }
 
     observer.current = new IntersectionObserver(entries => {
+      setLoadingNewEntries(entries[0].isIntersecting)
       if (entries[0].isIntersecting) {
         setPage(previousPageNumber => previousPageNumber + 1)
       }
@@ -50,7 +52,8 @@ export const InfiniteScrollingProvider = ({children}) => {
   }, [runningRequests])
 
   return <InfiniteScrollingContext.Provider value={{
-    lastElementRef
+    lastElementRef,
+    loadingNewEntries
   }}>
     {children}
   </InfiniteScrollingContext.Provider>
