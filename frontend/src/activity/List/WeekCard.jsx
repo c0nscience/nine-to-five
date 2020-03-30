@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
 const WeekCard = ({totalDuration, weekNumber, days, lastElement}) => {
   const classes = useStyles()
   const week = DateTime.fromISO(weekNumber)
-  const formattedTotalDuration = positiveDurationFrom(totalDuration).toFormat('hh:mm')
+  const formattedTotalDuration = positiveDurationFrom(totalDuration).toFormat('h:mm')
   const firstDay = week.set({weekday: 1}).toFormat('dd.')
   const lastDay = week.set({weekday: 7}).toFormat('dd. MMM, yyyy')
 

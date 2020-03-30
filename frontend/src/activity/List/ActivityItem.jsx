@@ -11,81 +11,107 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import MenuItem from '@material-ui/core/MenuItem'
 import {useActivity} from 'contexts/ActivityContext'
 import {CardHeader} from '@material-ui/core'
+import Avatar from '@material-ui/core/Avatar'
+import {useBulkMode} from 'contexts/BulkModeContext'
+import Checkbox from '@material-ui/core/Checkbox'
 
-const useStyles = makeStyles(theme => ({
-  itemText: {
-    margin: 0
+const useStyles = makeStyles(theme => {
+  const avatarBackgroundColor = theme.palette.primary
+  return {
+    itemText: {
+      margin: 0
+    },
+    durationAvatar: {
+      backgroundColor: avatarBackgroundColor.main,
+      textColor: avatarBackgroundColor.contrastText
+    }
   }
-}))
+})
 
 const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
-    const classes = useStyles()
-    const [anchorEl, setAnchorEl] = useState(undefined)
-    const {running, selectActivity, switchActivity, continueActivity} = useActivity()
-    const isActivityRunning = typeof running !== 'undefined'
+  const classes = useStyles()
+  const [anchorEl, setAnchorEl] = useState(undefined)
+  const {running, selectActivity, switchActivity, continueActivity} = useActivity()
+  const {bulkSelectModeEnabled, switchBulkSelectMode, addToBulkSelection, removeFromBulkSelection} = useBulkMode()
+  const isActivityRunning = typeof running !== 'undefined'
 
-    const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
-    const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
-    const isInTheFuture = DateTime.local() < start
-    const endOrNow = end || DateTime.local()
-    const duration = endOrNow.diff(start)
-    const period = ` for ${duration.toFormat('hh:mm')}`
+  const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
+  const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
+  const isInTheFuture = DateTime.local() < start
+  const endOrNow = end || DateTime.local()
+  const duration = endOrNow.diff(start)
 
-    return <ListItem ref={ref} disableGutters disabled={isInTheFuture}>
-      <ListItemText className={classes.itemText}>
-        <Card>
-          <CardHeader title={name} subheader={period}
-                      action={<IconButton aria-label="Menu"
-                                          aria-haspopup="true"
-                                          onClick={(event) => {
-                                            setAnchorEl(event.currentTarget)
-                                          }}>
-                        <More/>
-                      </IconButton>}/>
-        </Card>
-        <Menu
-          id={`item-menu-${id}`}
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(undefined)}>
-          {!isActivityRunning && <MenuItem onClick={() => {
-            setAnchorEl(undefined)
-            window.scroll(0, 0)
-            continueActivity(name)
-          }}>
-            <ListItemIcon>
-              <Replay/>
-            </ListItemIcon>
-            <ListItemText primary='Replay'/>
-          </MenuItem>}
-          {isActivityRunning && <MenuItem onClick={() => {
-            setAnchorEl(undefined)
-            window.scroll(0, 0)
-            switchActivity(name)
-          }}>
-            <ListItemIcon>
-              <Shuffle/>
-            </ListItemIcon>
-            <ListItemText primary='Switch'/>
-          </MenuItem>}
-          <MenuItem onClick={() => {
-            setAnchorEl(undefined)
-            window.scroll(0, 0)
-            selectActivity({
-              id,
-              name,
-              start: start.toISO(),
-              end: end.toISO()
-            })
-          }}>
-            <ListItemIcon>
-              <Edit/>
-            </ListItemIcon>
-            <ListItemText primary='Edit'/>
-          </MenuItem>
-        </Menu>
-      </ListItemText>
-    </ListItem>
+  let avatar
+  if (bulkSelectModeEnabled) {
+    avatar = <Checkbox onChange={e => {
+      const checked = e.target.checked
+      if (checked) {
+        addToBulkSelection(id)
+      } else {
+        removeFromBulkSelection(id)
+      }
+    }}/>
+  } else {
+    avatar = <Avatar aria-label="worked duration" className={classes.durationAvatar} onClick={() => switchBulkSelectMode()}>
+      {duration.as('hours').toPrecision(1)}
+    </Avatar>
   }
-)
+
+  return <ListItem ref={ref} disableGutters disabled={isInTheFuture}>
+    <ListItemText className={classes.itemText}>
+      <Card>
+        <CardHeader title={name}
+                    avatar={avatar}
+                    action={<IconButton aria-label="Menu"
+                                        aria-haspopup="true"
+                                        onClick={(event) => {
+                                          setAnchorEl(event.currentTarget)
+                                        }}>
+                      <More/>
+                    </IconButton>}/>
+      </Card>
+      <Menu
+        id={`item-menu-${id}`}
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(undefined)}>
+        {!isActivityRunning && <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          continueActivity(name)
+        }}>
+          <ListItemIcon>
+            <Replay/>
+          </ListItemIcon>
+          <ListItemText primary='Replay'/>
+        </MenuItem>}
+        {isActivityRunning && <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          switchActivity(name)
+        }}>
+          <ListItemIcon>
+            <Shuffle/>
+          </ListItemIcon>
+          <ListItemText primary='Switch'/>
+        </MenuItem>}
+        <MenuItem onClick={() => {
+          setAnchorEl(undefined)
+          window.scroll(0, 0)
+          selectActivity({
+            id,
+            name,
+            start: start.toISO(),
+            end: end.toISO()
+          })
+        }}>
+          <ListItemIcon>
+            <Edit/>
+          </ListItemIcon>
+          <ListItemText primary='Edit'/>
+        </MenuItem>
+      </Menu>
+    </ListItemText>
+  </ListItem>
+})
 export default ActivityItem

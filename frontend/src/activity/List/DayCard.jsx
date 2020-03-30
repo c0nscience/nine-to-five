@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 const DayCard = ({totalDuration, date, activities, lastElement}) => {
   const classes = useStyles()
   const {lastElementRef} = useInfiniteScrolling()
-  const formattedDuration = positiveDurationFrom(totalDuration).toFormat('hh:mm')
+  const formattedDuration = positiveDurationFrom(totalDuration).toFormat('h:mm')
 
   return <>
     <Typography variant="subtitle1" className={classes.dayHeadline}>

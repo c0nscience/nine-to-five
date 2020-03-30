@@ -11,6 +11,7 @@ import LoadingIndicator from 'component/LoadingIndicator'
 import {ActivityProvider} from 'contexts/ActivityContext'
 import {StatisticProvider} from 'contexts/StatisticContext'
 import {InfiniteScrollingProvider} from 'contexts/IntiniteScrolling'
+import {BulkModeProvider} from 'contexts/BulkModeContext'
 
 const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
@@ -19,20 +20,23 @@ const App = ({history}) => {
                        audience={'https://api.ntf.io'}
                        scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log update:log'}>
     <NetworkActivityProvider>
-      <NavBar/>
-      <LoadingIndicator/>
+      <BulkModeProvider>
+        <NavBar/>
+        <LoadingIndicator/>
 
-      <Router history={history}>
-        <Switch>
-          <PrivateRoute exact path="/" component={() => <StatisticProvider>
-            <ActivityProvider>
-              <InfiniteScrollingProvider>
-                <Activity/>
-              </InfiniteScrollingProvider>
-            </ActivityProvider>
-          </StatisticProvider>}/>
-        </Switch>
-      </Router>
+        <Router history={history}>
+          <Switch>
+            <PrivateRoute exact path="/" component={() =>
+              <StatisticProvider>
+                <ActivityProvider>
+                  <InfiniteScrollingProvider>
+                    <Activity/>
+                  </InfiniteScrollingProvider>
+                </ActivityProvider>
+              </StatisticProvider>}/>
+          </Switch>
+        </Router>
+      </BulkModeProvider>
     </NetworkActivityProvider>
   </AuthProvider>
 
