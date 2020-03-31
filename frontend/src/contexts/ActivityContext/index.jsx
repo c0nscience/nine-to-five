@@ -30,19 +30,9 @@ export const ActivityProvider = ({children}) => {
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
   const {get, post, put, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
-  const loadActivities = () => {
-    request(get('activities')
-      .then(activitiesByWeek => dispatch(activitiesLoaded(activitiesByWeek)))
-    ).with(LOAD_ACTIVITIES)
-  }
-
   const loadActivitiesInRange = (from, to, signal) => {
     request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
-      .then(activities => {
-        if (activities.entries.length > 0) {
-          dispatch(activitiesInRangeLoaded(activities))
-        }
-      })
+      .then(activities => dispatch(activitiesInRangeLoaded(activities)))
     ).with(LOAD_ACTIVITIES_IN_RANGE)
   }
 
@@ -53,7 +43,9 @@ export const ActivityProvider = ({children}) => {
   }
 
   useEffect(() => {
-    loadActivities()
+    //TODO determine if activities exist before the initial loaded time frame
+    //TODO if further activities exist load them
+    //TODO if not do nothing
     loadRunning()
   }, [])
 

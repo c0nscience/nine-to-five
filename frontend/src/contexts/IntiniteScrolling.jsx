@@ -15,7 +15,7 @@ export const InfiniteScrollingProvider = ({children}) => {
     const controller = new AbortController()
     const signal = controller.signal
 
-    if (hasMore && page > 0) {
+    if (hasMore) {
       const now = DateTime.local()
       const from = now.minus({day: 7 * (page + 1)})
       const to = now.minus({day: 7 * page})

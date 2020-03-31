@@ -12,13 +12,17 @@ const authorizationHeader = async (getToken) => {
   }
 }
 
+const extractJsonOrResolve = res => {
+  if (res.status === 204) {
+    return Promise.resolve()
+  } else {
+    return res.json()
+  }
+}
+
 const asJson = res => {
   if (res.ok) {
-    if (res.status === 204) {
-      return Promise.resolve()
-    } else {
-      return res.json()
-    }
+    return extractJsonOrResolve(res)
   } else {
     return Promise.reject({
       status: res.status
