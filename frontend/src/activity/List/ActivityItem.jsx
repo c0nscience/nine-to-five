@@ -31,6 +31,7 @@ const useStyles = makeStyles(theme => {
 const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(undefined)
+  const [selected, setSelected] = useState(false)
   const {running, selectActivity, switchActivity, continueActivity} = useActivity()
   const {bulkSelectModeEnabled, switchBulkSelectMode, addToBulkSelection, removeFromBulkSelection} = useBulkMode()
   const isActivityRunning = typeof running !== 'undefined'
@@ -43,8 +44,9 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
 
   let avatar
   if (bulkSelectModeEnabled) {
-    avatar = <Checkbox onChange={e => {
+    avatar = <Checkbox checked={selected} onChange={e => {
       const checked = e.target.checked
+      setSelected(checked)
       if (checked) {
         addToBulkSelection(id)
       } else {
@@ -52,7 +54,14 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
       }
     }}/>
   } else {
-    avatar = <Avatar aria-label="worked duration" className={classes.durationAvatar} onClick={() => switchBulkSelectMode()}>
+    if(selected) {
+      setSelected(false)
+    }
+    avatar = <Avatar aria-label="worked duration" className={classes.durationAvatar} onClick={() => {
+      addToBulkSelection(id)
+      setSelected(true)
+      switchBulkSelectMode()
+    }}>
       {duration.as('hours').toPrecision(1)}
     </Avatar>
   }
