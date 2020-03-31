@@ -1,10 +1,16 @@
 import React, {createContext, useContext, useState} from 'react'
+import {useAuth} from 'contexts/AuthenticationContext'
+import {useNetworkActivity} from 'contexts/NetworkContext'
+import {createApi} from 'api'
 
 const BulkModeContext = createContext()
 
 export const BulkModeProvider = ({children}) => {
   const [bulkSelectModeEnabled, setBulkSelectModeEnabled] = useState(false)
   const [selectedActivities, setSelectedActivities] = useState([])
+  const {getTokenSilently} = useAuth()
+  const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
+  const {del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const switchBulkSelectMode = () => {
     setBulkSelectModeEnabled(s => {
@@ -31,8 +37,11 @@ export const BulkModeProvider = ({children}) => {
   }
 
   const bulkDeleteSelection = () => {
-    console.log('delete all', selectedActivities)
-    //TODO add API
+    request(del('activities', selectedActivities)
+      .then(() => {
+        window.location.reload()
+      }))
+      .with('DELETE_SELECTED_ACTIVITIES')
   }
 
   return <BulkModeContext.Provider value={{

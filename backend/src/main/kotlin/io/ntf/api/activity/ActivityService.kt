@@ -117,6 +117,13 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
     return activityRepository.countByUserIdAndStartBefore(userId, until.atStartOfDay())
   }
 
+  fun deleteAll(userId: String, idsToDelete: Mono<List<String>>): Mono<Void> {
+    return activityRepository.findAllById(idsToDelete.flatMapIterable { it })
+      .filter { it.userId == userId }
+      .collectList()
+      .flatMap { activityRepository.deleteAll(Flux.fromIterable(it)) }
+  }
+
   data class WeekInformation(val totalDuration: Duration, val days: Map<String, DayInformation>)
 
   data class DayInformation(val totalDuration: Duration, val activities: List<Activity>)

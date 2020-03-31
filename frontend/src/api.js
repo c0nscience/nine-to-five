@@ -14,7 +14,11 @@ const authorizationHeader = async (getToken) => {
 
 const asJson = res => {
   if (res.ok) {
-    return res.json()
+    if (res.status === 204) {
+      return Promise.resolve()
+    } else {
+      return res.json()
+    }
   } else {
     return Promise.reject({
       status: res.status
@@ -82,10 +86,11 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       .then(asJson)
   }
 
-  const del = (endpoint) => {
+  const del = (endpoint, body) => {
     return authorizationHeader(getToken)
       .then(token => fetch(url(endpoint), {
         method: 'DELETE',
+        body: (body && JSON.stringify(body)) || {},
         headers: {
           ...token,
           'Content-Type': 'application/json'

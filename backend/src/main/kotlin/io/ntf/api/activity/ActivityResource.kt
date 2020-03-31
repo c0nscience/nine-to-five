@@ -93,6 +93,13 @@ class ActivityResource(private val activityService: ActivityService) {
       .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
   }
 
+  @DeleteMapping("/activities")
+  fun deleteAll(@RequestBody idsToDelete: Mono<List<String>>, principal: Mono<Principal>): Mono<ResponseEntity<Void>> {
+    return principal.map { it.name }
+      .flatMap { userId -> activityService.deleteAll(userId, idsToDelete) }
+      .thenReturn(ResponseEntity.noContent().build<Void>())
+  }
+
   data class StartActivity(val name: String)
 
   data class DeletedActivity(val id: String?, val start: LocalDateTime)
