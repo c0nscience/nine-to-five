@@ -30,10 +30,12 @@ class ActivityServiceTest {
 
   @BeforeAll
   fun setUp() {
-    activityRepository!!.deleteAll().block()
-    activityRepository.save(Activity(null, USER_ID, null, "activity 1", NOW, null)).block()
-    activityRepository.save(Activity(null, USER_ID, null, "activity 2", NOW.minusHours(1), NOW)).block()
-    activityRepository.save(Activity(null, UUID.randomUUID().toString(), null, "another activity", NOW.minusHours(3), NOW.minusHours(2))).block()
+    activityRepository?.run {
+      deleteAll().block()
+      save(Activity(null, USER_ID, null, "activity 1", NOW, null)).block()
+      save(Activity(null, USER_ID, null, "activity 2", NOW.minusHours(1), NOW)).block()
+      save(Activity(null, UUID.randomUUID().toString(), null, "another activity", NOW.minusHours(3), NOW.minusHours(2))).block()
+    }
   }
 
   @Test

@@ -2,14 +2,12 @@ import React, {createContext, useContext, useEffect, useReducer} from 'react'
 import {createApi} from 'api'
 import {
   activitiesInRangeLoaded,
-  activitiesLoaded,
   activityDeleted,
   activitySaved,
   activityStarted,
   activityStopped,
   DELETE_ACTIVITY,
   deselectActivity as deselectActivityAction,
-  LOAD_ACTIVITIES,
   LOAD_ACTIVITIES_IN_RANGE,
   LOAD_RUNNING_ACTIVITY,
   runningActivityLoaded,
@@ -30,12 +28,6 @@ export const ActivityProvider = ({children}) => {
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
   const {get, post, put, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
-  const loadActivitiesInRange = (from, to, signal) => {
-    request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
-      .then(activities => dispatch(activitiesInRangeLoaded(activities)))
-    ).with(LOAD_ACTIVITIES_IN_RANGE)
-  }
-
   const loadRunning = () => {
     request(get('activity/running')
       .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
@@ -48,6 +40,12 @@ export const ActivityProvider = ({children}) => {
     //TODO if not do nothing
     loadRunning()
   }, [])
+
+  const loadActivitiesInRange = (from, to, signal) => {
+    request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
+      .then(activities => dispatch(activitiesInRangeLoaded(activities)))
+    ).with(LOAD_ACTIVITIES_IN_RANGE)
+  }
 
   const startActivity = name => {
     return request(post('activity', {name})

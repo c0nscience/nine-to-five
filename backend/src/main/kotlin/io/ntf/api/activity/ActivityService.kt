@@ -2,25 +2,18 @@ package io.ntf.api.activity
 
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.activity.model.ActivityRepository
-import io.ntf.api.logger
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-
-typealias ByWeek = Map<String, ActivityService.WeekInformation>
 
 @Service
-class ActivityService(private val activityRepository: ActivityRepository, private val logService: LogService) : TimeTrait {
-
-  private val log = logger()
+class ActivityService(private val activityRepository: ActivityRepository) : TimeTrait {
 
   fun findByUserId(userId: String): Flux<Activity> {
     return activityRepository.findByUserIdOrderByStartDesc(userId)
@@ -28,26 +21,6 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
 
   private fun findByUserIdAndId(userId: String, id: String): Mono<Activity> {
     return activityRepository.findByUserIdAndId(userId, id)
-  }
-
-  fun all(userId: String): Mono<ByWeek> {
-    return allInRange(userId, now().minusDays(7).toLocalDate(), now().toLocalDate())
-      .reduce(emptyMap()) { result: ByWeek, activity: Activity ->
-        val weekDatePattern = DateTimeFormatter.ISO_WEEK_DATE
-        val dayDatePattern = DateTimeFormatter.ISO_LOCAL_DATE
-        val weekDate = activity.start.format(weekDatePattern).dropLast(2)
-        val dayDate = activity.start.format(dayDatePattern)
-
-        val duration = activity.duration()
-
-        val week = result[weekDate] ?: unitWeek()
-
-        val day = week.days[dayDate] ?: unitDay()
-
-        val days = week.days + (dayDate to day.copy(totalDuration = day.totalDuration + duration, activities = day.activities + activity))
-
-        result + (weekDate to week.copy(totalDuration = week.totalDuration + duration, days = days))
-      }
   }
 
   fun getLastModifiedDate(name: String): Mono<LocalDateTime> {
@@ -96,19 +69,6 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
       }
   }
 
-  fun findByLogIdAndUserId(logId: String, userId: String): Flux<Activity> {
-    return logService.findByLogIdAndUserId(logId, userId)
-      .flatMapMany { (logId, userId, _) -> activityRepository.findByLogIdAndUserId(logId!!, userId) }
-  }
-
-  private fun unitWeek(): WeekInformation {
-    return WeekInformation(Duration.ZERO, emptyMap())
-  }
-
-  private fun unitDay(): DayInformation {
-    return DayInformation(Duration.ZERO, emptyList())
-  }
-
   fun allInRange(userId: String, from: LocalDate, to: LocalDate): Flux<Activity> {
     return activityRepository.findByUserIdAndStartBetweenOrderByStartDesc(userId, from.atStartOfDay(), to.plusDays(1).atTime(LocalTime.MIDNIGHT))
   }
@@ -123,8 +83,6 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
       .collectList()
       .flatMap { activityRepository.deleteAll(Flux.fromIterable(it)) }
   }
-
-  data class WeekInformation(val totalDuration: Duration, val days: Map<String, DayInformation>)
-
-  data class DayInformation(val totalDuration: Duration, val activities: List<Activity>)
 }
+
+data class UpdateActivity(val id: String, val name: String, val start: LocalDateTime, val end: LocalDateTime?)

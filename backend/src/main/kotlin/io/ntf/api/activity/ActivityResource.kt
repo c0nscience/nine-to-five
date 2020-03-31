@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.util.function.component1
 import reactor.kotlin.core.util.function.component2
@@ -17,12 +16,6 @@ import java.time.format.DateTimeFormatter
 @RestController
 class ActivityResource(private val activityService: ActivityService) {
 
-  @GetMapping("/log/{logId}/activities")
-  fun allFromLog(@PathVariable("logId") logId: String, principal: Mono<Principal>): Flux<Activity> {
-    return principal.map { it.name }
-      .flatMapMany { userId -> activityService.findByLogIdAndUserId(logId, userId) }
-  }
-
   @RequestMapping(value = ["/activities"], method = [RequestMethod.HEAD])
   fun headLastModified(principal: Mono<Principal>) =
     principal
@@ -33,13 +26,6 @@ class ActivityResource(private val activityService: ActivityService) {
           .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
           .build<Unit>()
       }
-
-  @GetMapping("/activities")
-  fun allFromDefault(principal: Mono<Principal>): Mono<Map<String, ActivityService.WeekInformation>> {
-    return principal
-      .map { it.name }
-      .flatMap { name -> activityService.all(name) }
-  }
 
   @GetMapping("/activities/{from}/{to}")
   fun allInRange(principal: Mono<Principal>, @PathVariable from: String, @PathVariable to: String): Mono<Map<String, Any>> {

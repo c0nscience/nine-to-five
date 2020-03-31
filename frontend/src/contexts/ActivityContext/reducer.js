@@ -1,6 +1,5 @@
 import {
   ACTIVITIES_IN_RANGE_LOADED,
-  ACTIVITIES_LOADED,
   ACTIVITY_DELETED,
   ACTIVITY_SAVED,
   ACTIVITY_STARTED,
@@ -94,11 +93,6 @@ export const reducer = (state = initialState, action) => {
   const activitiesByWeekReducer = reduceActivitiesByWeek(state)
 
   switch (action.type) {
-    case ACTIVITIES_LOADED:
-      return {
-        ...state,
-        activitiesByWeek: action.payload
-      }
     case ACTIVITY_STARTED:
       return {
         ...state,
