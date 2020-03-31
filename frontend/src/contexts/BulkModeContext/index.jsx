@@ -39,6 +39,7 @@ export const BulkModeProvider = ({children}) => {
   const bulkDeleteSelection = () => {
     request(del('activities', selectedActivities)
       .then(() => {
+        //TODO find a maybe more elegant way to remove the deleted entries
         window.location.reload()
       }))
       .with('DELETE_SELECTED_ACTIVITIES')

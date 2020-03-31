@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.interfaces.DecodedJWT
+import io.ntf.api.logger
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -11,7 +12,7 @@ import java.util.*
 
 class AuthenticationJsonWebToken internal constructor(token: String, verifier: JWTVerifier?) : Authentication, JwtAuthentication {
   private val decoded: DecodedJWT = if (verifier == null) JWT.decode(token) else verifier.verify(token)
-
+private val log = logger()
   private var authenticated: Boolean = false
   override val token: String = decoded.token
   override val keyId: String = decoded.keyId
@@ -51,6 +52,7 @@ class AuthenticationJsonWebToken internal constructor(token: String, verifier: J
   }
 
   override fun isAuthenticated(): Boolean {
+    log.info("isAuthenticated: $authenticated")
     return authenticated
   }
 

@@ -9,10 +9,10 @@ import reactor.core.publisher.Mono
 
 class JwtAuthenticationConverter : ServerAuthenticationConverter {
 
-    override fun convert(exchange: ServerWebExchange): Mono<Authentication> {
-        val token = TokenUtils.tokenFromHeader(exchange.request
-                .headers
-                .getFirst(HttpHeaders.AUTHORIZATION))
-        return Mono.justOrEmpty(PreAuthenticatedAuthenticationJsonWebToken.usingToken(token))
-    }
+  override fun convert(exchange: ServerWebExchange): Mono<Authentication> {
+    val token = TokenUtils.tokenFromHeader(exchange.request
+      .headers
+      .getFirst(HttpHeaders.AUTHORIZATION))
+    return Mono.justOrEmpty(PreAuthenticatedAuthenticationJsonWebToken.usingToken(token))
+  }
 }

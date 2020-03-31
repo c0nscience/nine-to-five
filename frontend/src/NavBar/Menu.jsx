@@ -6,8 +6,6 @@ import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import AccountCircleIcon from '@material-ui/icons/AccountCircle'
-import TagIcon from '@material-ui/icons/LocalOffer'
-import SettingsIcon from '@material-ui/icons/Settings'
 import {ListItemText} from '@material-ui/core'
 import {useAuth} from 'contexts/AuthenticationContext'
 
