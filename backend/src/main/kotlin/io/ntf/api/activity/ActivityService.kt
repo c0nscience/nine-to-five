@@ -2,6 +2,11 @@ package io.ntf.api.activity
 
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.activity.model.ActivityRepository
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Query.query
+import org.springframework.data.mongodb.core.query.where
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -13,7 +18,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 @Service
-class ActivityService(private val activityRepository: ActivityRepository) : TimeTrait {
+class ActivityService(private val activityRepository: ActivityRepository, private val mongoTemplate: ReactiveMongoTemplate) : TimeTrait {
 
   fun findByUserId(userId: String): Flux<Activity> {
     return activityRepository.findByUserIdOrderByStartDesc(userId)
@@ -83,6 +88,13 @@ class ActivityService(private val activityRepository: ActivityRepository) : Time
       .collectList()
       .flatMap { activityRepository.deleteAll(Flux.fromIterable(it)) }
   }
+
+  fun findAllUsedTags(userId: String): Flux<String> = mongoTemplate
+    .query(Activity::class.java)
+    .distinct(Activity::tags.name)
+    .matching(query(where(Activity::userId).`is`(userId)))
+    .`as`(String::class.java)
+    .all()
 }
 
 data class UpdateActivity(val id: String, val name: String, val start: LocalDateTime, val end: LocalDateTime?)

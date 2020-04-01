@@ -9,7 +9,9 @@ import DialogContent from '@material-ui/core/DialogContent'
 import Grid from '@material-ui/core/Grid'
 import TextField from '@material-ui/core/TextField'
 import {useActivity} from 'contexts/ActivityContext'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 import {DateTime} from 'luxon'
+import Chip from '@material-ui/core/Chip'
 
 const ConfirmDeleteDialog = ({open, handleCloseDialog, handleDelete}) => <Dialog open={open}
                                                                                  onClose={handleCloseDialog}>
@@ -93,18 +95,18 @@ const EditDialog = () => {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const {deselectActivity, selectedActivity, saveActivity, deleteActivity} = useActivity()
-  const {id, name, start, end} = selectedActivity || {id: '', name: '', start: '', end: ''}
+  const {id, name, start, end, tags} = selectedActivity || {id: '', name: '', start: '', end: '', tags: []}
   const [state, setState] = useState({
-    id, name, start, end,
+    id, name, start, end, tags,
     deleteConfirmDialogOpen: false,
-    oldActivity: {id, name, start, end}
+    oldActivity: {id, name, start, end, tags}
   })
 
   useEffect(() => {
     setState(s => ({
       ...s,
-      id, name, start, end,
-      oldActivity: {id, name, start, end}
+      id, name, start, end, tags,
+      oldActivity: {id, name, start, end, tags}
     }))
   }, [id, name, start, end])
 
@@ -153,6 +155,25 @@ const EditDialog = () => {
             <DateTimeField name='end'
                            date={state.end}
                            handleInputChange={handleInputChange}/>
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                freeSolo
+                options={state.tags} //TODO retreive all tags of the the user and use it here
+                defaultValue={state.tags}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Tags" placeholder="Tags" margin="dense" fullWidth/>
+                )}
+                onChange={e => {
+                  console.log('new value: ', e.target.value)//TODO that does not work
+                }}
+              />
+            </Grid>
           </Grid>
         </form>
       </DialogContent>

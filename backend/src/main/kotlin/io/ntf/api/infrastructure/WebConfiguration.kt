@@ -1,5 +1,7 @@
 package io.ntf.api.infrastructure
 
+import io.ntf.api.activity.ActivityService
+import io.ntf.api.logger
 import io.ntf.api.statistics.model.UserConfiguration
 import io.ntf.api.statistics.model.UserConfigurationRepository
 import io.ntf.api.statistics.model.WorkTimeConfiguration
@@ -13,6 +15,8 @@ import java.time.LocalDate
 
 @Configuration
 class WebConfiguration : WebFluxConfigurer {
+
+  private val log = logger()
 
   override fun addCorsMappings(registry: CorsRegistry) {
     registry.addMapping("/**")
@@ -30,6 +34,13 @@ class WebConfiguration : WebFluxConfigurer {
       .switchIfEmpty(userConfigurationRepository.save(userConfigurationWith("auth0|59cc17a23b09c52496036107", LocalDate.of(2017, 10, 30), 36L)))
       .block()
 
+  }
+
+  @Bean
+  fun testDistinctAggregate(activityService: ActivityService) = CommandLineRunner {
+    activityService.findAllUsedTags("auth0|59ac17508f649c3f85124ec1")
+      .doOnNext{t -> log.info("found tag: $t") }
+      .blockLast()
   }
 
   private fun userConfigurationWith(userId: String, beginOfOvertimeCalculation: LocalDate, workingHoursPerWeek: Long): UserConfiguration {
