@@ -25,8 +25,8 @@ class StatisticsService(private val activityService: ActivityService,
       val beginOfOvertimeCalculation = workTimeConfiguration.beginOfOvertimeCalculation
 
       activities.asSequence()
-        .filter { (_, _, _, _, start) -> start.toLocalDate().isAfter(beginOfOvertimeCalculation) || start.toLocalDate().isEqual(beginOfOvertimeCalculation) }
-        .groupBy { (_, _, _, _, start) ->
+        .filter { (_, _, _, start) -> start.toLocalDate().isAfter(beginOfOvertimeCalculation) || start.toLocalDate().isEqual(beginOfOvertimeCalculation) }
+        .groupBy { (_, _, _, start) ->
           val weekFields = WeekFields.ISO
           val weekOfYear = start.get(weekFields.weekOfYear())
           val year = start.year

@@ -32,9 +32,9 @@ class ActivityServiceTest {
   fun setUp() {
     activityRepository?.run {
       deleteAll().block()
-      save(Activity(null, USER_ID, null, "activity 1", NOW, null)).block()
-      save(Activity(null, USER_ID, null, "activity 2", NOW.minusHours(1), NOW)).block()
-      save(Activity(null, UUID.randomUUID().toString(), null, "another activity", NOW.minusHours(3), NOW.minusHours(2))).block()
+      save(Activity(null, USER_ID, "activity 1", NOW, null)).block()
+      save(Activity(null, USER_ID, "activity 2", NOW.minusHours(1), NOW)).block()
+      save(Activity(null, UUID.randomUUID().toString(), "another activity", NOW.minusHours(3), NOW.minusHours(2))).block()
     }
   }
 
@@ -47,7 +47,7 @@ class ActivityServiceTest {
   }
 
   private fun activityWith(name: String, start: LocalDateTime, end: LocalDateTime? = null) =
-    Predicate<Activity> { Activity(it.id, it.userId, null, name, start, end) == it.copy(createdDate = null, lastModifiedDate = null) }
+    Predicate<Activity> { Activity(it.id, it.userId, name, start, end) == it.copy(createdDate = null, lastModifiedDate = null) }
 
 
   @TestConfiguration

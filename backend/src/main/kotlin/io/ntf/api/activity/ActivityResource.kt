@@ -75,7 +75,7 @@ class ActivityResource(private val activityService: ActivityService) {
   fun delete(@PathVariable("id") id: String, principal: Mono<Principal>): Mono<DeletedActivity> {
     return principal.map { it.name }
       .flatMap { userId -> activityService.delete(userId, id) }
-      .map { (id1, _, _, _, start) -> DeletedActivity(id = id1, start = start) }
+      .map { (id1, _, _, start) -> DeletedActivity(id = id1, start = start) }
       .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
   }
 

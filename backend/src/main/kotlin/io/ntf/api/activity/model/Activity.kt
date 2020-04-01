@@ -6,12 +6,10 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZonedDateTime
 
 @Document(collection = "activities")
 data class Activity(@Id val id: String? = null,
                     val userId: String,
-                    val logId: String? = null,
                     val name: String,
                     val start: LocalDateTime,
                     val end: LocalDateTime? = null,
