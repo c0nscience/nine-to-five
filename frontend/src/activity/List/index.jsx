@@ -32,7 +32,7 @@ const LoadingNewEntriesIndicator = ({loadingNewEntries}) => {
 const List = () => {
   const {activitiesByWeek: byWeek, hasMore} = useActivity()
   const {overtimes} = useStatistics()
-  const {loadingNewEntries} = useInfiniteScrolling()
+  const {loadingNewEntries, registerLoadingObserver} = useInfiniteScrolling()
   const weeks = Object.entries(byWeek)
 
   return <>
@@ -48,7 +48,7 @@ const List = () => {
                          days={week.days}/>
       })}
     <LoadingNewEntriesIndicator loadingNewEntries={loadingNewEntries && hasMore}/>
-    {(weeks.length === 0) && <NoEntriesFound/>}
+    {(weeks.length === 0) && <NoEntriesFound ref={registerLoadingObserver}/>}
   </>
 }
 

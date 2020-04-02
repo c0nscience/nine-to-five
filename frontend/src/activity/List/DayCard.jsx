@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
 )
 const DayCard = ({totalDuration, date, activities, lastElement}) => {
   const classes = useStyles()
-  const {lastElementRef} = useInfiniteScrolling()
+  const {registerLoadingObserver} = useInfiniteScrolling()
   const formattedDuration = positiveDurationFrom(totalDuration).toFormat('h:mm')
 
   return <>
@@ -34,7 +34,7 @@ const DayCard = ({totalDuration, date, activities, lastElement}) => {
           .map((activity, index) => {
             if (index + 1 === activities.length && lastElement) {
               return <ActivityItem {...activity}
-                                   ref={lastElementRef}
+                                   ref={registerLoadingObserver}
                                    key={`activity-${activity.id}`}/>
             } else {
               return <ActivityItem {...activity}

@@ -27,7 +27,7 @@ export const InfiniteScrollingProvider = ({children}) => {
   }, [page, hasMore])
 
   const observer = useRef()
-  const lastElementRef = useCallback(node => {
+  const registerLoadingObserver = useCallback(node => {
     if (runningRequests.length > 0) {
       return
     }
@@ -50,7 +50,7 @@ export const InfiniteScrollingProvider = ({children}) => {
   }, [runningRequests])
 
   return <InfiniteScrollingContext.Provider value={{
-    lastElementRef,
+    registerLoadingObserver,
     loadingNewEntries
   }}>
     {children}
