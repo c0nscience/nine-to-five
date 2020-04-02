@@ -61,7 +61,7 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
       .map { it.copy(name = updateActivity.name) }
       .map { it.copy(start = updateActivity.start) }
       .map { a -> updateActivity.end?.let { a.copy(end = it) } ?: a }
-      .map { a -> updateActivity.tags?.let { a.copy(tags = (a.tags + it).distinct()) } ?: a }
+      .map { a -> updateActivity.tags?.let { a.copy(tags = it.distinct()) } ?: a }
       .flatMap { activityRepository.save(it) }
   }
 

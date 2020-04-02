@@ -35,21 +35,21 @@ const DateTimeField = ({name, date, handleInputChange}) => {
   })
   return <>
     <Grid item xs={6}>
-      {dateValue && <TextField
-        id={`${name}-date`}
-        label={`${name} date`}
-        name={name}
-        margin="dense"
-        type="date"
-        value={dateValue}
-        onChange={handleInputChange}
-        InputLabelProps={{
-          shrink: true
-        }}
-      />}
+      <TextField
+      id={`${name}-date`}
+      label={`${name} date`}
+      name={name}
+      margin="dense"
+      type="date"
+      value={dateValue}
+      onChange={handleInputChange}
+      InputLabelProps={{
+        shrink: true
+      }}
+    />
     </Grid>
     <Grid item xs={6}>
-      {timeValue && <TextField
+      <TextField
         id={`${name}-time`}
         label="Time"
         name={name}
@@ -60,7 +60,7 @@ const DateTimeField = ({name, date, handleInputChange}) => {
         InputLabelProps={{
           shrink: true
         }}
-      />}
+      />
     </Grid>
 
   </>
@@ -90,6 +90,8 @@ const determineValueHandler = s => {
   }
 }
 
+const toHyphenCase = e => e.replace(/\s+/g, '-').toLowerCase()
+
 const EditDialog = () => {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
@@ -100,7 +102,8 @@ const EditDialog = () => {
     deleteConfirmDialogOpen: false,
     oldActivity: {id, name, start, end, tags}
   })
-  console.log('usedTags', usedTags)
+
+
 
   useEffect(() => {
     setState(s => ({
@@ -122,6 +125,7 @@ const EditDialog = () => {
       [name]: value
     })
   }
+
   return <>
     <ConfirmDeleteDialog open={state.deleteConfirmDialogOpen}
                          handleCloseDialog={() => setState({...state, deleteConfirmDialogOpen: false})}
@@ -152,18 +156,18 @@ const EditDialog = () => {
             <DateTimeField name='start'
                            date={state.start}
                            handleInputChange={handleInputChange}/>
-            <DateTimeField name='end'
+            {state.end && <DateTimeField name='end'
                            date={state.end}
-                           handleInputChange={handleInputChange}/>
+                           handleInputChange={handleInputChange}/>}
             <Grid item xs={12}>
               <Autocomplete
                 multiple
                 freeSolo
                 options={usedTags}
-                defaultValue={state.tags}//FIXME complains about getting modified despite uncontrolled
+                defaultValue={tags}
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => (
-                    <Chip variant="outlined" label={option} {...getTagProps({index})} />
+                    <Chip variant="outlined" label={toHyphenCase(option)} {...getTagProps({index})} />
                   ))
                 }
                 renderInput={(params) => (
@@ -172,7 +176,7 @@ const EditDialog = () => {
                 onChange={(e, v) => {
                   setState({
                     ...state,
-                    tags: v
+                    tags: v.map(toHyphenCase)
                   })
                 }}
               />

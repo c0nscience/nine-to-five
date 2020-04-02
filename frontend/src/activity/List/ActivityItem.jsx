@@ -14,7 +14,6 @@ import {CardHeader} from '@material-ui/core'
 import Avatar from '@material-ui/core/Avatar'
 import {useBulkMode} from 'contexts/BulkModeContext'
 import Checkbox from '@material-ui/core/Checkbox'
-import CardContent from '@material-ui/core/CardContent'
 import Chip from '@material-ui/core/Chip'
 
 const useStyles = makeStyles(theme => {
@@ -33,6 +32,9 @@ const useStyles = makeStyles(theme => {
       flexWrap: 'wrap',
       '& > *': {
         margin: theme.spacing(0.5)
+      },
+      '& > *:first-child': {
+        marginLeft: 0
       }
     }
   }
