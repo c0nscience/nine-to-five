@@ -3,8 +3,6 @@ package io.ntf.api.activity
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.activity.model.ActivityRepository
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.query.Criteria
-import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.where
 import org.springframework.http.HttpStatus
@@ -60,9 +58,10 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
 
   fun update(userId: String, updateActivity: UpdateActivity): Mono<Activity> {
     return findByUserIdAndId(userId, updateActivity.id)
-      .map { activity -> activity.copy(name = updateActivity.name) }
-      .map { activity -> activity.copy(start = updateActivity.start) }
-      .map { activity -> updateActivity.end?.let { activity.copy(end = it) } ?: activity }
+      .map { it.copy(name = updateActivity.name) }
+      .map { it.copy(start = updateActivity.start) }
+      .map { a -> updateActivity.end?.let { a.copy(end = it) } ?: a }
+      .map { a -> updateActivity.tags?.let { a.copy(tags = (a.tags + it).distinct()) } ?: a }
       .flatMap { activityRepository.save(it) }
   }
 
@@ -97,4 +96,4 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
     .all()
 }
 
-data class UpdateActivity(val id: String, val name: String, val start: LocalDateTime, val end: LocalDateTime?)
+data class UpdateActivity(val id: String, val name: String, val start: LocalDateTime, val end: LocalDateTime?, val tags: List<String>?)

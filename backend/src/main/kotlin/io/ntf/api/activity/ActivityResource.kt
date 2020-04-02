@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.util.function.component1
 import reactor.kotlin.core.util.function.component2
@@ -67,7 +68,7 @@ class ActivityResource(private val activityService: ActivityService) {
   fun update(@PathVariable("id") id: String, @RequestBody updateActivity: Mono<UpdateActivity>, principal: Mono<Principal>): Mono<Activity> {
     return principal.map { it.name }
       .zipWith(updateActivity)
-      .flatMap { tpl -> activityService.update(tpl.t1, tpl.t2) }
+      .flatMap { (userId, activity) -> activityService.update(userId, activity) }
       .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
   }
 
@@ -84,6 +85,12 @@ class ActivityResource(private val activityService: ActivityService) {
     return principal.map { it.name }
       .flatMap { userId -> activityService.deleteAll(userId, idsToDelete) }
       .thenReturn(ResponseEntity.noContent().build<Void>())
+  }
+
+  @GetMapping("/activities/tags")
+  fun getAllTags(principal: Mono<Principal>): Mono<List<String>> {
+    return principal.map { it.name }
+      .flatMap { activityService.findAllUsedTags(it).collectList() }
   }
 
   data class StartActivity(val name: String)
