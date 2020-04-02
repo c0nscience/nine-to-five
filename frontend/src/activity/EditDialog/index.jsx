@@ -9,7 +9,9 @@ import DialogContent from '@material-ui/core/DialogContent'
 import Grid from '@material-ui/core/Grid'
 import TextField from '@material-ui/core/TextField'
 import {useActivity} from 'contexts/ActivityContext'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 import {DateTime} from 'luxon'
+import Chip from '@material-ui/core/Chip'
 
 const ConfirmDeleteDialog = ({open, handleCloseDialog, handleDelete}) => <Dialog open={open}
                                                                                  onClose={handleCloseDialog}>
@@ -33,21 +35,21 @@ const DateTimeField = ({name, date, handleInputChange}) => {
   })
   return <>
     <Grid item xs={6}>
-      {dateValue && <TextField
-        id={`${name}-date`}
-        label={`${name} date`}
-        name={name}
-        margin="dense"
-        type="date"
-        value={dateValue}
-        onChange={handleInputChange}
-        InputLabelProps={{
-          shrink: true
-        }}
-      />}
+      <TextField
+      id={`${name}-date`}
+      label={`${name} date`}
+      name={name}
+      margin="dense"
+      type="date"
+      value={dateValue}
+      onChange={handleInputChange}
+      InputLabelProps={{
+        shrink: true
+      }}
+    />
     </Grid>
     <Grid item xs={6}>
-      {timeValue && <TextField
+      <TextField
         id={`${name}-time`}
         label="Time"
         name={name}
@@ -58,29 +60,28 @@ const DateTimeField = ({name, date, handleInputChange}) => {
         InputLabelProps={{
           shrink: true
         }}
-      />}
+      />
     </Grid>
 
   </>
 }
 
-const overrideValueInOriginal = (original, setOptions) => original.set(setOptions).toISO()
+const overrideValueInOriginalIfValid = (dateString, original, setOptions) => {
+  const date = DateTime.fromISO(dateString)
+  if (date.isValid) {
+    return original.set(setOptions(date)).toISO()
+  } else {
+    return undefined
+  }
+}
 const handleDateValue = (dateString, stateValue) => {
-  const date = DateTime.fromISO(dateString)
-  if (date.isValid) {
-    return overrideValueInOriginal(stateValue, {day: date.day, month: date.month, year: date.year})
-  } else {
-    return undefined
-  }
+  return overrideValueInOriginalIfValid(dateString, stateValue, date => ({day: date.day, month: date.month, year: date.year}))
 }
+
 const handleTimeValue = (dateString, stateValue) => {
-  const date = DateTime.fromISO(dateString)
-  if (date.isValid) {
-    return overrideValueInOriginal(stateValue, {hour: date.hour, minute: date.minute})
-  } else {
-    return undefined
-  }
+  return overrideValueInOriginalIfValid(stateValue, date => ({hour: date.hour, minute: date.minute}))
 }
+
 const determineValueHandler = s => {
   if (s.includes('date')) {
     return handleDateValue
@@ -89,22 +90,26 @@ const determineValueHandler = s => {
   }
 }
 
+const toHyphenCase = e => e.replace(/\s+/g, '-').toLowerCase()
+
 const EditDialog = () => {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
-  const {deselectActivity, selectedActivity, saveActivity, deleteActivity} = useActivity()
-  const {id, name, start, end} = selectedActivity || {id: '', name: '', start: '', end: ''}
+  const {deselectActivity, selectedActivity, saveActivity, deleteActivity, usedTags} = useActivity()
+  const {id, name, start, end, tags} = selectedActivity || {id: '', name: '', start: '', end: '', tags: []}
   const [state, setState] = useState({
-    id, name, start, end,
+    id, name, start, end, tags,
     deleteConfirmDialogOpen: false,
-    oldActivity: {id, name, start, end}
+    oldActivity: {id, name, start, end, tags}
   })
+
+
 
   useEffect(() => {
     setState(s => ({
       ...s,
-      id, name, start, end,
-      oldActivity: {id, name, start, end}
+      id, name, start, end, tags,
+      oldActivity: {id, name, start, end, tags}
     }))
   }, [id, name, start, end])
 
@@ -120,6 +125,7 @@ const EditDialog = () => {
       [name]: value
     })
   }
+
   return <>
     <ConfirmDeleteDialog open={state.deleteConfirmDialogOpen}
                          handleCloseDialog={() => setState({...state, deleteConfirmDialogOpen: false})}
@@ -150,9 +156,31 @@ const EditDialog = () => {
             <DateTimeField name='start'
                            date={state.start}
                            handleInputChange={handleInputChange}/>
-            <DateTimeField name='end'
+            {state.end && <DateTimeField name='end'
                            date={state.end}
-                           handleInputChange={handleInputChange}/>
+                           handleInputChange={handleInputChange}/>}
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                freeSolo
+                options={usedTags}
+                defaultValue={tags}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={toHyphenCase(option)} {...getTagProps({index})} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Tags" placeholder="Tags" margin="dense" fullWidth/>
+                )}
+                onChange={(e, v) => {
+                  setState({
+                    ...state,
+                    tags: v.map(toHyphenCase)
+                  })
+                }}
+              />
+            </Grid>
           </Grid>
         </form>
       </DialogContent>
@@ -169,7 +197,8 @@ const EditDialog = () => {
             id: state.id,
             name: state.name,
             start: DateTime.fromISO(state.start).toUTC().toISO(),
-            end: DateTime.fromISO(state.end).toUTC().toISO()
+            end: DateTime.fromISO(state.end).toUTC().toISO(),
+            tags: state.tags
           }, state.oldActivity)
         }} disabled={state.name.length < 3}
                 color="primary">

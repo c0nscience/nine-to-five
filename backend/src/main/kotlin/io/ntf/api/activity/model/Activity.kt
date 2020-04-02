@@ -13,6 +13,7 @@ data class Activity(@Id val id: String? = null,
                     val name: String,
                     val start: LocalDateTime,
                     val end: LocalDateTime? = null,
+                    val tags: List<String> = emptyList(),
                     @CreatedDate val createdDate: LocalDateTime? = null,
                     @LastModifiedDate val lastModifiedDate: LocalDateTime? = null) {
 

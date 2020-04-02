@@ -14,6 +14,7 @@ import {CardHeader} from '@material-ui/core'
 import Avatar from '@material-ui/core/Avatar'
 import {useBulkMode} from 'contexts/BulkModeContext'
 import Checkbox from '@material-ui/core/Checkbox'
+import Chip from '@material-ui/core/Chip'
 
 const useStyles = makeStyles(theme => {
   const avatarBackgroundColor = theme.palette.primary
@@ -24,11 +25,22 @@ const useStyles = makeStyles(theme => {
     durationAvatar: {
       backgroundColor: avatarBackgroundColor.main,
       textColor: avatarBackgroundColor.contrastText
+    },
+    tagContainer: {
+      display: 'flex',
+      justifyContent: 'start',
+      flexWrap: 'wrap',
+      '& > *': {
+        margin: theme.spacing(0.5)
+      },
+      '& > *:first-child': {
+        marginLeft: 0
+      }
     }
   }
 })
 
-const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
+const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags}, ref) => {
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(undefined)
   const [selected, setSelected] = useState(false)
@@ -54,7 +66,7 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
       }
     }}/>
   } else {
-    if(selected) {
+    if (selected) {
       setSelected(false)
     }
     avatar = <Avatar aria-label="worked duration" className={classes.durationAvatar} onClick={() => {
@@ -70,6 +82,9 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
     <ListItemText className={classes.itemText}>
       <Card>
         <CardHeader title={name}
+                    subheader={<div className={classes.tagContainer}>
+                      {tags.map(t => <Chip key={t} label={t} size='small'/>)}
+                    </div>}
                     avatar={avatar}
                     action={<IconButton aria-label="Menu"
                                         aria-haspopup="true"
@@ -111,7 +126,8 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end}, ref) => {
             id,
             name,
             start: start.toISO(),
-            end: end.toISO()
+            end: end.toISO(),
+            tags
           })
         }}>
           <ListItemIcon>

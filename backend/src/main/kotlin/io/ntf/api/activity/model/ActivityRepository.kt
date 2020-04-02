@@ -10,13 +10,9 @@ interface ActivityRepository : ReactiveMongoRepository<Activity, String> {
 
   fun findByUserIdOrderByStartDesc(userId: String): Flux<Activity>
 
-  fun findByUserIdAndLogIdIsNullAndStartIsAfterOrderByStartDesc(userId: String, dateTime: LocalDateTime): Flux<Activity>
-
   fun findByUserIdAndId(userId: String, id: String): Mono<Activity>
 
   fun findByUserIdAndEndNull(userId: String): Mono<Activity>
-
-  fun findByLogIdAndUserId(logId: String, userId: String): Flux<Activity>
 
   fun findByUserIdOrderByLastModifiedDateDesc(userId: String): Flux<Activity>
 

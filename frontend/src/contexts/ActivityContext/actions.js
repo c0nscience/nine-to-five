@@ -42,3 +42,9 @@ export const RUNNING_ACTIVITY_LOADED = 'RUNNING_ACTIVITY_LOADED'
 
 export const runningActivityLoaded = runningActivity =>
   ({type: RUNNING_ACTIVITY_LOADED, payload: runningActivity})
+
+export const LOAD_USED_TAGS = 'LOAD_USED_TAGS'
+export const USED_TAGS_LOADED = 'USED_TAGS_LOADED'
+
+export const usedTagsLoaded = tags =>
+  ({type: USED_TAGS_LOADED, payload: tags})

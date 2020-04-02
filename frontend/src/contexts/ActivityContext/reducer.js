@@ -6,7 +6,7 @@ import {
   ACTIVITY_STOPPED,
   DESELECT_ACTIVITY,
   RUNNING_ACTIVITY_LOADED,
-  SELECT_ACTIVITY
+  SELECT_ACTIVITY, USED_TAGS_LOADED
 } from './actions'
 import {DateTime, Duration} from 'luxon'
 import {ZERO_DURATION} from 'functions'
@@ -15,7 +15,8 @@ export const initialState = {
   selectedActivity: undefined,
   activitiesByWeek: {},
   running: undefined,
-  hasMore: true
+  hasMore: true,
+  usedTags: []
 }
 
 const updateActivityIn = (state, activity, reducer) => {
@@ -161,6 +162,11 @@ export const reducer = (state = initialState, action) => {
       return {
         ...newState,
         hasMore: action.payload.remainingEntries > 0
+      }
+    case USED_TAGS_LOADED:
+      return {
+        ...state,
+        usedTags: action.payload
       }
     default:
       return state

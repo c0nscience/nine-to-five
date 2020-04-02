@@ -9,12 +9,13 @@ import {
   DELETE_ACTIVITY,
   deselectActivity as deselectActivityAction,
   LOAD_ACTIVITIES_IN_RANGE,
-  LOAD_RUNNING_ACTIVITY,
+  LOAD_RUNNING_ACTIVITY, LOAD_USED_TAGS,
   runningActivityLoaded,
   SAVE_ACTIVITY,
   selectActivity as selectActivityAction,
   START_ACTIVITY,
-  STOP_ACTIVITY
+  STOP_ACTIVITY,
+  usedTagsLoaded
 } from './actions'
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 import {useNetworkActivity} from 'contexts/NetworkContext'
@@ -34,10 +35,14 @@ export const ActivityProvider = ({children}) => {
     ).with(LOAD_RUNNING_ACTIVITY)
   }
 
+  const loadUsedTags = () => {
+    request(get('activities/tags')
+      .then(tags => dispatch(usedTagsLoaded(tags))))
+      .with(LOAD_USED_TAGS)
+  }
+
   useEffect(() => {
-    //TODO determine if activities exist before the initial loaded time frame
-    //TODO if further activities exist load them
-    //TODO if not do nothing
+    loadUsedTags()
     loadRunning()
   }, [])
 
