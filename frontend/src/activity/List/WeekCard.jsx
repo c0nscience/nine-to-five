@@ -5,6 +5,7 @@ import DayCard from 'activity/List/DayCard'
 import Paper from '@material-ui/core/Paper'
 import {DateTime} from 'luxon'
 import {positiveDurationFrom} from 'functions'
+import {useInfiniteScrolling} from 'contexts/IntiniteScrolling'
 
 const useStyles = makeStyles(theme => ({
     weekSummaryCard: {
@@ -20,27 +21,36 @@ const WeekCard = ({totalDuration, weekNumber, days, lastElement}) => {
   const formattedTotalDuration = positiveDurationFrom(totalDuration).toFormat('h:mm')
   const firstDay = week.set({weekday: 1}).toFormat('dd.')
   const lastDay = week.set({weekday: 7}).toFormat('dd. MMM, yyyy')
+  const {registerLoadingObserver} = useInfiniteScrolling()
 
   const dayEntries = Object.entries(days)
-  return <>
-    <Paper className={classes.weekSummaryCard} elevation={3}>
+
+  let header
+  if (lastElement) {
+    header = <Paper className={classes.weekSummaryCard}
+                    elevation={3}
+                    ref={registerLoadingObserver}>
       <Typography variant="h5">
         {formattedTotalDuration} in {`${firstDay} - ${lastDay}`}
       </Typography>
     </Paper>
+  } else {
+    header = <Paper className={classes.weekSummaryCard} elevation={3}>
+      <Typography variant="h5">
+        {formattedTotalDuration} in {`${firstDay} - ${lastDay}`}
+      </Typography>
+    </Paper>
+  }
+  return <>
+    {header}
 
     {dayEntries
       .sort((a, b) => DateTime.fromISO(b[0]).diff(DateTime.fromISO(a[0])).valueOf())
-      .map((value, index) => {
-        const [date, day] = value
-        return <DayCard key={date}
-                        lastElement={index + 1 === dayEntries.length && lastElement}
-                        totalDuration={day.totalDuration}
-                        date={date}
-                        activities={day.activities}/>
-      })}
+      .map(([date, day]) => <DayCard key={date}
+                                     totalDuration={day.totalDuration}
+                                     date={date}
+                                     activities={day.activities}/>)}
 
   </>
 }
-
 export default WeekCard

@@ -5,7 +5,6 @@ import {makeStyles} from '@material-ui/core/styles'
 import ActivityItem from 'activity/List/ActivityItem'
 import {DateTime} from 'luxon'
 import {positiveDurationFrom} from 'functions'
-import {useInfiniteScrolling} from 'contexts/IntiniteScrolling'
 
 const useStyles = makeStyles(theme => ({
     dayHeadline: {
@@ -16,9 +15,8 @@ const useStyles = makeStyles(theme => ({
     }
   })
 )
-const DayCard = ({totalDuration, date, activities, lastElement}) => {
+const DayCard = ({totalDuration, date, activities}) => {
   const classes = useStyles()
-  const {registerLoadingObserver} = useInfiniteScrolling()
   const formattedDuration = positiveDurationFrom(totalDuration).toFormat('h:mm')
 
   return <>
@@ -31,16 +29,8 @@ const DayCard = ({totalDuration, date, activities, lastElement}) => {
         activities
           .sort((a, b) => DateTime.fromISO(b.start).diff(DateTime.fromISO(a.start)).valueOf())
           .filter(activity => activity.end !== undefined)
-          .map((activity, index) => {
-            if (index + 1 === activities.length && lastElement) {
-              return <ActivityItem {...activity}
-                                   ref={registerLoadingObserver}
-                                   key={`activity-${activity.id}`}/>
-            } else {
-              return <ActivityItem {...activity}
-                                   key={`activity-${activity.id}`}/>
-            }
-          })
+          .map(activity => <ActivityItem {...activity}
+                                         key={`activity-${activity.id}`}/>)
       }
     </List>
   </>
