@@ -12,7 +12,6 @@ import java.util.*
 
 class AuthenticationJsonWebToken internal constructor(token: String, verifier: JWTVerifier?) : Authentication, JwtAuthentication {
   private val decoded: DecodedJWT = if (verifier == null) JWT.decode(token) else verifier.verify(token)
-private val log = logger()
   private var authenticated: Boolean = false
   override val token: String = decoded.token
   override val keyId: String = decoded.keyId
@@ -52,7 +51,6 @@ private val log = logger()
   }
 
   override fun isAuthenticated(): Boolean {
-    log.info("isAuthenticated: $authenticated")
     return authenticated
   }
 

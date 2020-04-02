@@ -74,7 +74,7 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags}, ref
       setSelected(true)
       switchBulkSelectMode()
     }}>
-      {duration.as('hours').toPrecision(1)}
+      {Number.parseFloat(duration.as('hours').toFixed(1)).toPrecision(1)}
     </Avatar>
   }
 

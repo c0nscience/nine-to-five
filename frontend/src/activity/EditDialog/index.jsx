@@ -79,7 +79,7 @@ const handleDateValue = (dateString, stateValue) => {
 }
 
 const handleTimeValue = (dateString, stateValue) => {
-  return overrideValueInOriginalIfValid(stateValue, date => ({hour: date.hour, minute: date.minute}))
+  return overrideValueInOriginalIfValid(dateString, stateValue, date => ({hour: date.hour, minute: date.minute}))
 }
 
 const determineValueHandler = s => {
