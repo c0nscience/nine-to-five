@@ -1,6 +1,7 @@
 package io.ntf.api.activity
 
 import io.ntf.api.activity.model.Activity
+import io.ntf.api.logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,6 +17,8 @@ import java.time.format.DateTimeFormatter
 
 @RestController
 class ActivityResource(private val activityService: ActivityService) {
+
+  private val log = logger()
 
   @RequestMapping(value = ["/activities"], method = [RequestMethod.HEAD])
   fun headLastModified(principal: Mono<Principal>) =
@@ -35,6 +38,7 @@ class ActivityResource(private val activityService: ActivityService) {
       .flatMap { (name, remainingEntries) ->
         activityService.allInRange(name, LocalDate.parse(from), LocalDate.parse(to)).collectList()
           .map {
+            log.info("remaining entries $remainingEntries for $name")
             mapOf(
               "entries" to it,
               "remainingEntries" to remainingEntries
