@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => {
     },
     durationAvatar: {
       backgroundColor: avatarBackgroundColor.main,
-      textColor: avatarBackgroundColor.contrastText
+      color: avatarBackgroundColor.contrastText
     },
     tagContainer: {
       display: 'flex',
