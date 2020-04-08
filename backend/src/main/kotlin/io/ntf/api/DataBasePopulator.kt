@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import java.time.LocalDateTime
 
-@Component
+//@Component
 class DataBasePopulator(private val activityRepository: ActivityRepository) : CommandLineRunner {
 
   private val log = LoggerFactory.getLogger(javaClass)

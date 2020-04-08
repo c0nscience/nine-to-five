@@ -35,6 +35,7 @@ export const ActivityProvider = ({children}) => {
     ).with(LOAD_RUNNING_ACTIVITY)
   }
 
+  //TODO this should move into an own TagsContext, which then also can take care of providing methods to maintain tags like changing color and such
   const loadUsedTags = () => {
     request(get('activities/tags')
       .then(tags => dispatch(usedTagsLoaded(tags))))

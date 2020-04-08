@@ -9,9 +9,8 @@ import DialogContent from '@material-ui/core/DialogContent'
 import Grid from '@material-ui/core/Grid'
 import TextField from '@material-ui/core/TextField'
 import {useActivity} from 'contexts/ActivityContext'
-import Autocomplete from '@material-ui/lab/Autocomplete'
 import {DateTime} from 'luxon'
-import Chip from '@material-ui/core/Chip'
+import TagField from 'component/TagField'
 
 const ConfirmDeleteDialog = ({open, handleCloseDialog, handleDelete}) => <Dialog open={open}
                                                                                  onClose={handleCloseDialog}>
@@ -36,17 +35,17 @@ const DateTimeField = ({name, date, handleInputChange}) => {
   return <>
     <Grid item xs={6}>
       <TextField
-      id={`${name}-date`}
-      label={`${name} date`}
-      name={name}
-      margin="dense"
-      type="date"
-      value={dateValue}
-      onChange={handleInputChange}
-      InputLabelProps={{
-        shrink: true
-      }}
-    />
+        id={`${name}-date`}
+        label={`${name} date`}
+        name={name}
+        margin="dense"
+        type="date"
+        value={dateValue}
+        onChange={handleInputChange}
+        InputLabelProps={{
+          shrink: true
+        }}
+      />
     </Grid>
     <Grid item xs={6}>
       <TextField
@@ -75,7 +74,11 @@ const overrideValueInOriginalIfValid = (dateString, original, setOptions) => {
   }
 }
 const handleDateValue = (dateString, stateValue) => {
-  return overrideValueInOriginalIfValid(dateString, stateValue, date => ({day: date.day, month: date.month, year: date.year}))
+  return overrideValueInOriginalIfValid(dateString, stateValue, date => ({
+    day: date.day,
+    month: date.month,
+    year: date.year
+  }))
 }
 
 const handleTimeValue = (dateString, stateValue) => {
@@ -90,7 +93,6 @@ const determineValueHandler = s => {
   }
 }
 
-const toHyphenCase = e => e.replace(/\s+/g, '-').toLowerCase()
 
 const EditDialog = () => {
   const theme = useTheme()
@@ -102,8 +104,6 @@ const EditDialog = () => {
     deleteConfirmDialogOpen: false,
     oldActivity: {id, name, start, end, tags}
   })
-
-
 
   useEffect(() => {
     setState(s => ({
@@ -157,29 +157,15 @@ const EditDialog = () => {
                            date={state.start}
                            handleInputChange={handleInputChange}/>
             {state.end && <DateTimeField name='end'
-                           date={state.end}
-                           handleInputChange={handleInputChange}/>}
+                                         date={state.end}
+                                         handleInputChange={handleInputChange}/>}
             <Grid item xs={12}>
-              <Autocomplete
-                multiple
-                freeSolo
-                options={usedTags}
-                defaultValue={tags}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip variant="outlined" label={toHyphenCase(option)} {...getTagProps({index})} />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField {...params} label="Tags" placeholder="Tags" margin="dense" fullWidth/>
-                )}
-                onChange={(e, v) => {
-                  setState({
-                    ...state,
-                    tags: v.map(toHyphenCase)
-                  })
-                }}
-              />
+              <TagField allowNewValues
+                        tags={tags}
+                        setTags={newTags => setState({
+                          ...state,
+                          tags: newTags
+                        })}/>
             </Grid>
           </Grid>
         </form>

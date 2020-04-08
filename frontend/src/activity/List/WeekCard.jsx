@@ -1,10 +1,10 @@
 import React from 'react'
 import Typography from '@material-ui/core/Typography'
-import {makeStyles} from '@material-ui/core/styles'
+import {duration, makeStyles} from '@material-ui/core/styles'
 import DayCard from 'activity/List/DayCard'
 import Paper from '@material-ui/core/Paper'
 import {DateTime} from 'luxon'
-import {positiveDurationFrom} from 'functions'
+import {formatDuration, positiveDurationFrom} from 'functions'
 import {useInfiniteScrolling} from 'contexts/IntiniteScrolling'
 
 const useStyles = makeStyles(theme => ({
@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
 const WeekCard = ({totalDuration, weekNumber, days, lastElement}) => {
   const classes = useStyles()
   const week = DateTime.fromISO(weekNumber)
-  const formattedTotalDuration = positiveDurationFrom(totalDuration).toFormat('h:mm')
+  const formattedTotalDuration = formatDuration(totalDuration)
   const firstDay = week.set({weekday: 1}).toFormat('dd.')
   const lastDay = week.set({weekday: 7}).toFormat('dd. MMM, yyyy')
   const {registerLoadingObserver} = useInfiniteScrolling()

@@ -11,20 +11,17 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import MenuItem from '@material-ui/core/MenuItem'
 import {useActivity} from 'contexts/ActivityContext'
 import {CardHeader} from '@material-ui/core'
-import Avatar from '@material-ui/core/Avatar'
 import {useBulkMode} from 'contexts/BulkModeContext'
 import Checkbox from '@material-ui/core/Checkbox'
 import Chip from '@material-ui/core/Chip'
+import {formatDuration} from 'functions'
+import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles(theme => {
   const avatarBackgroundColor = theme.palette.primary
   return {
     itemText: {
       margin: 0
-    },
-    durationAvatar: {
-      backgroundColor: avatarBackgroundColor.main,
-      color: avatarBackgroundColor.contrastText
     },
     tagContainer: {
       display: 'flex',
@@ -56,26 +53,29 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags}, ref
 
   let avatar
   if (bulkSelectModeEnabled) {
-    avatar = <Checkbox checked={selected} onChange={e => {
-      const checked = e.target.checked
-      setSelected(checked)
-      if (checked) {
-        addToBulkSelection(id)
-      } else {
-        removeFromBulkSelection(id)
-      }
-    }}/>
+    avatar = <Checkbox checked={selected}
+                       onChange={e => {
+                         const checked = e.target.checked
+                         setSelected(checked)
+                         if (checked) {
+                           addToBulkSelection(id)
+                         } else {
+                           removeFromBulkSelection(id)
+                         }
+                       }}/>
   } else {
     if (selected) {
       setSelected(false)
     }
-    avatar = <Avatar aria-label="worked duration" className={classes.durationAvatar} onClick={() => {
-      addToBulkSelection(id)
-      setSelected(true)
-      switchBulkSelectMode()
-    }}>
-      {Number.parseFloat(duration.as('hours').toFixed(1)).toPrecision(1)}
-    </Avatar>
+    avatar = <Typography variant='h6'
+                         aria-label="worked duration"
+                         onClick={() => {
+                           addToBulkSelection(id)
+                           setSelected(true)
+                           switchBulkSelectMode()
+                         }}>
+      {formatDuration(duration)}
+    </Typography>
   }
 
   return <ListItem ref={ref} disableGutters disabled={isInTheFuture}>

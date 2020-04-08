@@ -4,7 +4,7 @@ import List from '@material-ui/core/List'
 import {makeStyles} from '@material-ui/core/styles'
 import ActivityItem from 'activity/List/ActivityItem'
 import {DateTime} from 'luxon'
-import {positiveDurationFrom} from 'functions'
+import {formatDuration, positiveDurationFrom} from 'functions'
 
 const useStyles = makeStyles(theme => ({
     dayHeadline: {
@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
 )
 const DayCard = ({totalDuration, date, activities}) => {
   const classes = useStyles()
-  const formattedDuration = positiveDurationFrom(totalDuration).toFormat('h:mm')
+  const formattedDuration = formatDuration(totalDuration)
 
   return <>
     <Typography variant="subtitle1" className={classes.dayHeadline}>

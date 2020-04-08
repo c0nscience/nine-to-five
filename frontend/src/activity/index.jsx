@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import {useActivity} from 'contexts/ActivityContext'
 import List from './List'
 import CreateForm from 'activity/CreateForm'
@@ -6,10 +6,17 @@ import RunningActivity from 'activity/RunningActivity'
 import EditDialog from 'activity/EditDialog'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import Grid from '@material-ui/core/Grid'
+import {InfiniteScrollingProvider} from 'contexts/IntiniteScrolling'
+import {useTitle} from 'contexts/TitleContext'
 
 const Activity = () => {
   const {running, selectActivity} = useActivity()
   const {runningRequests} = useNetworkActivity()
+  const {setTitle} = useTitle()
+
+  useEffect(() => {
+    setTitle('Activities')
+  })
 
   return <Grid container>
     <Grid item sm={3} lg={4}/>
@@ -21,8 +28,9 @@ const Activity = () => {
       {!running && <CreateForm/>}
       {running && <RunningActivity {...running} selectActivity={selectActivity} loading={runningRequests.length > 0}/>}
 
-
-      <List/>
+      <InfiniteScrollingProvider>
+        <List/>
+      </InfiniteScrollingProvider>
       <EditDialog/>
     </Grid>
     <Grid item sm={3} lg={4}/>
