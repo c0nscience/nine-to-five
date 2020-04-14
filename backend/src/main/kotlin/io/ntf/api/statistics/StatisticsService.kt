@@ -22,7 +22,9 @@ class StatisticsService(private val activityService: ActivityService,
   fun overtime(userId: String): Mono<Map<String, List<Overtime>>> {
     return statisticConfigurationRepository.findByUserId(userId)
       .flatMap { configuration ->
-        val workingHoursPerWeek = configuration.hours.toDuration(TimeUnit.HOURS).toJavaDuration()
+        val workingHoursPerWeek = configuration.hours
+          .toDuration(TimeUnit.HOURS)
+          .toJavaDuration()
 
         activityService.findByUserIdAndTags(userId = userId, tags = configuration.tags)
           .collectList()

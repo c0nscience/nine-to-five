@@ -1,7 +1,7 @@
 package io.ntf.api.statistics
 
 import io.ntf.api.activity.ActivityService
-import io.ntf.api.activity.model.Activity
+import io.ntf.api.fixtures.createActivitiesFrom
 import io.ntf.api.statistics.model.StatisticConfiguration
 import io.ntf.api.statistics.model.StatisticConfigurationRepository
 import org.junit.jupiter.api.Test
@@ -16,7 +16,6 @@ import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.*
@@ -32,7 +31,6 @@ class StatisticsServiceTest {
 
   @MockBean
   private lateinit var statisticConfigurationRepository: StatisticConfigurationRepository
-  private val NOW = LocalDateTime.of(2020, 1, 1, 8, 0)
 
   @Test
   fun `Test overtime calculation for user`() {
@@ -42,7 +40,7 @@ class StatisticsServiceTest {
       .thenReturn(Flux.just(StatisticConfiguration(userId = userId, name = "acme #1", hours = 40.0, timeUnit = ChronoUnit.WEEKS, tags = listOf("tag"))))
 
     `when`(activityService.findByUserIdAndTags(userId, listOf("tag")))
-      .thenReturn(Flux.fromIterable(weeks(userId, 2, 12)))
+      .thenReturn(Flux.fromIterable(createActivitiesFrom(userId = userId, weeks = 2, dailyOvertime = 12)))
 
     val week = LocalDate.now()
       .withYear(2020)
@@ -72,10 +70,10 @@ class StatisticsServiceTest {
       ))
 
     `when`(activityService.findByUserIdAndTags(userId, listOf("first-company")))
-      .thenReturn(Flux.fromIterable(weeks(userId, 2, 12)))
+      .thenReturn(Flux.fromIterable(createActivitiesFrom(userId = userId, weeks = 2, dailyOvertime = 12)))
 
     `when`(activityService.findByUserIdAndTags(userId, listOf("second-company")))
-      .thenReturn(Flux.fromIterable(weeks(userId, 2, 0)))
+      .thenReturn(Flux.fromIterable(createActivitiesFrom(userId = userId, weeks = 2, dailyOvertime = 0)))
 
     val week = LocalDate.now()
       .withYear(2020)
@@ -104,28 +102,6 @@ class StatisticsServiceTest {
       .verifyComplete()
   }
 
-  private fun weeks(userId: String, weeks: Long, dailyOvertime: Long): List<Activity> {
-    val activityTemplate = Activity(userId = userId, name = "template", start = NOW, end = NOW.plusHours(2))
-
-    return LongRange(1, weeks).flatMap { week ->
-      LongRange(0, 4).flatMap { day ->
-        LongRange(0, 6).step(2)
-          .map { hour -> Triple(week, day, hour) }
-      }
-    }.map { (week, day, hour) ->
-      val overtime = if (hour == 0L) {
-        dailyOvertime
-      } else {
-        0
-      }
-      activityTemplate
-        .shiftHours(hour, "task #$week$day$hour")
-        .shiftDays(day)
-        .shiftWeeks(week - 1)
-        .addOvertime(overtime)
-    }
-  }
-
   @TestConfiguration
   class Config {
 
@@ -135,17 +111,4 @@ class StatisticsServiceTest {
     }
 
   }
-
-  private fun Activity.shiftHours(hours: Long, name: String): Activity =
-    this.copy(name = name, start = this.start.plusHours(hours), end = this.end?.plusHours(hours))
-
-  private fun Activity.shiftDays(days: Long): Activity =
-    this.copy(start = this.start.plusDays(days), end = this.end?.plusDays(days))
-
-  private fun Activity.shiftWeeks(weeks: Long): Activity =
-    this.copy(start = this.start.plusWeeks(weeks), end = this.end?.plusWeeks(weeks))
-
-  private fun Activity.addOvertime(overtime: Long): Activity =
-    this.copy(start = this.start, end = this.end?.plusMinutes(overtime))
-
 }
