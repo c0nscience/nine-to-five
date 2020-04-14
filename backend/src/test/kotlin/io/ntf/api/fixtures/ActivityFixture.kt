@@ -6,29 +6,51 @@ import java.time.LocalDateTime
 private val NOW = LocalDateTime.of(2020, 1, 1, 8, 0)
 
 fun createActivitiesFrom(userId: String, weeks: Long, dailyOvertime: Long): List<Activity> {
-  val activityTemplate = Activity(userId = userId, name = "template", start = NOW, end = NOW.plusHours(2))
+  val days: Long = 5
+  val hours: Long = 6
+  val duration: Long = 2
 
-  return LongRange(1, weeks).flatMap { week ->
-    LongRange(0, 4).flatMap { day ->
-      LongRange(0, 6).step(2)
-        .map { hour -> Triple(week, day, hour) }
-    }
-  }.map { (week, day, hour) ->
-    val overtime = if (hour == 0L) {
-      dailyOvertime
-    } else {
-      0
-    }
+  val activityTemplate = Activity(
+    userId = userId,
+    name = "template",
+    start = NOW,
+    end = NOW.plusHours(duration)
+  )
 
-    activityTemplate.apply {
-      withName("task #$week$day$hour")
-      shiftHours(hour)
-      shiftDays(day)
-      shiftWeeks(week - 1)
-      addOvertime(overtime)
+
+  return LongRange(0, weeks - 1)
+    .addRange(days)
+    .addRange(end = hours, step = duration)
+    .map { (week, day, hour) ->
+      val overtime = if (hour == 0L) {
+        dailyOvertime
+      } else {
+        0
+      }
+
+      val name = "task #$week$day$hour"
+
+      activityTemplate
+        .withName(name)
+        .shiftHours(hour)
+        .shiftDays(day)
+        .shiftWeeks(week)
+        .addOvertime(overtime)
     }
-  }
 }
+
+private fun LongRange.addRange(endExclusive: Long): List<Pair<Long, Long>> =
+  this.flatMap { i ->
+    LongRange(0, endExclusive - 1)
+      .map { n -> Pair(i, n) }
+  }
+
+private fun List<Pair<Long, Long>>.addRange(end: Long, step: Long = 1): List<Triple<Long, Long, Long>> =
+  this.flatMap { (i, n) ->
+    LongRange(0, end)
+      .step(step)
+      .map { m -> Triple(i, n, m) }
+  }
 
 private fun Activity.withName(name: String): Activity =
   this.copy(name = name)
