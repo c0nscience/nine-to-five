@@ -19,4 +19,6 @@ interface ActivityRepository : ReactiveMongoRepository<Activity, String> {
   fun findByUserIdAndStartBetweenOrderByStartDesc(userId: String, from: LocalDateTime, to: LocalDateTime): Flux<Activity>
 
   fun countByUserIdAndStartBefore(userId: String, until: LocalDateTime): Mono<Long>
+
+  fun findByUserIdAndTagsIn(userId: String, tags: List<String>): Flux<Activity>
 }

@@ -27,28 +27,28 @@ const Configuration = () => {
       name: 'digital:Lab',
       tags: [],
       hours: 40,
-      timeUnit: 'WEEK'
+      timeUnit: 'WEEKS'
     },
     {
       id: 'uuid2',
       name: 'NIST',
       tags: [],
       hours: 40,
-      timeUnit: 'WEEK'
+      timeUnit: 'WEEKS'
     },
     {
       id: 'uuid3',
       name: 'ImmoScout',
       tags: [],
       hours: 36,
-      timeUnit: 'WEEK'
+      timeUnit: 'WEEKS'
     },
     {
       id: 'uuid4',
       name: 'Sprylab',
       tags: [],
       hours: 40,
-      timeUnit: 'WEEK'
+      timeUnit: 'WEEKS'
     }
   ]
 
@@ -111,7 +111,7 @@ const Configuration = () => {
                 <InputLabel id={`time-unit-label-${config.id}`} shrink>per</InputLabel>
                 <Select labelId={`time-unit-label-${config.id}`}
                         value={config.timeUnit}>
-                  <MenuItem value='WEEK'>Week</MenuItem>
+                  <MenuItem value='WEEKS'>Week</MenuItem>
                 </Select>
               </Grid>
               <Grid item xs={12}>

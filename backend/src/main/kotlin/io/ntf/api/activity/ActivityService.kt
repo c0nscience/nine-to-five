@@ -94,6 +94,8 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
     .matching(query(where(Activity::userId).`is`(userId)))
     .`as`(String::class.java)
     .all()
+
+  fun findByUserIdAndTags(userId: String, tags: List<String>): Flux<Activity> = activityRepository.findByUserIdAndTagsIn(userId = userId, tags = tags)
 }
 
 data class UpdateActivity(val id: String, val name: String, val start: LocalDateTime, val end: LocalDateTime?, val tags: List<String>?)
