@@ -3,7 +3,13 @@ import {initialState, reducer} from 'contexts/StatisticContext/reducer'
 import {useAuth} from 'contexts/AuthenticationContext'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {createApi} from 'api'
-import {LOAD_OVERTIME, overtimeLoaded} from 'contexts/StatisticContext/actions'
+import {
+  configurationSaved, configurationsLoaded,
+  LOAD_CONFIGURATIONS,
+  LOAD_OVERTIME,
+  overtimeLoaded,
+  SAVE_CONFIGURATION
+} from 'contexts/StatisticContext/actions'
 
 const StatisticContext = createContext()
 
@@ -11,7 +17,7 @@ export const StatisticProvider = ({children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const {getTokenSilently} = useAuth()
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
-  const {get, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
+  const {get, put, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadOvertime = () => {
     request(get('statistics/overtime')
@@ -23,8 +29,22 @@ export const StatisticProvider = ({children}) => {
     loadOvertime()
   }, [])
 
+  const loadConfigurations = () => {
+    request(get('statistic/configurations')
+      .then(configs => dispatch(configurationsLoaded(configs)))
+    ).with(LOAD_CONFIGURATIONS)
+  }
+
+  const updateConfiguration = config => {
+    request(put('statistic/configurations', config)
+      .then(newConfig => dispatch(configurationSaved(newConfig)))
+    ).with(SAVE_CONFIGURATION)
+  }
+
   return <StatisticContext.Provider value={{
-    ...state
+    ...state,
+    loadConfigurations,
+    updateConfiguration
   }}>
     {children}
   </StatisticContext.Provider>

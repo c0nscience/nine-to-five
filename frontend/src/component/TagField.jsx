@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState} from 'react'
 import Chip from '@material-ui/core/Chip'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
@@ -13,7 +13,7 @@ const TagField = ({tags, setTags, allowNewValues = false}) => {
     multiple
     freeSolo={allowNewValues}
     options={usedTags}
-    defaultValue={tags}
+    value={tags}
     renderTags={(value, getTagProps) =>
       value.map((option, index) => (
         <Chip variant="outlined" label={toHyphenCase(option)} {...getTagProps({index})} />

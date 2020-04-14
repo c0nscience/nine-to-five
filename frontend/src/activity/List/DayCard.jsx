@@ -17,11 +17,11 @@ const useStyles = makeStyles(theme => ({
 )
 const DayCard = ({totalDuration, date, activities}) => {
   const classes = useStyles()
-  const formattedDuration = formatDuration(totalDuration)
+  // const formattedDuration = formatDuration(totalDuration)
 
   return <>
     <Typography variant="subtitle1" className={classes.dayHeadline}>
-      {formattedDuration} @ {DateTime.fromISO(date).toFormat('dd. MMM, yyyy')}
+      {/*{formattedDuration} @ */}{DateTime.fromISO(date).toFormat('dd. MMM, yyyy')}
     </Typography>
 
     <List className={classes.list}>

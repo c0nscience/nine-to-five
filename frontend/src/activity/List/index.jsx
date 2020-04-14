@@ -43,7 +43,7 @@ const List = () => {
 
         return <WeekCard key={weekNumber}
                          lastElement={index + 1 === weeks.length}
-                         totalDuration={week.totalDuration}
+                         // totalDuration={week.totalDuration}
                          weekNumber={weekNumber}
                          days={week.days}/>
       })}

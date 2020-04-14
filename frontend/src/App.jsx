@@ -30,9 +30,11 @@ const App = ({history}) => {
 
             <Switch>
               <PrivateRoute path="/statistic/configuration" component={() =>
-                <ActivityProvider>
-                  <StatisticConfiguration/>
-                </ActivityProvider>
+                <StatisticProvider>
+                  <ActivityProvider>
+                    <StatisticConfiguration/>
+                  </ActivityProvider>
+                </StatisticProvider>
               }/>
 
               <PrivateRoute exact path="/" component={() =>

@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
 const WeekCard = ({totalDuration, weekNumber, days, lastElement}) => {
   const classes = useStyles()
   const week = DateTime.fromISO(weekNumber)
-  const formattedTotalDuration = formatDuration(totalDuration)
+  // const formattedTotalDuration = formatDuration(totalDuration)
   const firstDay = week.set({weekday: 1}).toFormat('dd.')
   const lastDay = week.set({weekday: 7}).toFormat('dd. MMM, yyyy')
   const {registerLoadingObserver} = useInfiniteScrolling()
@@ -31,13 +31,13 @@ const WeekCard = ({totalDuration, weekNumber, days, lastElement}) => {
                     elevation={3}
                     ref={registerLoadingObserver}>
       <Typography variant="h5">
-        {formattedTotalDuration} in {`${firstDay} - ${lastDay}`}
+        {/*{formattedTotalDuration} in */}{`${firstDay} - ${lastDay}`}
       </Typography>
     </Paper>
   } else {
     header = <Paper className={classes.weekSummaryCard} elevation={3}>
       <Typography variant="h5">
-        {formattedTotalDuration} in {`${firstDay} - ${lastDay}`}
+        {/*{formattedTotalDuration} in */}{`${firstDay} - ${lastDay}`}
       </Typography>
     </Paper>
   }

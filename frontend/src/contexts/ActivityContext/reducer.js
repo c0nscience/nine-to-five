@@ -24,12 +24,12 @@ const updateActivityIn = (state, activity, reducer) => {
   const weekDate = localStart.toISOWeekDate().slice(0, -2)
   const dayDate = localStart.toISODate()
   const week = state.activitiesByWeek[weekDate] || {
-    totalDuration: ZERO_DURATION(),
+    // totalDuration: ZERO_DURATION(),
     days: {}
   }
 
   const day = week.days[dayDate] || {
-    totalDuration: ZERO_DURATION(),
+    // totalDuration: ZERO_DURATION(),
     activities: []
   }
 
@@ -41,12 +41,12 @@ const updateActivityIn = (state, activity, reducer) => {
       ...week.days,
       [dayDate]: {
         ...day,
-        totalDuration: activities.reduce((result, activity) => {
-          const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
-          const end = activity.end && DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
-          const diff = end.diff(start)
-          return result.plus(diff)
-        }, ZERO_DURATION()),
+        // totalDuration: activities.reduce((result, activity) => {
+        //   const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
+        //   const end = activity.end && DateTime.fromISO(activity.end, {zone: 'utc'}).toLocal() || DateTime.local()
+        //   const diff = end.diff(start)
+        //   return result.plus(diff)
+        // }, ZERO_DURATION()),
         activities: activities
       }
     }
@@ -56,15 +56,15 @@ const updateActivityIn = (state, activity, reducer) => {
   }
 
   if (Object.keys(days).length > 0) {
-    const totalDuration = Object.values(days)
-      .reduce((result, day) => {
-        return result.plus(Duration.fromISO(day.totalDuration))
-      }, ZERO_DURATION())
+    // const totalDuration = Object.values(days)
+    //   .reduce((result, day) => {
+    //     return result.plus(Duration.fromISO(day.totalDuration))
+    //   }, ZERO_DURATION())
     return {
       ...state.activitiesByWeek,
       [weekDate]: {
         ...week,
-        totalDuration,
+        // totalDuration,
         days: days
       }
     }

@@ -10,6 +10,9 @@ import InputLabel from '@material-ui/core/InputLabel'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
+import CardActions from '@material-ui/core/CardActions'
+import Button from '@material-ui/core/Button'
+import {useStatistics} from 'contexts/StatisticContext'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -20,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 const Configuration = () => {
   const classes = useStyles()
   const {setTitle} = useTitle()
-  // const {statisticConfigurations} = useStatistics()
+  const {updateConfiguration} = useStatistics()
   const statisticConfigurations = [
     {
       id: 'uuid1',
@@ -117,10 +120,14 @@ const Configuration = () => {
               <Grid item xs={12}>
                 <TagField tags={config.tags}
                           setTags={newTags => {
+                            setState(updateConfigurationProperty(name, 'tags', newTags))
                           }}/>
               </Grid>
             </Grid>
           </CardContent>
+          <CardActions>
+            <Button onClick={() => updateConfiguration(config)}>Save</Button>
+          </CardActions>
         </Card>
       )}
 

@@ -2,11 +2,14 @@ package io.ntf.api.statistics
 
 import io.ntf.api.activity.ActivityService
 import io.ntf.api.activity.model.Activity
+import io.ntf.api.statistics.model.StatisticConfiguration
 import io.ntf.api.statistics.model.StatisticConfigurationRepository
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
@@ -73,4 +76,26 @@ class StatisticsService(private val activityService: ActivityService,
       totalWorkTime = totalWorkTime,
       overtime = overtime)
   }
+
+  fun updateConfiguration(userId: String, updatedConfiguration: UpdateStatisticConfiguration): Mono<StatisticConfiguration> {
+    return statisticConfigurationRepository.findByUserIdAndId(userId, updatedConfiguration.id)
+      .map { it.copy(name = updatedConfiguration.name) }
+      .map { it.copy(tags = updatedConfiguration.tags) }
+      .map { it.copy(hours = updatedConfiguration.hours) }
+      .map { it.copy(timeUnit = updatedConfiguration.timeUnit) }
+      .flatMap { statisticConfigurationRepository.save(it) }
+  }
+
+  fun findAllById(userId: String): Mono<List<StatisticConfiguration>> {
+    return statisticConfigurationRepository.findByUserId(userId)
+      .collectList()
+  }
 }
+
+data class UpdateStatisticConfiguration(
+  val id: String,
+  val name: String,
+  val tags: List<String>,
+  val hours: Double,
+  val timeUnit: ChronoUnit
+)
