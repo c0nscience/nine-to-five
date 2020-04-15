@@ -1,4 +1,4 @@
-import {CONFIGURATION_UPDATED, CONFIGURATIONS_LOADED, OVERTIME_LOADED} from './actions'
+import {CONFIGURATION_CREATED, CONFIGURATION_UPDATED, CONFIGURATIONS_LOADED, OVERTIME_LOADED} from './actions'
 
 export const initialState = {
   overtimes: [],
@@ -12,7 +12,14 @@ export const reducer = (state = initialState, action) => {
         ...state,
         overtimes: action.payload
       }
-
+    case CONFIGURATION_CREATED:
+      return {
+        ...state,
+        configurations: [
+          action.payload,
+          ...state.configurations
+        ]
+      }
     case CONFIGURATIONS_LOADED:
       return {
         ...state,

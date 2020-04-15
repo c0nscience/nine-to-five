@@ -90,6 +90,17 @@ class StatisticsService(private val activityService: ActivityService,
     return statisticConfigurationRepository.findByUserId(userId)
       .collectList()
   }
+
+  fun createConfiguration(userId: String, configuration: CreateConfiguration): Mono<StatisticConfiguration> {
+    val newConfiguration = StatisticConfiguration(
+      userId = userId,
+      name = configuration.name,
+      hours = configuration.hours,
+      timeUnit = configuration.timeUnit,
+      tags = configuration.tags
+    )
+    return statisticConfigurationRepository.save(newConfiguration)
+  }
 }
 
 data class UpdateStatisticConfiguration(

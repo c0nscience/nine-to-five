@@ -20,7 +20,7 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
     http
       .authorizeExchange()
       .pathMatchers(OPTIONS).permitAll()
-
+//TODO fix scopes
       .pathMatchers(POST, "/activity").hasAuthority("SCOPE_start:activity")
       .pathMatchers(POST, "/activity/stop").hasAuthority("SCOPE_stop:activity")
       .pathMatchers(GET, "/activity/running").hasAuthority("SCOPE_read:activities")
@@ -34,6 +34,10 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
       .pathMatchers(DELETE, "/activities").hasAuthority("SCOPE_delete:activity")
 
       .pathMatchers(GET, "/statistics/overtime").hasAuthority("SCOPE_read:overtime")
+
+      .pathMatchers(GET, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
+      .pathMatchers(POST, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
+      .pathMatchers(PUT, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
       .and()
       .oauth2ResourceServer().jwt().and().and().build()
 

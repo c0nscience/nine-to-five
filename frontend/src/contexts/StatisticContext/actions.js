@@ -4,6 +4,12 @@ export const OVERTIME_LOADED = 'OVERTIME_LOADED'
 export const overtimeLoaded = overtime =>
   ({type: OVERTIME_LOADED, payload: overtime})
 
+export const CREATE_CONFIGURATION = 'CREATE_CONFIGURATION'
+export const CONFIGURATION_CREATED = 'CONFIGURATION_CREATED'
+
+export const configurationCreated = config =>
+  ({type: CONFIGURATION_CREATED, payload: config})
+
 export const LOAD_CONFIGURATIONS = 'LOAD_CONFIGURATIONS'
 export const CONFIGURATIONS_LOADED = 'CONFIGURATIONS_LOADED'
 

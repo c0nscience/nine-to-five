@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 import java.security.Principal
+import java.time.temporal.ChronoUnit
+import reactor.kotlin.core.util.function.*
 
 @RestController
 class StatisticsResource(private val statisticsService: StatisticsService) {
@@ -13,6 +15,13 @@ class StatisticsResource(private val statisticsService: StatisticsService) {
   fun overtime(principal: Mono<Principal>): Mono<Map<String, List<Overtime>>> {
     return principal.map { it.name }
       .flatMap { statisticsService.overtime(it) }
+  }
+
+  @PostMapping("/statistic/configurations")
+  fun createConfiguration(@RequestBody statisticsConfiguration: Mono<CreateConfiguration>, principal: Mono<Principal>): Mono<StatisticConfiguration> {
+    return principal.map { it.name }
+      .zipWith(statisticsConfiguration)
+      .flatMap { (userId, configuration) -> statisticsService.createConfiguration(userId, configuration) }
   }
 
   @PutMapping("/statistic/configurations")
@@ -28,3 +37,5 @@ class StatisticsResource(private val statisticsService: StatisticsService) {
   }
 
 }
+
+data class CreateConfiguration(val name: String, val hours: Double, val tags: List<String>, val timeUnit: ChronoUnit)
