@@ -11,4 +11,14 @@ export const positiveDurationFrom = isoDurationString => {
 
 export const ZERO_DURATION = () => Duration.fromMillis(0)
 
-export const formatDuration = duration => duration.toFormat('h\'h\' m\'m\'')
+export const formatDuration = duration => {
+  if (!duration) {
+    return ''
+  }
+
+  if (typeof duration === 'string') {
+    duration = Duration.fromISO(duration)
+  }
+
+  return duration.toFormat('h\'h\' m\'m\'')
+}
