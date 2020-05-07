@@ -83,7 +83,8 @@ export const AuthProvider = ({
         logout: (...p) => auth0Client.logout(...p)
       }}
     >
-      {children}
+      {loading && <h1>LOADING</h1>}
+      {!loading && children}
     </Auth0Context.Provider>
   )
 }
