@@ -11,6 +11,8 @@ import TextField from '@material-ui/core/TextField'
 import {useActivity} from 'contexts/ActivityContext'
 import {DateTime} from 'luxon'
 import TagField from 'component/TagField'
+import {DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers'
+import LuxonUtils from '@date-io/luxon'
 
 const ConfirmDeleteDialog = ({open, handleCloseDialog, handleDelete}) => <Dialog open={open}
                                                                                  onClose={handleCloseDialog}>
@@ -25,45 +27,17 @@ const ConfirmDeleteDialog = ({open, handleCloseDialog, handleDelete}) => <Dialog
   </DialogActions>
 </Dialog>
 
-const DateTimeField = ({name, date, handleInputChange}) => {
-  const dateValue = DateTime.fromISO(date).toISODate()
-  const timeValue = DateTime.fromISO(date).toISOTime({
-    suppressMilliseconds: true,
-    suppressSeconds: true,
-    includeOffset: false
-  })
-  return <>
-    <Grid item xs={6}>
-      <TextField
-        id={`${name}-date`}
-        label={`${name} date`}
-        name={name}
-        margin="dense"
-        type="date"
-        value={dateValue}
-        onChange={handleInputChange}
-        InputLabelProps={{
-          shrink: true
-        }}
-      />
-    </Grid>
-    <Grid item xs={6}>
-      <TextField
-        id={`${name}-time`}
-        label="Time"
-        name={name}
-        margin="dense"
-        type="time"
-        value={timeValue}
-        onChange={handleInputChange}
-        InputLabelProps={{
-          shrink: true
-        }}
-      />
-    </Grid>
-
-  </>
-}
+// const DateTimeField = ({name, date, handleInputChange}) => {
+//   // const dateValue = DateTime.fromISO(date).toISODate()
+//   // const timeValue = DateTime.fromISO(date).toISOTime({
+//   //   suppressMilliseconds: true,
+//   //   suppressSeconds: true,
+//   //   includeOffset: false
+//   // })
+//   return <DateTimePicker label={name}
+//                          ampm={false}
+//                          value={DateTime.utc()}/>
+// }
 
 const overrideValueInOriginalIfValid = (dateString, original, setOptions) => {
   const date = DateTime.fromISO(dateString)
@@ -126,7 +100,7 @@ const EditDialog = () => {
     })
   }
 
-  return <>
+  return <MuiPickersUtilsProvider utils={LuxonUtils}>
     <ConfirmDeleteDialog open={state.deleteConfirmDialogOpen}
                          handleCloseDialog={() => setState({...state, deleteConfirmDialogOpen: false})}
                          handleDelete={() => {
@@ -153,12 +127,18 @@ const EditDialog = () => {
                 onChange={handleInputChange}
               />
             </Grid>
-            <DateTimeField name='start'
-                           date={state.start}
-                           handleInputChange={handleInputChange}/>
-            {state.end && <DateTimeField name='end'
-                                         date={state.end}
-                                         handleInputChange={handleInputChange}/>}
+            <DateTimePicker label={'Foo'}
+                            value={DateTime.utc()}/>
+
+            {/*<DateTimeField name='start'*/}
+            {/*               date={state.start}*/}
+            {/*               handleInputChange={newDate => setState(s => ({*/}
+            {/*                 ...s,*/}
+            {/*                 start: newDate*/}
+            {/*               }))}/>*/}
+            {/*{state.end && <DateTimeField name='end'*/}
+            {/*                             date={state.end}*/}
+            {/*                             handleInputChange={handleInputChange}/>}*/}
             <Grid item xs={12}>
               <TagField allowNewValues
                         tags={tags}
@@ -193,7 +173,7 @@ const EditDialog = () => {
       </DialogActions>
     </Dialog>
 
-  </>
+  </MuiPickersUtilsProvider>
 }
 
 export default EditDialog

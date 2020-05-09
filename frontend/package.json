@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.6.4",
+    "@date-io/luxon": "^2.6.0",
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.47",
+    "@material-ui/pickers": "^3.2.10",
     "history": "^4.10.1",
     "luxon": "^1.19.3",
     "prop-types": "^15.7.2",
