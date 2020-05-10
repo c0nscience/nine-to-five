@@ -27,46 +27,13 @@ const ConfirmDeleteDialog = ({open, handleCloseDialog, handleDelete}) => <Dialog
   </DialogActions>
 </Dialog>
 
-// const DateTimeField = ({name, date, handleInputChange}) => {
-//   // const dateValue = DateTime.fromISO(date).toISODate()
-//   // const timeValue = DateTime.fromISO(date).toISOTime({
-//   //   suppressMilliseconds: true,
-//   //   suppressSeconds: true,
-//   //   includeOffset: false
-//   // })
-//   return <DateTimePicker label={name}
-//                          ampm={false}
-//                          value={DateTime.utc()}/>
-// }
-
-const overrideValueInOriginalIfValid = (dateString, original, setOptions) => {
-  const date = DateTime.fromISO(dateString)
-  if (date.isValid) {
-    return original.set(setOptions(date)).toISO()
-  } else {
-    return undefined
-  }
+const DateTimeField = ({name, date, handleInputChange}) => {
+  return <DateTimePicker label={name}
+                         ampm={false}
+                         value={DateTime.fromISO(date)}
+                         minutesStep={5}
+                         onChange={handleInputChange}/>
 }
-const handleDateValue = (dateString, stateValue) => {
-  return overrideValueInOriginalIfValid(dateString, stateValue, date => ({
-    day: date.day,
-    month: date.month,
-    year: date.year
-  }))
-}
-
-const handleTimeValue = (dateString, stateValue) => {
-  return overrideValueInOriginalIfValid(dateString, stateValue, date => ({hour: date.hour, minute: date.minute}))
-}
-
-const determineValueHandler = s => {
-  if (s.includes('date')) {
-    return handleDateValue
-  } else {
-    return handleTimeValue
-  }
-}
-
 
 const EditDialog = () => {
   const theme = useTheme()
@@ -87,20 +54,20 @@ const EditDialog = () => {
     }))
   }, [id, name, start, end])
 
-  const handleInputChange = event => {
-    const target = event.target
-    const name = target.name
-    const stateValue = DateTime.fromISO(state[name])
-    const valueHandler = determineValueHandler(target.id)
-    const value = valueHandler(target.value, stateValue) || target.value
-
-    setState({
-      ...state,
-      [name]: value
-    })
+  const handleNameChange = e => {
+    const target = e.target
+    setState(s => ({
+      ...s,
+      name: target.value
+    }))
   }
 
-  return <MuiPickersUtilsProvider utils={LuxonUtils}>
+  const handleDateTimeChange = field => newDate => setState(s => ({
+    ...s,
+    [field]: newDate.toISO()
+  }))
+
+  return <>
     <ConfirmDeleteDialog open={state.deleteConfirmDialogOpen}
                          handleCloseDialog={() => setState({...state, deleteConfirmDialogOpen: false})}
                          handleDelete={() => {
@@ -124,21 +91,20 @@ const EditDialog = () => {
                 type="text"
                 fullWidth
                 value={state.name}
-                onChange={handleInputChange}
+                onChange={handleNameChange}
               />
             </Grid>
-            <DateTimePicker label={'Foo'}
-                            value={DateTime.utc()}/>
 
-            {/*<DateTimeField name='start'*/}
-            {/*               date={state.start}*/}
-            {/*               handleInputChange={newDate => setState(s => ({*/}
-            {/*                 ...s,*/}
-            {/*                 start: newDate*/}
-            {/*               }))}/>*/}
-            {/*{state.end && <DateTimeField name='end'*/}
-            {/*                             date={state.end}*/}
-            {/*                             handleInputChange={handleInputChange}/>}*/}
+            <MuiPickersUtilsProvider utils={LuxonUtils}>
+              <DateTimeField name='start'
+                             date={state.start}
+                             handleInputChange={handleDateTimeChange('start')}/>
+
+              {state.end && <DateTimeField name='end'
+                                           date={state.end}
+                                           handleInputChange={handleDateTimeChange('end')}/>}
+            </MuiPickersUtilsProvider>
+
             <Grid item xs={12}>
               <TagField allowNewValues
                         tags={tags}
@@ -172,8 +138,7 @@ const EditDialog = () => {
         </Button>
       </DialogActions>
     </Dialog>
-
-  </MuiPickersUtilsProvider>
+  </>
 }
 
 export default EditDialog
