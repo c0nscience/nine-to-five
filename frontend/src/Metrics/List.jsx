@@ -2,6 +2,11 @@ import React from 'react'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import Fab from '@material-ui/core/Fab'
 import {Add} from '@material-ui/icons'
+import Typography from '@material-ui/core/Typography'
+import MuiList from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import {ListItemText} from '@material-ui/core'
+import {useHistory} from 'react-router'
 
 const useStyles = makeStyles(theme => ({
   addButton: {
@@ -11,18 +16,28 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const List = ({metrics}) => {
+const EmptyMessage = () => <Typography data-testid='empty-message'>No metrics configured.</Typography>
+
+export const List = ({metrics = []}) => {
   const classes = useStyles()
+  const history = useHistory()
 
   return <>
-    <Fab aria-label="add" data-testid='add-button'>
-      <Add />
+    <Fab aria-label="add" data-testid='add-button' className={classes.addButton}>
+      <Add/>
     </Fab>
-    <ul>
-      {metrics.map(m => <li data-testid={`entry-${m.id}`} key={m.id}><a data-testid={`link-${m.id}`}
-                                                                        href={`/metrics/${m.id}`}>{m.name}</a></li>)}
-    </ul>
+    {(metrics.length > 0) && <MuiList disablePadding>
+      {metrics.map(m =>
+        <ListItem key={m.id} data-testid={`entry-${m.id}`}
+                  button
+                  onClick={() => history.push(`/metrics/${m.id}`)}>
+          <ListItemText primary={m.name}/>
+        </ListItem>
+      )}
+    </MuiList>}
+
+    {(metrics.length === 0) && <EmptyMessage/>}
   </>
 }
 
-export default List
+export default () => <List metrics={[{id: 'uuid', name: 'Overtime'}]}/>

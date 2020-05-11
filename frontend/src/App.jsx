@@ -13,6 +13,7 @@ import {StatisticProvider} from 'contexts/StatisticContext'
 import {BulkModeProvider} from 'contexts/BulkModeContext'
 import StatisticConfiguration from 'statistic/configuration'
 import {TitleProvider} from 'contexts/TitleContext'
+import MetricList from 'Metrics/List'
 
 const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
@@ -37,6 +38,8 @@ const App = ({history}) => {
                 </StatisticProvider>
               }/>
 
+              <PrivateRoute exact path="/metrics" component={() => <MetricList/>}/>
+
               <PrivateRoute exact path="/" component={() =>
                 <StatisticProvider>
                   <ActivityProvider>
@@ -44,6 +47,7 @@ const App = ({history}) => {
                   </ActivityProvider>
                 </StatisticProvider>
               }/>
+
             </Switch>
 
           </TitleProvider>
