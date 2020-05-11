@@ -38,6 +38,9 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
       .pathMatchers(GET, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
       .pathMatchers(POST, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
       .pathMatchers(PUT, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
+
+      .pathMatchers(GET, "/metrics").hasAuthority("SCOPE_read:metrics")
+      .pathMatchers(POST, "/metrics").hasAuthority("SCOPE_create:metrics")
       .and()
       .oauth2ResourceServer().jwt().and().and().build()
 
@@ -45,7 +48,6 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
   fun jwtDecoder(): ReactiveJwtDecoder {
     val issuer = auth0ConfigurationProperties.issuer
     val audience = auth0ConfigurationProperties.audience
-
 
     val jwtDecoder = ReactiveJwtDecoders.fromOidcIssuerLocation(issuer) as NimbusReactiveJwtDecoder
 
