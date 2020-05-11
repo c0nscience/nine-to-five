@@ -14,6 +14,7 @@ import {BulkModeProvider} from 'contexts/BulkModeContext'
 import StatisticConfiguration from 'statistic/configuration'
 import {TitleProvider} from 'contexts/TitleContext'
 import MetricList from 'Metrics/List'
+import MetricCreatePage from 'Metrics/CreatePage'
 
 const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
@@ -38,6 +39,7 @@ const App = ({history}) => {
                 </StatisticProvider>
               }/>
 
+              <PrivateRoute exact path="/metrics/new" component={() => <MetricCreatePage/>}/>
               <PrivateRoute exact path="/metrics" component={() => <MetricList/>}/>
 
               <PrivateRoute exact path="/" component={() =>

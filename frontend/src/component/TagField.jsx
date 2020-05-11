@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import Chip from '@material-ui/core/Chip'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
@@ -6,10 +6,8 @@ import {useActivity} from 'contexts/ActivityContext'
 
 const toHyphenCase = e => e.replace(/\s+/g, '-').toLowerCase()
 
-const TagField = ({tags, setTags, allowNewValues = false}) => {
-  const {usedTags} = useActivity()
-
-  return <Autocomplete
+export const TagField = ({tags, setTags, allowNewValues = false, usedTags = [], ...props}) =>
+  <Autocomplete
     multiple
     freeSolo={allowNewValues}
     options={usedTags}
@@ -20,12 +18,16 @@ const TagField = ({tags, setTags, allowNewValues = false}) => {
       ))
     }
     renderInput={(params) => (
-      <TextField {...params} label="Tags" placeholder="Tags" margin="dense" fullWidth/>
+      <TextField {...params} label="Tags" placeholder="Tags" margin="dense" fullWidth variant='filled'/>
     )}
     onChange={(e, v) => {
       setTags(v.map(toHyphenCase))
     }}
+    {...props}
   />
-}
 
-export default TagField
+
+export default props => {
+  const {usedTags} = useActivity()
+  return <TagField {...props} usedTags={usedTags}/>
+}

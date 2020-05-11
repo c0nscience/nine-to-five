@@ -23,7 +23,10 @@ export const List = ({metrics = []}) => {
   const history = useHistory()
 
   return <>
-    <Fab aria-label="add" data-testid='add-button' className={classes.addButton}>
+    <Fab aria-label="add"
+         data-testid='add-button'
+         className={classes.addButton}
+    onClick={() => history.push('metrics/new')}>
       <Add/>
     </Fab>
     {(metrics.length > 0) && <MuiList disablePadding>
