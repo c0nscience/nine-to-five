@@ -3,11 +3,12 @@ package io.ntf.api.metrics
 import io.ntf.api.infrastructure.SecurityConfiguration
 import io.ntf.api.metrics.model.MetricConfiguration
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.eq
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt
@@ -17,7 +18,6 @@ import reactor.core.publisher.Mono
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-
 @WebFluxTest(value = [MetricsResource::class], excludeAutoConfiguration = [])
 @Import(SecurityConfiguration::class)
 class MetricsResourceTest {
@@ -25,7 +25,7 @@ class MetricsResourceTest {
   @Autowired
   lateinit var rest: WebTestClient
 
-  @SpyBean
+  @MockBean
   lateinit var metricsService: MetricsService
 
   @Test
@@ -55,10 +55,8 @@ class MetricsResourceTest {
   internal fun `should save new metric configuration`() {
     val userId = "existing-user"
 
-    doReturn(Mono.just(MetricConfiguration(userId = userId)))
-      .`when`(metricsService).createMetricConfiguration(anyString(), any(CreateMetric::class.java))
-
-    //TODO no blody idea why the original method is called despite beeing mocked ??? ¯\_(ツ)_/¯
+    `when`(metricsService.createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS)))
+      .thenReturn(Mono.just(MetricConfiguration(userId = userId)))
 
     rest.mutateWith(mockJwt().jwt { jwt -> jwt.claim("sub", userId).claim("scope", "create:metrics") })
       .mutateWith(csrf())
@@ -68,7 +66,7 @@ class MetricsResourceTest {
       .exchange()
       .expectStatus().isCreated
 
-    verify(metricsService, times(1)).createMetricConfiguration(eq(userId), eq(CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS)))
+    verify(metricsService).createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS))
   }
 
 }
