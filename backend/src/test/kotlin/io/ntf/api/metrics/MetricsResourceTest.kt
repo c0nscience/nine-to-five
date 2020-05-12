@@ -3,8 +3,6 @@ package io.ntf.api.metrics
 import io.ntf.api.infrastructure.SecurityConfiguration
 import io.ntf.api.metrics.model.MetricConfiguration
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -16,7 +14,10 @@ import org.springframework.security.test.web.reactive.server.SecurityMockServerC
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.time.temporal.ChronoUnit
+import java.time.Duration
+import java.time.LocalDate
+import java.time.Month
+import java.time.temporal.ChronoUnit.*
 import java.util.*
 
 @WebFluxTest(value = [MetricsResource::class], excludeAutoConfiguration = [])
@@ -41,7 +42,7 @@ class MetricsResourceTest {
           userId = userId,
           name = "overtime",
           tags = listOf("some-tag"),
-          timeUnit = ChronoUnit.WEEKS,
+          timeUnit = WEEKS,
           formula = "sum"
         )
       ))
@@ -66,13 +67,13 @@ class MetricsResourceTest {
   internal fun `should save new metric configuration`() {
     val userId = "existing-user"
 
-    `when`(metricsService.createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS)))
+    `when`(metricsService.createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = WEEKS)))
       .thenReturn(Mono.just(
         MetricConfiguration(
           userId = userId,
           name = "overtime",
           tags = listOf("some-tag"),
-          timeUnit = ChronoUnit.WEEKS,
+          timeUnit = WEEKS,
           formula = "sum"
         )
       ))
@@ -87,7 +88,7 @@ class MetricsResourceTest {
       .expectStatus().isCreated
       .expectBody().isEmpty
 
-    verify(metricsService).createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS))
+    verify(metricsService).createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = WEEKS))
   }
 
   @Test
@@ -104,6 +105,41 @@ class MetricsResourceTest {
       .expectStatus().isForbidden
 
     verifyNoInteractions(metricsService)
+  }
+
+  @Test
+  internal fun `should return a calculated metric for a metric configuration id`() {
+    val userId = "existing-user"
+
+    val metricConfigurationId = UUID.randomUUID().toString()
+    `when`(metricsService.calculateMetricFor(userId, metricConfigurationId))
+      .thenReturn(Mono.just(MetricDetail(
+        id = metricConfigurationId,
+        name = "Overtime",
+        total = Duration.of(40, HOURS).plusMinutes(30),
+        current = Duration.of(30, MINUTES),
+        formula = "limited-sum",
+        threshold = 40.0,
+        values = listOf(MetricValue(
+          duration = Duration.of(40, HOURS).plusMinutes(30),
+          date = LocalDate.of(2020, Month.MAY, 12)
+        ))
+      )))
+
+    rest.mutateWith(mockJwt().jwt { jwt -> jwt.claim("sub", userId).claim("scope", "read:metrics") })
+      .get()
+      .uri("/metrics/$metricConfigurationId")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.id").isEqualTo(metricConfigurationId)
+      .jsonPath("$.name").isEqualTo("Overtime")
+      .jsonPath("$.total").isEqualTo("PT40H30M")
+      .jsonPath("$.current").isEqualTo("PT30M")
+      .jsonPath("$.formula").isEqualTo("limited-sum")
+      .jsonPath("$.threshold").isEqualTo(40.0)
+      .jsonPath("$.values[0].duration").isEqualTo("PT40H30M")
+      .jsonPath("$.values[0].date").isEqualTo("2020-05-12")
   }
 
 }

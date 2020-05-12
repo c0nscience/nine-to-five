@@ -2,10 +2,19 @@ package io.ntf.api.fixtures
 
 import io.ntf.api.activity.model.Activity
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 
 private val NOW = LocalDateTime.of(2020, 1, 1, 8, 0)
 
-fun createActivitiesFrom(userId: String, weeks: Long, dailyOvertime: Long): List<Activity> {
+fun createActivitiesFrom(
+  userId: String,
+  weeks: Long,
+  dailyOvertime: Long,
+  unit: TemporalUnit = ChronoUnit.MINUTES,
+  now: () -> LocalDateTime = { NOW },
+  tags: List<String> = emptyList()
+): List<Activity> {
   val days: Long = 5
   val hours: Long = 6
   val duration: Long = 2
@@ -13,10 +22,10 @@ fun createActivitiesFrom(userId: String, weeks: Long, dailyOvertime: Long): List
   val activityTemplate = Activity(
     userId = userId,
     name = "template",
-    start = NOW,
-    end = NOW.plusHours(duration)
+    start = now(),
+    end = now().plusHours(duration),
+    tags = tags
   )
-
 
   return LongRange(0, weeks - 1)
     .addRange(days)
@@ -35,7 +44,7 @@ fun createActivitiesFrom(userId: String, weeks: Long, dailyOvertime: Long): List
         .shiftHours(hour)
         .shiftDays(day)
         .shiftWeeks(week)
-        .addOvertime(overtime)
+        .addOvertime(overtime, unit)
     }
 }
 
@@ -64,8 +73,8 @@ private fun Activity.shiftDays(days: Long): Activity =
 private fun Activity.shiftWeeks(weeks: Long): Activity =
   this.alterDuration(startFunction = { it.plusWeeks(weeks) }, endFunction = { it?.plusWeeks(weeks) })
 
-private fun Activity.addOvertime(overtime: Long): Activity =
-  this.alterDuration(startFunction = { it }, endFunction = { it?.plusMinutes(overtime) })
+private fun Activity.addOvertime(overtime: Long, unit: TemporalUnit): Activity =
+  this.alterDuration(startFunction = { it }, endFunction = { it?.plus(overtime, unit) })
 
 private fun Activity.alterDuration(startFunction: (LocalDateTime) -> LocalDateTime,
                                    endFunction: (LocalDateTime?) -> LocalDateTime?): Activity =

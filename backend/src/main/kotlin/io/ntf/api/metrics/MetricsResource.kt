@@ -2,14 +2,11 @@ package io.ntf.api.metrics
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.util.function.component1
+import reactor.kotlin.core.util.function.component2
 import java.security.Principal
-import java.time.temporal.ChronoUnit
-import reactor.kotlin.core.util.function.*
 
 @RestController
 class MetricsResource(private val metricsService: MetricsService) {
@@ -30,10 +27,11 @@ class MetricsResource(private val metricsService: MetricsService) {
       .flatMap { (name, metricToCreate) -> metricsService.createMetricConfiguration(name, metricToCreate) }
       .map { ResponseEntity.status(HttpStatus.CREATED).build<Void>() }
   }
-}
 
-data class ListMetric(val id: String, val name: String)
-data class CreateMetric(val name: String,
-                        val tags: List<String>,
-                        val formula: String,
-                        val timeUnit: ChronoUnit)
+  @GetMapping("metrics/{id}")
+  fun getCalculatedMetric(principal: Mono<Principal>,
+                          @PathVariable("id") id: String): Mono<MetricDetail> {
+    return principal.map { it.name }
+      .flatMap { userId -> metricsService.calculateMetricFor(userId, id) }
+  }
+}

@@ -1,5 +1,8 @@
 package io.ntf.api.metrics
 
+import io.ntf.api.activity.ActivityService
+import io.ntf.api.activity.model.ActivityRepository
+import io.ntf.api.fixtures.createActivitiesFrom
 import io.ntf.api.metrics.model.MetricConfiguration
 import io.ntf.api.metrics.model.MetricConfigurationRepository
 import org.junit.jupiter.api.Assertions
@@ -14,13 +17,14 @@ import org.springframework.context.annotation.Import
 import reactor.core.scheduler.Scheduler
 import reactor.core.scheduler.Schedulers
 import reactor.test.StepVerifier
+import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Predicate
 
 @DataMongoTest
-@Import(MetricsService::class)
+@Import(MetricsService::class, ActivityService::class)
 class MetricsServiceTest {
 
   @Autowired
@@ -29,6 +33,9 @@ class MetricsServiceTest {
   @Autowired
   lateinit var metricsService: MetricsService
 
+  @Autowired
+  lateinit var activityRepository: ActivityRepository
+
   @BeforeEach
   fun setUp() {
     metricConfigurationRepository.run {
@@ -36,6 +43,10 @@ class MetricsServiceTest {
       save(MetricConfiguration(userId = USER_ID, name = "config 1", tags = listOf("tag-one"), formula = "sum", timeUnit = ChronoUnit.WEEKS)).block()
       save(MetricConfiguration(userId = USER_ID, name = "config 2", tags = listOf("tag-one", "tag-two"), formula = "avg", timeUnit = ChronoUnit.WEEKS)).block()
       save(MetricConfiguration(userId = UUID.randomUUID().toString(), name = "config 3", tags = listOf("tag-three"), formula = "avg", timeUnit = ChronoUnit.WEEKS)).block()
+    }
+
+    activityRepository.run {
+      deleteAll().block()
     }
   }
 
@@ -76,6 +87,41 @@ class MetricsServiceTest {
 
     StepVerifier.create(metricConfigurationRepository.count())
       .expectNext(4)
+      .verifyComplete()
+  }
+
+  @Test
+  internal fun `should calculate limited sum metric for user and configuration id`() {
+    val date = LocalDate.of(2020, Month.MAY, 11)
+    val metricConfiguration = metricConfigurationRepository.save(MetricConfiguration(
+      name = "overtime",
+      timeUnit = ChronoUnit.WEEKS,
+      tags = listOf("acme"),
+      userId = USER_ID,
+      formula = "limited-sum"
+    )).block()
+
+    activityRepository.saveAll(createActivitiesFrom(
+      USER_ID,
+      weeks = 1,
+      dailyOvertime = 30,
+      now = { LocalDateTime.of(date, LocalTime.of(8, 0)) },
+      tags = listOf("acme")
+    )).blockLast()
+
+    StepVerifier.create(metricsService.calculateMetricFor(USER_ID, metricConfiguration?.id!!))
+      .expectNext(MetricDetail(
+        id = metricConfiguration.id!!,
+        name = "overtime",
+        total = Duration.ZERO,
+        current = Duration.ofHours(2).plusMinutes(30),
+        threshold = 40.0,
+        formula = "limited-sum",
+        values = listOf(MetricValue(
+          duration = Duration.ofHours(40).plusMinutes(30),
+          date = date
+        ))
+      ))
       .verifyComplete()
   }
 
