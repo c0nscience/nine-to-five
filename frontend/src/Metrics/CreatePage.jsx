@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {TextField} from '@material-ui/core'
 import InputLabel from '@material-ui/core/InputLabel'
 import Select from '@material-ui/core/Select'
@@ -10,6 +10,7 @@ import Grid from '@material-ui/core/Grid'
 import {TagField} from 'component/TagField'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import {useMetrics} from 'contexts/MetricsContext'
+import {useActivity} from 'contexts/ActivityContext'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,7 +36,7 @@ const callValueWith = f => event => {
   f(target.value)
 }
 
-export const CreatePage = ({saveNewConfiguration}) => {
+export const CreatePage = ({saveNewConfiguration, usedTags}) => {
   const classes = useStyles()
   const history = useHistory()
   const [name, setName] = useState('')
@@ -57,7 +58,9 @@ export const CreatePage = ({saveNewConfiguration}) => {
         <Grid item xs={12}>
           <TagField data-testid='tags'
                     tags={tags}
-                    setTags={setTags}/>
+                    setTags={setTags}
+                    usedTags={usedTags}
+                    allowNewValues={true}/>
         </Grid>
         <Grid item xs={12}>
           <Grid container>
@@ -110,6 +113,11 @@ export const CreatePage = ({saveNewConfiguration}) => {
 
 export default () => {
   const {saveNewMetricConfiguration} = useMetrics()
+  const {usedTags, loadUsedTags} = useActivity()
 
-  return <CreatePage saveNewConfiguration={saveNewMetricConfiguration}/>
+  useEffect(() => {
+    loadUsedTags()
+  }, [])
+
+  return <CreatePage saveNewConfiguration={saveNewMetricConfiguration} usedTags={usedTags}/>
 }

@@ -42,7 +42,9 @@ const App = ({history}) => {
 
               <PrivateRoute exact path="/metrics/new" component={() =>
                 <MetricsProvider>
-                  <MetricCreatePage/>
+                  <ActivityProvider>
+                    <MetricCreatePage/>
+                  </ActivityProvider>
                 </MetricsProvider>
               }/>
               <PrivateRoute exact path="/metrics" component={() =>

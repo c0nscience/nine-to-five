@@ -43,7 +43,7 @@ export const ActivityProvider = ({children}) => {
   }
 
   useEffect(() => {
-    loadUsedTags()
+    // loadUsedTags()
     loadRunning()
   }, [])
 
@@ -109,7 +109,9 @@ export const ActivityProvider = ({children}) => {
     deleteActivity,
     switchActivity,
     continueActivity,
-    loadActivitiesInRange
+    loadActivitiesInRange,
+
+    loadUsedTags
   }}>
     {children}
   </ActivityContext.Provider>
