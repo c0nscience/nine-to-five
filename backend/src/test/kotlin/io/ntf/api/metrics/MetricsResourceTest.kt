@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
+import org.springframework.http.MediaType
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -62,9 +63,11 @@ class MetricsResourceTest {
       .mutateWith(csrf())
       .post()
       .uri("/metrics")
-      .body(Mono.just(CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS)), CreateMetric::class.java)
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(Mono.just("""{"name":"Overtime", "tags":["some-tag"], "formula":"sum","timeUnit":"WEEKS"}"""), String::class.java)
       .exchange()
       .expectStatus().isCreated
+      .expectBody().isEmpty
 
     verify(metricsService).createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS))
   }
