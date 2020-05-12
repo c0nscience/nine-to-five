@@ -46,7 +46,7 @@ class MetricsResourceTest {
   }
 
   @Test
-  internal fun `should return forbidden for wrong scope`() {
+  internal fun `should return forbidden for wrong scope for read all metric configurations`() {
     rest.mutateWith(mockJwt().jwt { jwt -> jwt.claim("scope", "not-existing-scope") })
       .get().uri("/metrics").exchange()
       .expectStatus().isForbidden
@@ -70,6 +70,22 @@ class MetricsResourceTest {
       .expectBody().isEmpty
 
     verify(metricsService).createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS))
+  }
+
+  @Test
+  internal fun `should return forbidden for wrong scope for new metric configuration endpoint`() {
+    val userId = "existing-user"
+
+    rest.mutateWith(mockJwt().jwt { jwt -> jwt.claim("sub", userId).claim("scope", "not-existing") })
+      .mutateWith(csrf())
+      .post()
+      .uri("/metrics")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(Mono.just("""{"name":"Overtime", "tags":["some-tag"], "formula":"sum","timeUnit":"WEEKS"}"""), String::class.java)
+      .exchange()
+      .expectStatus().isForbidden
+
+    verifyNoInteractions(metricsService)
   }
 
 }
