@@ -44,7 +44,7 @@ describe('Create Metric Page', () => {
     it('should contain \'week\' as time unit', () => {
       const {getByRole, getAllByRole} = render(<CreatePage/>)
 
-      fireEvent.mouseDown(getAllByRole('button')[1])
+      fireEvent.mouseDown(getAllByRole('button')[0])
 
       expect(getByRole('option')).toHaveTextContent('Week')
     })
