@@ -3,3 +3,5 @@ export const METRIC_CONFIGURATIONS_LOADED = 'METRIC_CONFIGURATIONS_LOADED'
 
 export const metricConfigurationLoaded = configurations =>
   ({type: METRIC_CONFIGURATIONS_LOADED, payload: configurations})
+
+export const CREATE_NEW_METRIC_CONFIGURATION = 'CREATE_NEW_METRIC_CONFIGURATION'

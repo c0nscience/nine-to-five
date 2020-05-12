@@ -9,6 +9,7 @@ import {useHistory} from 'react-router'
 import Grid from '@material-ui/core/Grid'
 import {TagField} from 'component/TagField'
 import makeStyles from '@material-ui/core/styles/makeStyles'
+import {useMetrics} from 'contexts/MetricsContext'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -34,7 +35,7 @@ const callValueWith = f => event => {
   f(target.value)
 }
 
-export const CreatePage = () => {
+export const CreatePage = ({saveNewConfiguration}) => {
   const classes = useStyles()
   const history = useHistory()
   const [name, setName] = useState('')
@@ -95,7 +96,11 @@ export const CreatePage = () => {
         <Grid item xs={3} className={classes.center}>
           <Button color='primary'
                   variant='contained'
-                  data-testid='save-button'>Save</Button>
+                  data-testid='save-button'
+                  onClick={() => saveNewConfiguration({name, tags, formula, timeUnit})
+                    .then(() => history.replace('/metrics'))}>
+            Save
+          </Button>
 
         </Grid>
       </Grid>
@@ -103,4 +108,8 @@ export const CreatePage = () => {
   </form>
 }
 
-export default () => <CreatePage/>
+export default () => {
+  const {saveNewMetricConfiguration} = useMetrics()
+
+  return <CreatePage saveNewConfiguration={saveNewMetricConfiguration}/>
+}
