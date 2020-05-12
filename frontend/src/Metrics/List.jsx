@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import Fab from '@material-ui/core/Fab'
 import {Add} from '@material-ui/icons'
@@ -7,6 +7,7 @@ import MuiList from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import {ListItemText} from '@material-ui/core'
 import {useHistory} from 'react-router'
+import {useMetrics} from 'contexts/MetricsContext'
 
 const useStyles = makeStyles(theme => ({
   addButton: {
@@ -43,4 +44,12 @@ export const List = ({metrics = []}) => {
   </>
 }
 
-export default () => <List metrics={[{id: 'uuid', name: 'Overtime'}]}/>
+export default () => {
+  const {configurations, loadMetricConfigurations} = useMetrics()
+
+  useEffect(() => {
+    loadMetricConfigurations()
+  }, [])
+
+  return <List metrics={configurations}/>
+}
