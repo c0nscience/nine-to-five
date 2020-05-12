@@ -35,7 +35,16 @@ class MetricsResourceTest {
     val metricId = UUID.randomUUID().toString()
 
     `when`(metricsService.findAllByUserId(userId))
-      .thenReturn(Flux.just(MetricConfiguration(id = metricId, userId = userId)))
+      .thenReturn(Flux.just(
+        MetricConfiguration(
+          id = metricId,
+          userId = userId,
+          name = "overtime",
+          tags = listOf("some-tag"),
+          timeUnit = ChronoUnit.WEEKS,
+          formula = "sum"
+        )
+      ))
 
     rest.mutateWith(mockJwt().jwt { jwt -> jwt.claim("sub", userId).claim("scope", "read:metrics") })
       .get().uri("/metrics").exchange()
@@ -43,6 +52,7 @@ class MetricsResourceTest {
       .expectBody()
       .jsonPath("$.length()").isEqualTo(1)
       .jsonPath("$[0].id").isEqualTo(metricId)
+      .jsonPath("$[0].name").isEqualTo("overtime")
   }
 
   @Test
@@ -57,7 +67,15 @@ class MetricsResourceTest {
     val userId = "existing-user"
 
     `when`(metricsService.createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = ChronoUnit.WEEKS)))
-      .thenReturn(Mono.just(MetricConfiguration(userId = userId)))
+      .thenReturn(Mono.just(
+        MetricConfiguration(
+          userId = userId,
+          name = "overtime",
+          tags = listOf("some-tag"),
+          timeUnit = ChronoUnit.WEEKS,
+          formula = "sum"
+        )
+      ))
 
     rest.mutateWith(mockJwt().jwt { jwt -> jwt.claim("sub", userId).claim("scope", "create:metrics") })
       .mutateWith(csrf())

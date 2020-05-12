@@ -3,6 +3,7 @@ package io.ntf.api.activity
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.activity.model.ActivityRepository
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
@@ -13,6 +14,7 @@ import reactor.core.scheduler.Scheduler
 import reactor.core.scheduler.Schedulers
 import reactor.test.StepVerifier
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Predicate
@@ -28,7 +30,7 @@ class ActivityServiceTest {
   @Autowired
   private val activityRepository: ActivityRepository? = null
 
-  @BeforeAll
+  @BeforeEach
   fun setUp() {
     activityRepository?.run {
       deleteAll().block()
@@ -47,7 +49,7 @@ class ActivityServiceTest {
   }
 
   private fun activityWith(name: String, start: LocalDateTime, end: LocalDateTime? = null) =
-    Predicate<Activity> { Activity(it.id, it.userId, name, start, end) == it.copy(createdDate = null, lastModifiedDate = null) }
+    Predicate<Activity> { Activity(it.id, it.userId, name, start, end) == it }
 
 
   @TestConfiguration
@@ -62,7 +64,7 @@ class ActivityServiceTest {
 
   companion object {
 
-    private val NOW = LocalDateTime.now()
+    private val NOW = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)
     private val USER_ID = UUID.randomUUID().toString()
   }
 }

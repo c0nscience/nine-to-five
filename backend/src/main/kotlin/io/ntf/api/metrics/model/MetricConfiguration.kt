@@ -1,3 +1,20 @@
 package io.ntf.api.metrics.model
 
-data class MetricConfiguration(val id: String? = null, val userId: String)
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+
+@Document(collection = "metricConfigurations")
+data class MetricConfiguration(@Id val id: String? = null,
+                               val userId: String,
+                               val name: String,
+                               val tags: List<String> = emptyList(),
+                               val timeUnit: ChronoUnit,
+                               val formula: String,
+                               @CreatedDate val createdDate: LocalDateTime? = null,
+                               @LastModifiedDate val lastModifiedDate: LocalDateTime? = null) {
+  companion object
+}

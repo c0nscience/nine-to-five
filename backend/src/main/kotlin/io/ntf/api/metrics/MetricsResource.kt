@@ -18,7 +18,7 @@ class MetricsResource(private val metricsService: MetricsService) {
   fun getAllMetrics(principal: Mono<Principal>): Mono<List<ListMetric>> {
     return principal.map { it.name }
       .flatMapMany { metricsService.findAllByUserId(it) }
-      .map { ListMetric(id = it.id!!) }
+      .map { ListMetric(id = it.id!!, name = it.name) }
       .collectList()
   }
 
@@ -32,7 +32,7 @@ class MetricsResource(private val metricsService: MetricsService) {
   }
 }
 
-data class ListMetric(val id: String)
+data class ListMetric(val id: String, val name: String)
 data class CreateMetric(val name: String,
                         val tags: List<String>,
                         val formula: String,
