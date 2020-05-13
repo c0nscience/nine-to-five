@@ -26,4 +26,20 @@ describe('Metric Detail', () => {
     expect(getByTestId('total-heading')).toHaveTextContent('Total Overtime')
     expect(getByTestId('total-value')).toHaveTextContent('4h 30m')
   })
+
+  it('should display metric values', () => {
+    const metric = {
+      name: 'Overtime',
+      values: [
+        {
+          date: '2020-05-11',
+          duration: 'PT42H30'
+        }
+      ]
+    }
+
+    const {getByTestId} = render(<Detail metric={metric}/>)
+
+    expect(getByTestId('calender-week-2020-05-11')).toHaveTextContent('CW 20')
+  })
 })
