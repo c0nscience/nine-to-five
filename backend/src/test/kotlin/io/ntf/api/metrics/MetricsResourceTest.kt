@@ -19,6 +19,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.ChronoUnit.*
 import java.util.*
+import kotlin.time.ExperimentalTime
 
 @WebFluxTest(value = [MetricsResource::class], excludeAutoConfiguration = [])
 @Import(SecurityConfiguration::class)
@@ -43,7 +44,8 @@ class MetricsResourceTest {
           name = "overtime",
           tags = listOf("some-tag"),
           timeUnit = WEEKS,
-          formula = "sum"
+          formula = "sum",
+          threshold = 40.0
         )
       ))
 
@@ -67,14 +69,15 @@ class MetricsResourceTest {
   internal fun `should save new metric configuration`() {
     val userId = "existing-user"
 
-    `when`(metricsService.createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = WEEKS)))
+    `when`(metricsService.createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = WEEKS, threshold = 40.0)))
       .thenReturn(Mono.just(
         MetricConfiguration(
           userId = userId,
           name = "overtime",
           tags = listOf("some-tag"),
           timeUnit = WEEKS,
-          formula = "sum"
+          formula = "sum",
+          threshold = 40.0
         )
       ))
 
@@ -83,12 +86,12 @@ class MetricsResourceTest {
       .post()
       .uri("/metrics")
       .contentType(MediaType.APPLICATION_JSON)
-      .body(Mono.just("""{"name":"Overtime", "tags":["some-tag"], "formula":"sum","timeUnit":"WEEKS"}"""), String::class.java)
+      .body(Mono.just("""{"name":"Overtime", "tags":["some-tag"], "formula":"sum","timeUnit":"WEEKS","threshold":40.0}"""), String::class.java)
       .exchange()
       .expectStatus().isCreated
       .expectBody().isEmpty
 
-    verify(metricsService).createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = WEEKS))
+    verify(metricsService).createMetricConfiguration(userId, CreateMetric(name = "Overtime", tags = listOf("some-tag"), formula = "sum", timeUnit = WEEKS, threshold = 40.0))
   }
 
   @Test
@@ -107,6 +110,7 @@ class MetricsResourceTest {
     verifyNoInteractions(metricsService)
   }
 
+  @ExperimentalTime
   @Test
   internal fun `should return a calculated metric for a metric configuration id`() {
     val userId = "existing-user"
@@ -116,8 +120,7 @@ class MetricsResourceTest {
       .thenReturn(Mono.just(MetricDetail(
         id = metricConfigurationId,
         name = "Overtime",
-        total = Duration.of(40, HOURS).plusMinutes(30),
-        current = Duration.of(30, MINUTES),
+        totalExceeding = Duration.of(40, HOURS).plusMinutes(30),
         formula = "limited-sum",
         threshold = 40.0,
         values = listOf(MetricValue(

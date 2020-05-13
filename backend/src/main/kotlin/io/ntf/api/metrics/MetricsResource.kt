@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.util.function.component1
 import reactor.kotlin.core.util.function.component2
 import java.security.Principal
+import kotlin.time.ExperimentalTime
 
 @RestController
 class MetricsResource(private val metricsService: MetricsService) {
@@ -28,6 +29,7 @@ class MetricsResource(private val metricsService: MetricsService) {
       .map { ResponseEntity.status(HttpStatus.CREATED).build<Void>() }
   }
 
+  @ExperimentalTime
   @GetMapping("metrics/{id}")
   fun getCalculatedMetric(principal: Mono<Principal>,
                           @PathVariable("id") id: String): Mono<MetricDetail> {

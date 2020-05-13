@@ -5,8 +5,6 @@ import io.ntf.api.activity.model.ActivityRepository
 import io.ntf.api.fixtures.createActivitiesFrom
 import io.ntf.api.metrics.model.MetricConfiguration
 import io.ntf.api.metrics.model.MetricConfigurationRepository
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,6 +20,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Predicate
+import kotlin.time.ExperimentalTime
 
 @DataMongoTest
 @Import(MetricsService::class, ActivityService::class)
@@ -58,8 +57,8 @@ class MetricsServiceTest {
       .verifyComplete()
   }
 
-  private fun withMetricConfiguration(userId: String, name: String, tags: List<String>, formula: String) =
-    Predicate<MetricConfiguration> { MetricConfiguration(id = it.id, userId = userId, name = name, tags = tags, formula = formula, timeUnit = ChronoUnit.WEEKS) == it }
+  private fun withMetricConfiguration(userId: String, name: String, tags: List<String>, formula: String, threshold: Double = 0.0) =
+    Predicate<MetricConfiguration> { MetricConfiguration(id = it.id, userId = userId, name = name, tags = tags, formula = formula, timeUnit = ChronoUnit.WEEKS, threshold = threshold) == it }
 
   @Test
   fun `should save new metric configuration`() {
@@ -91,6 +90,38 @@ class MetricsServiceTest {
   }
 
   @Test
+  fun `should save new metric configuration with threshold`() {
+    val createMetric = CreateMetric(
+      name = "overtime",
+      tags = listOf("some-tag"),
+      timeUnit = ChronoUnit.WEEKS,
+      formula = "sum",
+      threshold = 40.0
+    )
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(3)
+      .verifyComplete()
+
+    StepVerifier.create(metricsService.createMetricConfiguration(USER_ID, createMetric))
+      .expectNextMatches(
+        withMetricConfiguration(
+          userId = USER_ID,
+          name = "overtime",
+          tags = listOf("some-tag"),
+          formula = "sum",
+          threshold = 40.0
+        )
+      )
+      .verifyComplete()
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(4)
+      .verifyComplete()
+  }
+
+  @ExperimentalTime
+  @Test
   internal fun `should calculate limited sum metric for user and configuration id`() {
     val date = LocalDate.of(2020, Month.MAY, 11)
     val metricConfiguration = metricConfigurationRepository.save(MetricConfiguration(
@@ -98,7 +129,8 @@ class MetricsServiceTest {
       timeUnit = ChronoUnit.WEEKS,
       tags = listOf("acme"),
       userId = USER_ID,
-      formula = "limited-sum"
+      formula = "limited-sum",
+      threshold = 40.0
     )).block()
 
     activityRepository.saveAll(createActivitiesFrom(
@@ -113,12 +145,11 @@ class MetricsServiceTest {
       .expectNext(MetricDetail(
         id = metricConfiguration.id!!,
         name = "overtime",
-        total = Duration.ZERO,
-        current = Duration.ofHours(2).plusMinutes(30),
-        threshold = 40.0,
+        totalExceeding = Duration.ofHours(2).plusMinutes(30),
         formula = "limited-sum",
+        threshold = 40.0,
         values = listOf(MetricValue(
-          duration = Duration.ofHours(40).plusMinutes(30),
+          duration = Duration.ofHours(42).plusMinutes(30),
           date = date
         ))
       ))
