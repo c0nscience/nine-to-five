@@ -15,6 +15,7 @@ import StatisticConfiguration from 'statistic/configuration'
 import {TitleProvider} from 'contexts/TitleContext'
 import MetricList from 'Metrics/List'
 import MetricCreatePage from 'Metrics/CreatePage'
+import MetricDetailPage from 'Metrics/Detail'
 import {MetricsProvider} from 'contexts/MetricsContext'
 
 const App = ({history}) => {
@@ -47,6 +48,13 @@ const App = ({history}) => {
                   </ActivityProvider>
                 </MetricsProvider>
               }/>
+
+              <PrivateRoute exact path="/metrics/:id" component={() =>
+                <MetricsProvider>
+                  <MetricDetailPage/>
+                </MetricsProvider>
+              }/>
+
               <PrivateRoute exact path="/metrics" component={() =>
                 <MetricsProvider>
                   <MetricList/>

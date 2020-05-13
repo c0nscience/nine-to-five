@@ -1,7 +1,8 @@
-import {METRIC_CONFIGURATIONS_LOADED} from 'contexts/MetricsContext/actions'
+import {METRIC_CONFIGURATIONS_LOADED, METRIC_DETAIL_LOADED} from 'contexts/MetricsContext/actions'
 
 export const initialState = {
-  configurations: []
+  configurations: [],
+  metricDetail: undefined
 }
 
 export const reducer = (state = initialState, action) => {
@@ -10,6 +11,11 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         configurations: action.payload
+      }
+    case METRIC_DETAIL_LOADED:
+      return {
+        ...state,
+        metricDetail: action.payload
       }
     default:
       return state

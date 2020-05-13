@@ -5,7 +5,6 @@ import io.ntf.api.activity.model.Activity
 import io.ntf.api.logger
 import io.ntf.api.metrics.model.MetricConfiguration
 import io.ntf.api.metrics.model.MetricConfigurationRepository
-import io.ntf.api.statistics.Overtime
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -55,14 +54,20 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
               .map(toMetricValue)
               .sortedBy { it.date }
 
-            val totalExceededDuration = metricValues.map { it.duration }
-              .map { it.minus(configuration.thresholdAsDuration()) }
-              .reduce { r, d -> r + d }
+            val totalExceedingDuration = if (metricValues.isEmpty()) {
+              Duration.ZERO
+            } else {
+              metricValues
+                .map { it.duration }
+                .map { it.minus(configuration.thresholdAsDuration()) }
+                .reduce { r, d -> r + d }
+            }
+
 
             MetricDetail(
               id = configuration.id!!,
               name = configuration.name,
-              totalExceeding = totalExceededDuration,
+              totalExceedingDuration = totalExceedingDuration,
               formula = configuration.formula,
               threshold = configuration.threshold,
               values = metricValues
@@ -102,8 +107,6 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
       date = timeUnit
     )
   }
-
-
 }
 
 data class ListMetric(val id: String, val name: String)
@@ -116,7 +119,7 @@ data class CreateMetric(val name: String,
 data class MetricDetail(
   val id: String,
   val name: String,
-  val totalExceeding: Duration,
+  val totalExceedingDuration: Duration,
   val formula: String,
   val threshold: Double,
   val values: List<MetricValue>

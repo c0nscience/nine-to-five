@@ -5,8 +5,8 @@ import {createApi} from 'api'
 import {initialState, reducer} from 'contexts/MetricsContext/reducer'
 import {
   CREATE_NEW_METRIC_CONFIGURATION,
-  LOAD_METRIC_CONFIGURATIONS,
-  metricConfigurationLoaded
+  LOAD_METRIC_CONFIGURATIONS, LOAD_METRIC_DETAIL,
+  metricConfigurationLoaded, metricDetailLoaded
 } from 'contexts/MetricsContext/actions'
 
 const MetricsContext = createContext()
@@ -28,10 +28,17 @@ export const MetricsProvider = ({children}) => {
       .with(CREATE_NEW_METRIC_CONFIGURATION)
   }
 
+  const loadMetricDetail = id => {
+    request(get(`metrics/${id}`)
+      .then(metricDetail => dispatch(metricDetailLoaded(metricDetail)))
+    ).with(LOAD_METRIC_DETAIL)
+  }
+
   return <MetricsContext.Provider value={{
     ...state,
     loadMetricConfigurations,
-    saveNewMetricConfiguration
+    saveNewMetricConfiguration,
+    loadMetricDetail
   }}
   >
     {children}

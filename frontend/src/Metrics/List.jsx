@@ -32,7 +32,8 @@ export const List = ({metrics = []}) => {
     </Fab>
     {(metrics.length > 0) && <MuiList disablePadding>
       {metrics.map(m =>
-        <ListItem key={m.id} data-testid={`entry-${m.id}`}
+        <ListItem key={m.id}
+                  data-testid={`entry-${m.id}`}
                   button
                   onClick={() => history.push(`/metrics/${m.id}`)}>
           <ListItemText primary={m.name}/>

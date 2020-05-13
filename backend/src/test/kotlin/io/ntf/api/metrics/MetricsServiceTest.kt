@@ -145,13 +145,37 @@ class MetricsServiceTest {
       .expectNext(MetricDetail(
         id = metricConfiguration.id!!,
         name = "overtime",
-        totalExceeding = Duration.ofHours(2).plusMinutes(30),
+        totalExceedingDuration = Duration.ofHours(2).plusMinutes(30),
         formula = "limited-sum",
         threshold = 40.0,
         values = listOf(MetricValue(
           duration = Duration.ofHours(42).plusMinutes(30),
           date = date
         ))
+      ))
+      .verifyComplete()
+  }
+
+  @ExperimentalTime
+  @Test
+  internal fun `should return a usable result for no activities`() {
+    val metricConfiguration = metricConfigurationRepository.save(MetricConfiguration(
+      name = "overtime",
+      timeUnit = ChronoUnit.WEEKS,
+      tags = listOf("acme"),
+      userId = USER_ID,
+      formula = "limited-sum",
+      threshold = 40.0
+    )).block()
+
+    StepVerifier.create(metricsService.calculateMetricFor(USER_ID, metricConfiguration?.id!!))
+      .expectNext(MetricDetail(
+        id = metricConfiguration.id!!,
+        name = "overtime",
+        totalExceedingDuration = Duration.ZERO,
+        formula = "limited-sum",
+        threshold = 40.0,
+        values = emptyList()
       ))
       .verifyComplete()
   }

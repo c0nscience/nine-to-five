@@ -120,7 +120,7 @@ class MetricsResourceTest {
       .thenReturn(Mono.just(MetricDetail(
         id = metricConfigurationId,
         name = "Overtime",
-        totalExceeding = Duration.of(40, HOURS).plusMinutes(30),
+        totalExceedingDuration = Duration.of(40, HOURS).plusMinutes(30),
         formula = "limited-sum",
         threshold = 40.0,
         values = listOf(MetricValue(
@@ -137,8 +137,7 @@ class MetricsResourceTest {
       .expectBody()
       .jsonPath("$.id").isEqualTo(metricConfigurationId)
       .jsonPath("$.name").isEqualTo("Overtime")
-      .jsonPath("$.total").isEqualTo("PT40H30M")
-      .jsonPath("$.current").isEqualTo("PT30M")
+      .jsonPath("$.totalExceedingDuration").isEqualTo("PT40H30M")
       .jsonPath("$.formula").isEqualTo("limited-sum")
       .jsonPath("$.threshold").isEqualTo(40.0)
       .jsonPath("$.values[0].duration").isEqualTo("PT40H30M")
