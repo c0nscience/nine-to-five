@@ -37,7 +37,7 @@ describe('Metric Detail', () => {
     expect(getByTestId('total-heading')).toHaveTextContent('Total Meetings')
   })
 
-  it('should show the graph', () => {
+  it.skip('should show the graph', () => {
     const metric = {
       values: [
         {
@@ -56,7 +56,7 @@ describe('Metric Detail', () => {
     expect(getByRole('img')).toBeVisible()
   })
 
-  it('should display metric values', () => {
+  it.skip('should display metric values', () => {
     const metric = {
       name: 'Overtime',
       values: [
