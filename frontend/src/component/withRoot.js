@@ -7,9 +7,9 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 // It's optional.
 const theme = createMuiTheme({
   palette: {
-    type: 'dark',
-    primary: indigo,
-    secondary: pink,
+    // type: 'dark',
+    // primary: indigo,
+    // secondary: pink,
   },
 });
 

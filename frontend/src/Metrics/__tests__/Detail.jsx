@@ -27,6 +27,16 @@ describe('Metric Detail', () => {
     expect(getByTestId('total-value')).toHaveTextContent('4h 30m')
   })
 
+  it('should display the total amount headline with the Name', () => {
+    const metric = {
+      name: 'Meetings',
+    }
+
+    const {getByTestId} = render(<Detail metric={metric}/>)
+
+    expect(getByTestId('total-heading')).toHaveTextContent('Total Meetings')
+  })
+
   it('should display metric values', () => {
     const metric = {
       name: 'Overtime',
