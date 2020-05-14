@@ -2,13 +2,15 @@ import React, {useEffect} from 'react'
 import Typography from '@material-ui/core/Typography'
 import {formatDuration} from 'functions'
 import {useMetrics} from 'contexts/MetricsContext'
-import {useParams} from 'react-router'
+import {useHistory, useParams} from 'react-router'
 import Grid from '@material-ui/core/Grid'
 import {ResponsiveBar} from '@nivo/bar'
 import {DateTime, Duration} from 'luxon'
 import makeStyles from '@material-ui/core/styles/makeStyles'
+import IconButton from '@material-ui/core/IconButton'
+import {Delete} from '@material-ui/icons'
 
-export const Detail = ({metric = {}}) => {
+export const Detail = ({metric = {}, deleteMetric}) => {
   const {name, totalExceedingDuration = 0, values = [], threshold} = metric
   const data = values.map(v => ({
     id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
@@ -16,6 +18,14 @@ export const Detail = ({metric = {}}) => {
   }))
 
   return <Grid container alignContent='flex-start'>
+    <Grid item xs={12} style={{textAlign: 'end'}}>
+      <IconButton
+        data-testid='delete-button'
+        onClick={() => deleteMetric()}>
+        <Delete/>
+      </IconButton>
+    </Grid>
+
     <Grid item xs={12}>
       <Typography variant='h3'
                   data-testid='heading'
@@ -56,12 +66,16 @@ export const Detail = ({metric = {}}) => {
 }
 
 export default () => {
-  const {metricDetail, loadMetricDetail} = useMetrics()
+  const {metricDetail, loadMetricDetail, deleteMetricConfiguration} = useMetrics()
   const {id} = useParams()
+  const history = useHistory()
 
   useEffect(() => {
     loadMetricDetail(id)
   }, [id])
 
-  return <Detail metric={metricDetail}/>
+  return <Detail metric={metricDetail} deleteMetric={() => {
+    deleteMetricConfiguration(id)
+      .then(() => history.replace('/metrics'))
+  }}/>
 }

@@ -71,6 +71,11 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
       }
   }
 
+  fun deleteById(userId: String, id: String): Mono<Void> {
+    return metricConfigurationRepository.findByUserIdAndId(userId, id)
+      .flatMap { metricConfigurationRepository.delete(it) }
+  }
+
   private val timeUnit: (TemporalUnit) -> (Activity) -> LocalDate = { unit ->
     { (_, _, _, start) ->
       if (unit == ChronoUnit.WEEKS) {

@@ -36,4 +36,12 @@ class MetricsResource(private val metricsService: MetricsService) {
     return principal.map { it.name }
       .flatMap { userId -> metricsService.calculateMetricFor(userId, id) }
   }
+
+  @DeleteMapping("metrics/{id}")
+  fun deleteMetricConfiguration(principal: Mono<Principal>,
+                                @PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
+    return principal.map { it.name }
+      .flatMap { userId -> metricsService.deleteById(userId, id) }
+      .map { ResponseEntity.status(HttpStatus.OK).build<Void>() }
+  }
 }

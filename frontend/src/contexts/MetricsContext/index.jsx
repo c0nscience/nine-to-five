@@ -4,7 +4,7 @@ import {useNetworkActivity} from 'contexts/NetworkContext'
 import {createApi} from 'api'
 import {initialState, reducer} from 'contexts/MetricsContext/reducer'
 import {
-  CREATE_NEW_METRIC_CONFIGURATION,
+  CREATE_NEW_METRIC_CONFIGURATION, DELETE_METRIC_CONFIGURATION,
   LOAD_METRIC_CONFIGURATIONS, LOAD_METRIC_DETAIL,
   metricConfigurationLoaded, metricDetailLoaded
 } from 'contexts/MetricsContext/actions'
@@ -15,7 +15,7 @@ export const MetricsProvider = ({children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const {getTokenSilently} = useAuth()
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
-  const {get, post, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
+  const {get, post, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadMetricConfigurations = () => {
     request(get('metrics')
@@ -34,11 +34,17 @@ export const MetricsProvider = ({children}) => {
     ).with(LOAD_METRIC_DETAIL)
   }
 
+  const deleteMetricConfiguration = id => {
+    return request(del(`metrics/${id}`))
+      .with(DELETE_METRIC_CONFIGURATION)
+  }
+
   return <MetricsContext.Provider value={{
     ...state,
     loadMetricConfigurations,
     saveNewMetricConfiguration,
-    loadMetricDetail
+    loadMetricDetail,
+    deleteMetricConfiguration
   }}
   >
     {children}

@@ -11,3 +11,5 @@ export const METRIC_DETAIL_LOADED = 'METRIC_DETAIL_LOADED'
 
 export const metricDetailLoaded = metricDetail =>
   ({type: METRIC_DETAIL_LOADED, payload: metricDetail})
+
+export const DELETE_METRIC_CONFIGURATION = 'DELETE_METRIC_CONFIGURATION'

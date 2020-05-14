@@ -144,4 +144,36 @@ class MetricsResourceTest {
       .jsonPath("$.values[0].date").isEqualTo("2020-05-12")
   }
 
+  @Test
+  internal fun `should delete the metric configuration for the given id`() {
+    val userId = "existing-user"
+    val metricConfigurationId = UUID.randomUUID().toString()
+
+    `when`(metricsService.deleteById(userId, metricConfigurationId)).thenReturn(Mono.empty())
+
+    rest.mutateWith(mockJwt().jwt { it.claim("sub", userId).claim("scope", "delete:metrics") })
+      .mutateWith(csrf())
+      .delete()
+      .uri("/metrics/$metricConfigurationId")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().isEmpty
+
+    verify(metricsService).deleteById(userId, metricConfigurationId)
+  }
+
+  @Test
+  internal fun `should return forbidden with wrong scope for delete endpoint`() {
+    val userId = "existing-user"
+    val metricConfigurationId = UUID.randomUUID().toString()
+
+    rest.mutateWith(mockJwt().jwt { it.claim("sub", userId).claim("scope", "does:notexist") })
+      .mutateWith(csrf())
+      .delete()
+      .uri("/metrics/$metricConfigurationId")
+      .exchange()
+      .expectStatus().isForbidden
+
+    verifyNoInteractions(metricsService)
+  }
 }

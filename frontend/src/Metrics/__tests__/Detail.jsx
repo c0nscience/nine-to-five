@@ -37,6 +37,13 @@ describe('Metric Detail', () => {
     expect(getByTestId('total-heading')).toHaveTextContent('Total Meetings')
   })
 
+
+  it('should show a delete button', () => {
+    const {getByTestId} = render(<Detail metric={{}}/>)
+
+    expect(getByTestId('delete-button')).toBeVisible()
+  })
+
   it.skip('should show the graph', () => {
     const metric = {
       values: [

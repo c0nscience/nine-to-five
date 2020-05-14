@@ -182,6 +182,56 @@ class MetricsServiceTest {
 
   //TODO test a gapless calculation
 
+  @Test
+  internal fun `should delete an configuration for user and id`() {
+    val metricConfiguration = metricConfigurationRepository.save(
+      MetricConfiguration(
+        name = "overtime",
+        timeUnit = ChronoUnit.WEEKS,
+        tags = listOf("acme"),
+        userId = USER_ID,
+        formula = "limited-sum",
+        threshold = 40.0
+      )).block()
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(4)
+      .verifyComplete()
+
+    StepVerifier.create(metricsService.deleteById(USER_ID, metricConfiguration?.id!!))
+      .expectNext()
+      .verifyComplete()
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(3)
+      .verifyComplete()
+
+  }
+
+  @Test
+  internal fun `should not delete a configuration if the configuration does not belong to the user`() {
+    val metricConfiguration = metricConfigurationRepository.save(
+      MetricConfiguration(
+        name = "overtime",
+        timeUnit = ChronoUnit.WEEKS,
+        tags = listOf("acme"),
+        userId = UUID.randomUUID().toString(),
+        formula = "limited-sum",
+        threshold = 40.0
+      )).block()
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(4)
+      .verifyComplete()
+
+    StepVerifier.create(metricsService.deleteById(USER_ID, metricConfiguration?.id!!))
+      .verifyComplete()
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(4)
+      .verifyComplete()
+  }
+
   companion object {
     val USER_ID = UUID.randomUUID().toString()
   }

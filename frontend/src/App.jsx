@@ -23,7 +23,7 @@ const App = ({history}) => {
                        client_id={AUTH_CONFIG.clientId}
                        redirect_uri={AUTH_CONFIG.callbackUrl}
                        audience={'https://api.ntf.io'}
-                       scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log update:log read:metrics create:metrics'}>
+                       scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log update:log read:metrics create:metrics delete:metrics'}>
     <Router history={history}>
       <NetworkActivityProvider>
         <BulkModeProvider>
