@@ -180,6 +180,8 @@ class MetricsServiceTest {
       .verifyComplete()
   }
 
+  //TODO test a gapless calculation
+
   companion object {
     val USER_ID = UUID.randomUUID().toString()
   }

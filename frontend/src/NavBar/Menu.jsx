@@ -35,11 +35,11 @@ const Menu = ({open, closeDrawer}) => {
           </ListItemIcon>
           <ListItemText primary='Activities'/>
         </ListItem>
-        <ListItem button onClick={() => { history.push('/statistic/configuration') }}>
+        <ListItem button onClick={() => { history.push('/metrics') }}>
           <ListItemIcon>
             <BarChart/>
           </ListItemIcon>
-          <ListItemText primary='Configure Statistics'/>
+          <ListItemText primary='Metrics'/>
         </ListItem>
         <ListItem button onClick={() => {window.location.reload()}}>
           <ListItemIcon>

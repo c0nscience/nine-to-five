@@ -18,7 +18,7 @@ describe('Metric Detail', () => {
   it('should display the total amount headline and value', () => {
     const metric = {
       name: 'Overtime',
-      totalExceedingDuration: 'PT4H30M',
+      totalExceedingDuration: 'PT4H30M'
     }
 
     const {getByTestId} = render(<Detail metric={metric}/>)
@@ -29,12 +29,31 @@ describe('Metric Detail', () => {
 
   it('should display the total amount headline with the Name', () => {
     const metric = {
-      name: 'Meetings',
+      name: 'Meetings'
     }
 
     const {getByTestId} = render(<Detail metric={metric}/>)
 
     expect(getByTestId('total-heading')).toHaveTextContent('Total Meetings')
+  })
+
+  it('should show the graph', () => {
+    const metric = {
+      values: [
+        {
+          date: '2020-05-03',
+          duration: 'PT40H30M'
+        },
+        {
+          date: '2020-05-11',
+          duration: 'PT42H30M'
+        },
+      ]
+    }
+
+    const {getByRole} = render(<Detail metric={metric}/>)
+
+    expect(getByRole('img')).toBeVisible()
   })
 
   it('should display metric values', () => {

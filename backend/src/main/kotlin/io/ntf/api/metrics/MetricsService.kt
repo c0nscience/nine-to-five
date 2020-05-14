@@ -54,15 +54,10 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
               .map(toMetricValue)
               .sortedBy { it.date }
 
-            val totalExceedingDuration = if (metricValues.isEmpty()) {
-              Duration.ZERO
-            } else {
-              metricValues
-                .map { it.duration }
-                .map { it.minus(configuration.thresholdAsDuration()) }
-                .reduce { r, d -> r + d }
-            }
-
+            val totalExceedingDuration = metricValues
+              .map { it.duration }
+              .map { it.minus(configuration.thresholdAsDuration()) }
+              .fold(Duration.ZERO) { r, d -> r + d }
 
             MetricDetail(
               id = configuration.id!!,
