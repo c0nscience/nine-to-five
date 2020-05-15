@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 
-class TimeAdjusterTestTest: TimeTrait {
+class TimeAdjusterTest: TimeTrait {
 
   private val testValues = listOf(
     Pair(3, 5),

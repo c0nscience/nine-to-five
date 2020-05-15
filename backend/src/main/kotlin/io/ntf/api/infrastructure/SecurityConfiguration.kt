@@ -43,6 +43,7 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
       .pathMatchers(POST, "/metrics").hasAuthority("SCOPE_create:metrics")
       .pathMatchers(GET, "/metrics/{id}").hasAuthority("SCOPE_read:metrics")
       .pathMatchers(DELETE, "/metrics/{id}").hasAuthority("SCOPE_delete:metrics")
+      .pathMatchers(POST, "/metrics/{id}").hasAuthority("SCOPE_update:metric")
       .and()
       .oauth2ResourceServer().jwt().and().and().build()
 

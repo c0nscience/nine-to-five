@@ -76,6 +76,10 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
       .flatMap { metricConfigurationRepository.delete(it) }
   }
 
+  fun updateByUserIdAndId(userId: String, id: String, editMetric: EditMetric): Mono<MetricConfiguration> {
+    TODO("Not yet implemented")
+  }
+
   private val timeUnit: (TemporalUnit) -> (Activity) -> LocalDate = { unit ->
     { (_, _, _, start) ->
       if (unit == ChronoUnit.WEEKS) {
@@ -110,11 +114,13 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
 }
 
 data class ListMetric(val id: String, val name: String)
-data class CreateMetric(val name: String,
-                        val tags: List<String>,
-                        val formula: String,
-                        val timeUnit: ChronoUnit,
-                        val threshold: Double = 0.0)
+data class CreateMetric(
+  val name: String,
+  val tags: List<String>,
+  val formula: String,
+  val timeUnit: ChronoUnit,
+  val threshold: Double = 0.0
+)
 
 data class MetricDetail(
   val id: String,
@@ -127,3 +133,10 @@ data class MetricDetail(
 
 data class MetricValue(val duration: Duration, val date: LocalDate)
 
+data class EditMetric internal constructor(
+  val name: String,
+  val tags: List<String>,
+  val unit: ChronoUnit,
+  val formula: String,
+  val threshold: Double
+)

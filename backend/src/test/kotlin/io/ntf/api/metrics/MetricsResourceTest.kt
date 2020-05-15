@@ -17,7 +17,8 @@ import reactor.core.publisher.Mono
 import java.time.Duration
 import java.time.LocalDate
 import java.time.Month
-import java.time.temporal.ChronoUnit.*
+import java.time.temporal.ChronoUnit.HOURS
+import java.time.temporal.ChronoUnit.WEEKS
 import java.util.*
 import kotlin.time.ExperimentalTime
 
@@ -175,5 +176,46 @@ class MetricsResourceTest {
       .expectStatus().isForbidden
 
     verifyNoInteractions(metricsService)
+  }
+
+  @Test
+  internal fun `should update an existing metric configuration`() {
+    val userId = "existing-user"
+    val metricConfigurationId = UUID.randomUUID().toString()
+
+    `when`(metricsService.updateByUserIdAndId(userId, metricConfigurationId, EditMetric(
+      name = "Overtime",
+      tags = listOf("updated-tag"),
+      unit = WEEKS,
+      formula = "sum",
+      threshold = 35.0
+    )))
+      .thenReturn(Mono.just(MetricConfiguration(
+        id = metricConfigurationId,
+        userId = userId,
+        name = "Overtime",
+        tags = listOf("updated-tag"),
+        timeUnit = WEEKS,
+        formula = "sum",
+        threshold = 35.0
+      )))
+
+    rest.mutateWith(mockJwt().jwt { it.claim("sub", userId).claim("scope", "update:metric") })
+      .mutateWith(csrf())
+      .post()
+      .uri("/metrics/$metricConfigurationId")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(Mono.just("""{"name":"Overtime","tags":["updated-tag"],"formula":"sum","unit":"WEEKS","threshold": 35.0}"""), String::class.java)
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().isEmpty
+
+    verify(metricsService).updateByUserIdAndId(userId, metricConfigurationId, EditMetric(
+      name = "Overtime",
+      tags = listOf("updated-tag"),
+      unit = WEEKS,
+      formula = "sum",
+      threshold = 35.0
+    ))
   }
 }
