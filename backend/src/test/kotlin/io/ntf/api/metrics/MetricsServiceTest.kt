@@ -19,6 +19,7 @@ import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.function.Predicate
 import kotlin.time.ExperimentalTime
 
@@ -57,8 +58,8 @@ class MetricsServiceTest {
       .verifyComplete()
   }
 
-  private fun withMetricConfiguration(userId: String, name: String, tags: List<String>, formula: String, threshold: Double = 0.0) =
-    Predicate<MetricConfiguration> { MetricConfiguration(id = it.id, userId = userId, name = name, tags = tags, formula = formula, timeUnit = ChronoUnit.WEEKS, threshold = threshold) == it }
+  private fun withMetricConfiguration(userId: String, name: String, tags: List<String>, formula: String, threshold: Double = 0.0, timeUnit: ChronoUnit = ChronoUnit.WEEKS) =
+    Predicate<MetricConfiguration> { MetricConfiguration(id = it.id, userId = userId, name = name, tags = tags, formula = formula, timeUnit = timeUnit, threshold = threshold) == it }
 
   @Test
   fun `should save new metric configuration`() {
@@ -225,6 +226,46 @@ class MetricsServiceTest {
       .verifyComplete()
 
     StepVerifier.create(metricsService.deleteById(USER_ID, metricConfiguration?.id!!))
+      .verifyComplete()
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(4)
+      .verifyComplete()
+  }
+
+  @Test
+  internal fun `should update an existing metric configuration with the new values`() {
+    val metricConfiguration = metricConfigurationRepository.save(
+      MetricConfiguration(
+        name = "overtime",
+        timeUnit = ChronoUnit.WEEKS,
+        tags = listOf("acme"),
+        userId = USER_ID,
+        formula = "limited-sum",
+        threshold = 40.0
+      )).block()
+
+    StepVerifier.create(metricConfigurationRepository.count())
+      .expectNext(4)
+      .verifyComplete()
+
+    StepVerifier.create(metricsService.updateByUserIdAndId(USER_ID, metricConfiguration?.id!!, EditMetric(
+      name = "Overtime",
+      unit = ChronoUnit.HOURS,
+      formula = "sum",
+      tags = listOf("updated-tag"),
+      threshold = 35.0
+    )))
+      .expectNextMatches(
+        withMetricConfiguration(
+          userId = USER_ID,
+          name = "Overtime",
+          formula = "sum",
+          tags = listOf("updated-tag"),
+          threshold = 35.0,
+          timeUnit = ChronoUnit.HOURS
+        )
+      )
       .verifyComplete()
 
     StepVerifier.create(metricConfigurationRepository.count())

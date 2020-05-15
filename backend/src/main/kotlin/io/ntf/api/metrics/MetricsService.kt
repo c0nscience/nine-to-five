@@ -77,7 +77,17 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
   }
 
   fun updateByUserIdAndId(userId: String, id: String, editMetric: EditMetric): Mono<MetricConfiguration> {
-    TODO("Not yet implemented")
+    return metricConfigurationRepository.findByUserIdAndId(userId, id)
+      .map {
+        it.copy(
+          name = editMetric.name,
+          tags = editMetric.tags,
+          threshold = editMetric.threshold,
+          formula = editMetric.formula,
+          timeUnit = editMetric.unit
+        )
+      }
+      .flatMap { metricConfigurationRepository.save(it) }
   }
 
   private val timeUnit: (TemporalUnit) -> (Activity) -> LocalDate = { unit ->
