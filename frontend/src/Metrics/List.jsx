@@ -12,7 +12,7 @@ import {useMetrics} from 'contexts/MetricsContext'
 const useStyles = makeStyles(theme => ({
   addButton: {
     position: 'fixed',
-    bottom: theme.spacing(2),
+    bottom: theme.mixins.toolbar.minHeight + theme.spacing(2),
     right: theme.spacing(2)
   }
 }))
