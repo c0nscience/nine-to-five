@@ -4,9 +4,9 @@ import {useNetworkActivity} from 'contexts/NetworkContext'
 import {createApi} from 'api'
 import {initialState, reducer} from 'contexts/MetricsContext/reducer'
 import {
-  CREATE_NEW_METRIC_CONFIGURATION, DELETE_METRIC_CONFIGURATION,
-  LOAD_METRIC_CONFIGURATIONS, LOAD_METRIC_DETAIL,
-  metricConfigurationLoaded, metricDetailLoaded
+  CREATE_NEW_METRIC_CONFIGURATION, DELETE_METRIC_CONFIGURATION, LOAD_METRIC_CONFIGURATION,
+  LOAD_METRIC_CONFIGURATIONS, LOAD_METRIC_DETAIL, metricConfigurationLoaded,
+  metricConfigurationsLoaded, metricDetailLoaded, SAVE_METRIC_CONFIGURATION
 } from 'contexts/MetricsContext/actions'
 
 const MetricsContext = createContext()
@@ -19,7 +19,7 @@ export const MetricsProvider = ({children}) => {
 
   const loadMetricConfigurations = () => {
     request(get('metrics')
-      .then(configurations => dispatch(metricConfigurationLoaded(configurations)))
+      .then(configurations => dispatch(metricConfigurationsLoaded(configurations)))
     ).with(LOAD_METRIC_CONFIGURATIONS)
   }
 
@@ -39,12 +39,25 @@ export const MetricsProvider = ({children}) => {
       .with(DELETE_METRIC_CONFIGURATION)
   }
 
+  const loadMetricConfiguration = id => {
+    return request(get(`metrics/${id}/config`)
+      .then(metricConfiguration => dispatch(metricConfigurationLoaded(metricConfiguration)))
+    ).with(LOAD_METRIC_CONFIGURATION)
+  }
+
+  const saveMetricConfiguration = config => {
+    return request(post(`metrics/${config.id}`, config))
+      .with(SAVE_METRIC_CONFIGURATION)
+  }
+
   return <MetricsContext.Provider value={{
     ...state,
     loadMetricConfigurations,
     saveNewMetricConfiguration,
     loadMetricDetail,
-    deleteMetricConfiguration
+    deleteMetricConfiguration,
+    loadMetricConfiguration,
+    saveMetricConfiguration
   }}
   >
     {children}

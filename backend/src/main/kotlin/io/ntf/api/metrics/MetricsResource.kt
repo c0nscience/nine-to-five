@@ -54,4 +54,11 @@ class MetricsResource(private val metricsService: MetricsService) {
       .flatMap { userId -> metricsService.updateByUserIdAndId(userId, id, editMetric) }
       .map { ResponseEntity.status(HttpStatus.OK).build<Void>() }
   }
+
+  @GetMapping("metrics/{id}/config")
+  fun loadMetricConfiguration(principal: Mono<Principal>,
+                              @PathVariable("id") id: String): Mono<MetricConfigurationEdit> {
+    return principal.name()
+      .flatMap { userId -> metricsService.findByUserIdAndId(userId, id) }
+  }
 }

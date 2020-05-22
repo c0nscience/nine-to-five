@@ -90,6 +90,19 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
       .flatMap { metricConfigurationRepository.save(it) }
   }
 
+  fun findByUserIdAndId(userId: String, id: String): Mono<MetricConfigurationEdit> {
+    return metricConfigurationRepository.findByUserIdAndId(userId, id)
+      .map {
+        MetricConfigurationEdit(
+          name = it.name,
+          unit = it.timeUnit,
+          formula = it.formula,
+          tags = it.tags,
+          threshold = it.threshold
+        )
+      }
+  }
+
   private val timeUnit: (TemporalUnit) -> (Activity) -> LocalDate = { unit ->
     { (_, _, _, start) ->
       if (unit == ChronoUnit.WEEKS) {
@@ -143,10 +156,18 @@ data class MetricDetail(
 
 data class MetricValue(val duration: Duration, val date: LocalDate)
 
-data class EditMetric internal constructor(
+data class EditMetric(
   val name: String,
   val tags: List<String>,
   val unit: ChronoUnit,
   val formula: String,
   val threshold: Double
+)
+
+data class MetricConfigurationEdit(
+  val name: String,
+  val unit: ChronoUnit,
+  val threshold: Double,
+  val formula: String,
+  val tags: List<String>
 )

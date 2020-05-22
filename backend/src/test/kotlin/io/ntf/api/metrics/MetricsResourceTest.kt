@@ -218,4 +218,32 @@ class MetricsResourceTest {
       threshold = 35.0
     ))
   }
+
+  @Test
+  internal fun `should return the current metric configuration by id`() {
+    val userId = "existing-user"
+    val metricConfigurationId = UUID.randomUUID().toString()
+
+    `when`(metricsService.findByUserIdAndId(userId, metricConfigurationId))
+      .thenReturn(Mono.just(MetricConfigurationEdit(
+        name = "Overtime",
+        unit = WEEKS,
+        threshold = 40.0,
+        formula = "sum",
+        tags = listOf("some-tag")
+      )))
+
+    rest.mutateWith(mockJwt().jwt { it.claim("sub", userId).claim("scope", "read:metrics") })
+      .get()
+      .uri("/metrics/$metricConfigurationId/config")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.name").isEqualTo("Overtime")
+      .jsonPath("$.unit").isEqualTo("WEEKS")
+      .jsonPath("$.threshold").isEqualTo(40.0)
+      .jsonPath("$.formula").isEqualTo("sum")
+      .jsonPath("$.tags.length()").isEqualTo(1)
+      .jsonPath("$.tags[0]").isEqualTo("some-tag")
+  }
 }

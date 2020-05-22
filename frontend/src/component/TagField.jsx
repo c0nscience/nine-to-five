@@ -13,12 +13,15 @@ export const TagField = ({tags, setTags, allowNewValues = false, usedTags = [], 
     options={usedTags}
     value={tags}
     renderTags={(value, getTagProps) =>
-      value.map((option, index) => (
-        <Chip variant="outlined" label={toHyphenCase(option)} {...getTagProps({index})} />
-      ))
+      value.map((opt, index) => {
+        const option = toHyphenCase(opt)
+        return (
+          <Chip data-testid={`value-${option}`} variant="outlined" label={option} {...getTagProps({index})} />
+        )
+      })
     }
     renderInput={(params) => (
-      <TextField {...params} label="Tags" placeholder="Tags" margin="dense" fullWidth variant='filled'/>
+      <TextField {...params} label="Tags" placeholder="Tags" margin="dense" name='tags' fullWidth variant='filled'/>
     )}
     onChange={(e, v) => {
       setTags(v.map(toHyphenCase))

@@ -6,11 +6,10 @@ import {useHistory, useParams} from 'react-router'
 import Grid from '@material-ui/core/Grid'
 import {ResponsiveBar} from '@nivo/bar'
 import {DateTime, Duration} from 'luxon'
-import makeStyles from '@material-ui/core/styles/makeStyles'
 import IconButton from '@material-ui/core/IconButton'
-import {Delete} from '@material-ui/icons'
+import {Delete, Edit} from '@material-ui/icons'
 
-export const Detail = ({metric = {}, deleteMetric}) => {
+export const Detail = ({metric = {}, deleteMetric, editMetric}) => {
   const {name, totalExceedingDuration = 0, values = [], threshold} = metric
   const data = values.map(v => ({
     id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
@@ -23,6 +22,11 @@ export const Detail = ({metric = {}, deleteMetric}) => {
         data-testid='delete-button'
         onClick={() => deleteMetric()}>
         <Delete/>
+      </IconButton>
+      <IconButton
+        data-testid='edit-button'
+        onClick={() => editMetric()}>
+        <Edit/>
       </IconButton>
     </Grid>
 
@@ -43,8 +47,8 @@ export const Detail = ({metric = {}, deleteMetric}) => {
           {
             axis: 'y',
             value: threshold,
-            lineStyle: { stroke: 'rgba(0, 0, 0, .35)', strokeWidth: 2 },
-          },
+            lineStyle: {stroke: 'rgba(0, 0, 0, .35)', strokeWidth: 2}
+          }
         ]}
         labelSkipWidth={12}
         labelSkipHeight={12}
@@ -74,8 +78,10 @@ export default () => {
     loadMetricDetail(id)
   }, [id])
 
-  return <Detail metric={metricDetail} deleteMetric={() => {
-    deleteMetricConfiguration(id)
-      .then(() => history.replace('/metrics'))
-  }}/>
+  return <Detail metric={metricDetail}
+                 deleteMetric={() => {
+                   deleteMetricConfiguration(id)
+                     .then(() => history.replace('/metrics'))
+                 }}
+                 editMetric={() => history.push(`/metrics/${id}/edit`)}/>
 }

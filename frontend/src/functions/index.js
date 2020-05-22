@@ -22,3 +22,8 @@ export const formatDuration = duration => {
 
   return duration.toFormat('h\'h\' m\'m\'')
 }
+
+export const callValueWith = f => event => {
+  const target = event.target
+  f(target.value)
+}

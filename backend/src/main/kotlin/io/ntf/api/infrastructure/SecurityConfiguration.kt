@@ -44,6 +44,7 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
       .pathMatchers(GET, "/metrics/{id}").hasAuthority("SCOPE_read:metrics")
       .pathMatchers(DELETE, "/metrics/{id}").hasAuthority("SCOPE_delete:metrics")
       .pathMatchers(POST, "/metrics/{id}").hasAuthority("SCOPE_update:metric")
+      .pathMatchers(GET, "/metrics/{id}/config").hasAuthority("SCOPE_read:metrics")
       .and()
       .oauth2ResourceServer().jwt().and().and().build()
 

@@ -16,6 +16,7 @@ import {TitleProvider} from 'contexts/TitleContext'
 import MetricList from 'Metrics/List'
 import MetricCreatePage from 'Metrics/CreatePage'
 import MetricDetailPage from 'Metrics/Detail'
+import MetricEditPage from 'Metrics/Edit'
 import {MetricsProvider} from 'contexts/MetricsContext'
 
 const App = ({history}) => {
@@ -23,7 +24,7 @@ const App = ({history}) => {
                        client_id={AUTH_CONFIG.clientId}
                        redirect_uri={AUTH_CONFIG.callbackUrl}
                        audience={'https://api.ntf.io'}
-                       scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log update:log read:metrics create:metrics delete:metrics'}>
+                       scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log update:log read:metrics create:metrics delete:metrics update:metric'}>
     <Router history={history}>
       <NetworkActivityProvider>
         <BulkModeProvider>
@@ -52,6 +53,12 @@ const App = ({history}) => {
               <PrivateRoute exact path="/metrics/:id" component={() =>
                 <MetricsProvider>
                   <MetricDetailPage/>
+                </MetricsProvider>
+              }/>
+
+              <PrivateRoute exact path="/metrics/:id/edit" component={() =>
+                <MetricsProvider>
+                  <MetricEditPage/>
                 </MetricsProvider>
               }/>
 

@@ -11,6 +11,7 @@ import {TagField} from 'component/TagField'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import {useMetrics} from 'contexts/MetricsContext'
 import {useActivity} from 'contexts/ActivityContext'
+import {callValueWith} from 'functions'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -30,11 +31,6 @@ const useStyles = makeStyles(theme => ({
     flex: 0
   }
 }))
-
-const callValueWith = f => event => {
-  const target = event.target
-  f(target.value)
-}
 
 export const CreatePage = ({saveNewConfiguration, usedTags}) => {
   const classes = useStyles()
