@@ -18,6 +18,7 @@ import MetricCreatePage from 'Metrics/CreatePage'
 import MetricDetailPage from 'Metrics/Detail'
 import MetricEditPage from 'Metrics/Edit'
 import {MetricsProvider} from 'contexts/MetricsContext'
+import Navigation from 'Navigation'
 
 const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
@@ -30,8 +31,8 @@ const App = ({history}) => {
         <BulkModeProvider>
           <TitleProvider>
 
-            <NavBar/>
-            <LoadingIndicator/>
+            {/*<NavBar/>*/}
+            {/*<LoadingIndicator/>*/}
 
             <Switch>
               <PrivateRoute path="/statistic/configuration" component={() =>
@@ -77,6 +78,8 @@ const App = ({history}) => {
               }/>
 
             </Switch>
+
+            <Navigation/>
 
           </TitleProvider>
         </BulkModeProvider>
