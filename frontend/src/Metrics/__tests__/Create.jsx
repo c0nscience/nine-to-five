@@ -3,8 +3,7 @@ import '@testing-library/jest-dom'
 import React from 'react'
 import {fireEvent, render} from '@testing-library/react'
 import {CreatePage} from '../CreatePage'
-import { useHistory } from 'react-router'
-import {prettyDOM} from '@testing-library/dom'
+import {useHistory} from 'react-router'
 
 jest.mock('react-router')
 

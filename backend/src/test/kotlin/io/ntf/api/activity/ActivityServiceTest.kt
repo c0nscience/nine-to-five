@@ -2,7 +2,6 @@ package io.ntf.api.activity
 
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.activity.model.ActivityRepository
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,14 +24,14 @@ import java.util.function.Predicate
 class ActivityServiceTest {
 
   @Autowired
-  private val activityService: ActivityService? = null
+  lateinit var activityService: ActivityService
 
   @Autowired
-  private val activityRepository: ActivityRepository? = null
+  lateinit var activityRepository: ActivityRepository
 
   @BeforeEach
   fun setUp() {
-    activityRepository?.run {
+    activityRepository.run {
       deleteAll().block()
       save(Activity(null, USER_ID, "activity 1", NOW, null)).block()
       save(Activity(null, USER_ID, "activity 2", NOW.minusHours(1), NOW)).block()
@@ -42,7 +41,7 @@ class ActivityServiceTest {
 
   @Test
   fun shouldReturnAllActivitiesOfAGivenUser() {
-    StepVerifier.create(activityService!!.findByUserId(USER_ID))
+    StepVerifier.create(activityService.findByUserId(USER_ID))
       .expectNextMatches(activityWith("activity 1", NOW))
       .expectNextMatches(activityWith("activity 2", NOW.minusHours(1), NOW))
       .verifyComplete()
@@ -51,6 +50,20 @@ class ActivityServiceTest {
   private fun activityWith(name: String, start: LocalDateTime, end: LocalDateTime? = null) =
     Predicate<Activity> { Activity(it.id, it.userId, name, start, end) == it }
 
+  @Test
+  internal fun `should return all activities for one day`() {
+    activityRepository.run {
+      deleteAll().block()
+
+      save(Activity(userId = USER_ID, name = "today", start = NOW, end = NOW.plusHours(1))).block()
+
+      save(Activity(userId = USER_ID, name = "tomorrow", start = NOW.plusDays(1), end = NOW.plusDays(1).plusHours(1))).block()
+    }
+
+    StepVerifier.create(activityService.allInRange(USER_ID, NOW.toLocalDate(), NOW.toLocalDate()))
+      .expectNextMatches(activityWith("today", NOW, NOW.plusHours(1)))
+      .verifyComplete()
+  }
 
   @TestConfiguration
   class Config {

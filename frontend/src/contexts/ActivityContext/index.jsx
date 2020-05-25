@@ -29,11 +29,11 @@ export const ActivityProvider = ({children}) => {
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
   const {get, post, put, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
-  const loadRunning = () => {
-    request(get('activity/running')
-      .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
-    ).with(LOAD_RUNNING_ACTIVITY)
-  }
+  // const loadRunning = () => {
+  //   request(get('activity/running')
+  //     .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
+  //   ).with(LOAD_RUNNING_ACTIVITY)
+  // }
 
   //TODO this should move into an own TagsContext, which then also can take care of providing methods to maintain tags like changing color and such
   const loadUsedTags = () => {
@@ -42,10 +42,10 @@ export const ActivityProvider = ({children}) => {
       .with(LOAD_USED_TAGS)
   }
 
-  useEffect(() => {
-    // loadUsedTags()
-    loadRunning()
-  }, [])
+  // useEffect(() => {
+  //   // loadUsedTags()
+  //   loadRunning()
+  // }, [])
 
   const loadActivitiesInRange = (from, to, signal) => {
     request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
@@ -53,62 +53,54 @@ export const ActivityProvider = ({children}) => {
     ).with(LOAD_ACTIVITIES_IN_RANGE)
   }
 
-  const startActivity = name => {
-    return request(post('activity', {name})
-      .then(activity => dispatch(activityStarted(activity)))
-    ).with(START_ACTIVITY)
-  }
+  // const startActivity = name => {
+  //   return request(post('activity', {name})
+  //     .then(activity => dispatch(activityStarted(activity)))
+  //   ).with(START_ACTIVITY)
+  // }
+  //
+  // const stopActivity = () => {
+  //   return request(post('activity/stop')
+  //     .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
+  //   ).with(STOP_ACTIVITY)
+  // }
 
-  const stopActivity = () => {
-    return request(post('activity/stop')
-      .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
-    ).with(STOP_ACTIVITY)
-  }
+  // const saveActivity = (changedActivity, oldActivity) => {
+  //   dispatch(deselectActivityAction())
+  //   request(put(`activity/${changedActivity.id}`, changedActivity)
+  //     .then(savedActivity => {
+  //       dispatch(activityDeleted(oldActivity))
+  //       dispatch(activitySaved(savedActivity))
+  //     }))
+  //     .with(SAVE_ACTIVITY)
+  // }
 
-  const selectActivity = activity => {
-    dispatch(selectActivityAction(activity))
-  }
+  // const deleteActivity = id => {
+  //   dispatch(deselectActivityAction())
+  //   request(del(`activity/${id}`)
+  //     .then(deletedActivity => dispatch(activityDeleted(deletedActivity))))
+  //     .with(DELETE_ACTIVITY)
+  // }
 
-  const deselectActivity = () => {
-    dispatch(deselectActivityAction())
-  }
+  // const switchActivity = name => {
+  //   stopActivity()
+  //     .then(() => startActivity(name))
+  // }
 
-  const saveActivity = (changedActivity, oldActivity) => {
-    dispatch(deselectActivityAction())
-    request(put(`activity/${changedActivity.id}`, changedActivity)
-      .then(savedActivity => {
-        dispatch(activityDeleted(oldActivity))
-        dispatch(activitySaved(savedActivity))
-      }))
-      .with(SAVE_ACTIVITY)
-  }
-
-  const deleteActivity = id => {
-    dispatch(deselectActivityAction())
-    request(del(`activity/${id}`)
-      .then(deletedActivity => dispatch(activityDeleted(deletedActivity))))
-      .with(DELETE_ACTIVITY)
-  }
-
-  const switchActivity = name => {
-    stopActivity()
-      .then(() => startActivity(name))
-  }
-
-  const continueActivity = name => {
-    startActivity(name)
-  }
+  // const continueActivity = name => {
+  //   startActivity(name)
+  // }
 
   return <ActivityContext.Provider value={{
     ...state,
-    startActivity,
-    stopActivity,
-    selectActivity,
-    deselectActivity,
-    saveActivity,
-    deleteActivity,
-    switchActivity,
-    continueActivity,
+    // startActivity,
+    // stopActivity,
+    // selectActivity,
+    // deselectActivity,
+    // saveActivity,
+    // deleteActivity,
+    // switchActivity,
+    // continueActivity,
     loadActivitiesInRange,
 
     loadUsedTags

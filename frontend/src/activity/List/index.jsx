@@ -1,55 +1,57 @@
-import React from 'react'
-import WeekCard from './WeekCard'
+import React, {useEffect} from 'react'
 import {useActivity} from 'contexts/ActivityContext'
-import {useStatistics} from 'contexts/StatisticContext'
 import {DateTime} from 'luxon'
-import NoEntriesFound from 'activity/List/NoEntriesFound'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import Grid from '@material-ui/core/Grid'
-import {useInfiniteScrolling} from 'contexts/IntiniteScrolling'
+import DayPicker from 'activity/List/DayPicker'
+import ActivityItem from 'activity/List/ActivityItem'
+import MuiList from '@material-ui/core/List'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 
-const useStyles = makeStyles(theme =>({
-  loadingIndicatorContainer: {
-    minHeight: '50px',
-    textAlign: 'center',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(3)
+const useStyles = makeStyles(theme => ({
+  list: {
+    marginBottom: theme.mixins.toolbar.minHeight
   }
 }))
 
-const LoadingNewEntriesIndicator = ({loadingNewEntries}) => {
+export const List = ({activities}) => {
   const classes = useStyles()
-  return <Grid container>
-    <Grid item xs={5}/>
-    <Grid item xs={2} className={classes.loadingIndicatorContainer}>
-      {loadingNewEntries && <CircularProgress/>}
-    </Grid>
-    <Grid item xs={5}/>
-  </Grid>
+
+  return <MuiList className={classes.list}>
+    {
+      activities
+        .sort((a, b) => DateTime.fromISO(a.start).diff(DateTime.fromISO(b.start)).valueOf())
+        .filter(activity => activity.end !== undefined)
+        .map((activity, index) => {
+          let hideEndTime = false
+          const next = activities[index + 1]
+          if (next) {
+            const currentEndTime = DateTime.fromISO(activity.end)
+            const nextEndTime = next && DateTime.fromISO(next.start)
+            const diff = currentEndTime.diff(nextEndTime).valueOf()
+            hideEndTime = diff === 0
+          }
+
+          return <ActivityItem {...activity}
+                               hideEndTime={hideEndTime}
+                               key={`activity-${activity.id}`}/>
+        })
+    }
+  </MuiList>
 }
 
-const List = () => {
-  const {activitiesByWeek: byWeek, hasMore} = useActivity()
-  const {overtimes} = useStatistics()
-  const {loadingNewEntries, registerLoadingObserver} = useInfiniteScrolling()
-  const weeks = Object.entries(byWeek)
+export default () => {
+  const {loadActivitiesInRange, activities} = useActivity()
+
+  const now = DateTime.local()
+  useEffect(() => {
+    loadActivitiesInRange(now, now)
+  }, [])
 
   return <>
-    {(weeks.length > 0) && weeks
-      .sort((a, b) => DateTime.fromISO(b[0]).diff(DateTime.fromISO(a[0])).valueOf())
-      .map((v, index) => {
-        const [weekNumber, week] = v
+    <DayPicker date={now}
+               onChanged={d => {
+                 loadActivitiesInRange(d, d)
+               }}/>
 
-        return <WeekCard key={weekNumber}
-                         lastElement={index + 1 === weeks.length}
-                         // totalDuration={week.totalDuration}
-                         weekNumber={weekNumber}
-                         days={week.days}/>
-      })}
-    <LoadingNewEntriesIndicator loadingNewEntries={loadingNewEntries && hasMore}/>
-    {(weeks.length === 0) && <NoEntriesFound ref={registerLoadingObserver}/>}
+    <List activities={activities}/>
   </>
 }
-
-export default List
