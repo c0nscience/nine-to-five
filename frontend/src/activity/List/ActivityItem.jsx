@@ -12,6 +12,10 @@ import ListSubheader from '@material-ui/core/ListSubheader'
 
 const useStyles = makeStyles(theme => {
   return {
+    item: {
+      paddingTop: 0,
+      paddingBottom: 0
+    },
     itemText: {
       margin: 0
     },
@@ -25,6 +29,9 @@ const useStyles = makeStyles(theme => {
       '& > *:first-child': {
         marginLeft: 0
       }
+    },
+    time: {
+      paddingLeft: theme.spacing(2)
     }
   }
 })
@@ -43,8 +50,13 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [],
   </Typography>
 
   return <>
-    {!hideStartTime && <ListSubheader data-testid='start-time' disableSticky disableGutters>{start.toFormat('T')}</ListSubheader>}
-    <ListItem ref={ref} disableGutters disabled={isInTheFuture}>
+    {!hideStartTime && <ListSubheader data-testid='start-time'
+                                      className={classes.time}
+                                      disableSticky
+                                      disableGutters>
+      {start.toFormat('T')}
+    </ListSubheader>}
+    <ListItem ref={ref} className={classes.item} disableGutters disabled={isInTheFuture}>
       <ListItemText className={classes.itemText}>
         <Card>
           <CardHeader title={name}
@@ -55,7 +67,12 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [],
         </Card>
       </ListItemText>
     </ListItem>
-    {!hideEndTime && <ListSubheader data-testid='end-time' disableSticky disableGutters>{endOrNow.toFormat('T')}</ListSubheader>}
+    {!hideEndTime && <ListSubheader data-testid='end-time'
+                                    className={classes.time}
+                                    disableSticky
+                                    disableGutters>
+      {endOrNow.toFormat('T')}
+    </ListSubheader>}
   </>
 })
 export default ActivityItem
