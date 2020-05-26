@@ -33,14 +33,19 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
       .map { it.lastModifiedDate }
   }
 
-  fun start(userId: String, name: String): Mono<Activity> {
+  fun start(
+    userId: String,
+    name: String,
+    start: LocalDateTime?,
+    tags: List<String> = emptyList()
+  ): Mono<Activity> {
     return running(userId)
       .flatMap { Mono.error<Activity>(ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not start new activity while another is running.")) }
-      .switchIfEmpty(startAndSaveActivityWith(userId, name))
+      .switchIfEmpty(startAndSaveActivityWith(userId, name, start?.adjust() ?: now(), tags))
   }
 
-  private fun startAndSaveActivityWith(userId: String, name: String): Mono<Activity> {
-    val activity = Activity(userId = userId, name = name, start = now())
+  private fun startAndSaveActivityWith(userId: String, name: String, start: LocalDateTime, tags: List<String>): Mono<Activity> {
+    val activity = Activity(userId = userId, name = name, start = start, tags = tags)
 
     return Mono.just(activity)
       .flatMap { activityRepository.save(it) }

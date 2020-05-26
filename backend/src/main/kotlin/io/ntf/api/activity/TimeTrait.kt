@@ -12,7 +12,11 @@ interface TimeTrait {
 
   fun now(): LocalDateTime {
     return LocalDateTime.now(ZoneOffset.UTC)
-      .truncatedTo(ChronoUnit.MINUTES)
+      .adjust()
+  }
+
+  fun LocalDateTime.adjust(): LocalDateTime {
+    return this.truncatedTo(ChronoUnit.MINUTES)
       .with(adjustToNearestTenth())
   }
 

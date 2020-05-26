@@ -57,7 +57,8 @@ export default () => {
   }, [])
 
   return <>
-    <StartDialog open={startDialogOpen}/>
+    <StartDialog open={startDialogOpen}
+                 closeDialog={() => setStartDialogOpen(false)}/>
 
     <DayPicker date={now}
                onChanged={d => {

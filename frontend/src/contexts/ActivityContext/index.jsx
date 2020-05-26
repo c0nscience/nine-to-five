@@ -53,11 +53,11 @@ export const ActivityProvider = ({children}) => {
     ).with(LOAD_ACTIVITIES_IN_RANGE)
   }
 
-  // const startActivity = name => {
-  //   return request(post('activity', {name})
-  //     .then(activity => dispatch(activityStarted(activity)))
-  //   ).with(START_ACTIVITY)
-  // }
+  const startActivity = activity => {
+    return request(post('activity', activity)
+      .then(activity => dispatch(activityStarted(activity)))
+    ).with(START_ACTIVITY)
+  }
   //
   // const stopActivity = () => {
   //   return request(post('activity/stop')
@@ -93,7 +93,7 @@ export const ActivityProvider = ({children}) => {
 
   return <ActivityContext.Provider value={{
     ...state,
-    // startActivity,
+    startActivity,
     // stopActivity,
     // selectActivity,
     // deselectActivity,

@@ -50,8 +50,8 @@ class ActivityResource(private val activityService: ActivityService) {
   @PostMapping("/activity")
   fun start(@RequestBody startActivity: Mono<StartActivity>, principal: Mono<Principal>): Mono<ResponseEntity<Activity>> {
     return principal.map { it.name }
-      .zipWith(startActivity.map { it.name })
-      .flatMap { tpl -> activityService.start(tpl.t1, tpl.t2) }
+      .zipWith(startActivity)
+      .flatMap { (userId, activity) -> activityService.start(userId, activity.name, activity.start, activity.tags) }
       .map { activity -> ResponseEntity.status(HttpStatus.CREATED).body(activity) }
   }
 
@@ -97,7 +97,7 @@ class ActivityResource(private val activityService: ActivityService) {
       .flatMap { activityService.findAllUsedTags(it).collectList() }
   }
 
-  data class StartActivity(val name: String)
+  data class StartActivity(val name: String, val start: LocalDateTime?, val tags: List<String> = emptyList())
 
   data class DeletedActivity(val id: String?, val start: LocalDateTime)
 }

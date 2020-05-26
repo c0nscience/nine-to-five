@@ -25,7 +25,11 @@ export const formatDuration = duration => {
 
 export const callValueWith = f => event => {
   const target = event.target
-  f(target.value)
+  if (target.value) {
+    f(target.value)
+  } else {
+    f(target.checked)
+  }
 }
 
 export const toHyphenCase = e => e.replace(/\s+/g, '-').toLowerCase()

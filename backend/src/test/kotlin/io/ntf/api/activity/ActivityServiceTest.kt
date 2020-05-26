@@ -47,8 +47,8 @@ class ActivityServiceTest {
       .verifyComplete()
   }
 
-  private fun activityWith(name: String, start: LocalDateTime, end: LocalDateTime? = null) =
-    Predicate<Activity> { Activity(it.id, it.userId, name, start, end) == it }
+  private fun activityWith(name: String, start: LocalDateTime, end: LocalDateTime? = null, tags: List<String> = emptyList()) =
+    Predicate<Activity> { Activity(it.id, it.userId, name, start, end, tags) == it }
 
   @Test
   internal fun `should return all activities for one day`() {
@@ -62,6 +62,15 @@ class ActivityServiceTest {
 
     StepVerifier.create(activityService.allInRange(USER_ID, NOW.toLocalDate(), NOW.toLocalDate()))
       .expectNextMatches(activityWith("today", NOW, NOW.plusHours(1)))
+      .verifyComplete()
+  }
+
+  @Test
+  internal fun `should start activity with name, tags and start`() {
+    activityService.stop(USER_ID).block()
+
+    StepVerifier.create(activityService.start(USER_ID, "new task", NOW, listOf("new-tag")))
+      .expectNextMatches(activityWith(name = "new task", start = NOW, tags = listOf("new-tag")))
       .verifyComplete()
   }
 
