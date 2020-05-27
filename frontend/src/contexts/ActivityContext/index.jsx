@@ -11,7 +11,7 @@ import {
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {useAuth} from 'contexts/AuthenticationContext'
-import {activityLoaded, LOAD_ACTIVITY} from 'contexts/ActivityContext/actions'
+import {activityLoaded, LOAD_ACTIVITY, SAVE_ACTIVITY} from 'contexts/ActivityContext/actions'
 
 const ActivityContext = createContext()
 
@@ -57,15 +57,10 @@ export const ActivityProvider = ({children}) => {
   //   ).with(STOP_ACTIVITY)
   // }
 
-  // const saveActivity = (changedActivity, oldActivity) => {
-  //   dispatch(deselectActivityAction())
-  //   request(put(`activity/${changedActivity.id}`, changedActivity)
-  //     .then(savedActivity => {
-  //       dispatch(activityDeleted(oldActivity))
-  //       dispatch(activitySaved(savedActivity))
-  //     }))
-  //     .with(SAVE_ACTIVITY)
-  // }
+  const saveActivity = (changedActivity) => {
+    return request(put(`activity/${changedActivity.id}`, changedActivity))
+      .with(SAVE_ACTIVITY)
+  }
 
   // const deleteActivity = id => {
   //   dispatch(deselectActivityAction())
@@ -95,7 +90,7 @@ export const ActivityProvider = ({children}) => {
     // stopActivity,
     // selectActivity,
     // deselectActivity,
-    // saveActivity,
+    saveActivity,
     // deleteActivity,
     // switchActivity,
     // continueActivity,

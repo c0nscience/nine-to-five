@@ -16,6 +16,7 @@ import MetricEditPage from 'Metrics/Edit'
 import {MetricsProvider} from 'contexts/MetricsContext'
 import Navigation from 'Navigation'
 import ActivityDetail from 'activity/Detail'
+import ActivityEdit from 'activity/Edit'
 
 const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
@@ -53,6 +54,10 @@ const App = ({history}) => {
                     <MetricList/>
                     <Navigation/>
                   </MetricsProvider>
+                }/>
+
+                <PrivateRoute exact path="/activities/:id/edit" component={() =>
+                  <ActivityEdit/>
                 }/>
 
                 <PrivateRoute exact path="/activities/:id" component={() =>

@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export const Detail = ({start: _start, end: _end, name, tags}) => {
+export const Detail = ({id, start: _start, end: _end, name, tags}) => {
   const classes = useStyles()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
   const end = DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
@@ -38,7 +38,12 @@ export const Detail = ({start: _start, end: _end, name, tags}) => {
       </Button>
       <div className={classes.spacer}/>
       <IconButton color='inherit' data-testid='delete-btn'><Delete/></IconButton>
-      <IconButton color='inherit' edge='end' data-testid='edit-btn'><Edit/></IconButton>
+      <IconButton color='inherit'
+                  edge='end'
+                  data-testid='edit-btn'
+                  onClick={() => history.push(`/activities/${id}/edit`)}>
+        <Edit/>
+      </IconButton>
     </Toolbar>
 
     <Grid container className={classes.root}>

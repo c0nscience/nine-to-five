@@ -5,8 +5,9 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 import {useActivity} from 'contexts/ActivityContext'
 import {toHyphenCase} from 'functions'
 
-export const TagField = ({tags, setTags, allowNewValues = false, usedTags = [], ...props}) =>
-  <Autocomplete
+export const TagField = ({tags, setTags, allowNewValues = false, usedTags = [], ...props}) => {
+  console.log('usedTags', usedTags)
+  return <Autocomplete
     multiple
     freeSolo={allowNewValues}
     options={usedTags}
@@ -27,9 +28,4 @@ export const TagField = ({tags, setTags, allowNewValues = false, usedTags = [], 
     }}
     {...props}
   />
-
-
-export default props => {
-  const {usedTags} = useActivity()
-  return <TagField {...props} usedTags={usedTags}/>
 }

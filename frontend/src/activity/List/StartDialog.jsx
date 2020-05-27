@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import Dialog from '@material-ui/core/Dialog'
 import {DialogTitle, useMediaQuery} from '@material-ui/core'
 import DialogContent from '@material-ui/core/DialogContent'
@@ -15,7 +15,7 @@ import {DateTime} from 'luxon'
 import LuxonUtils from '@date-io/luxon'
 import {useActivity} from 'contexts/ActivityContext'
 
-export const StartDialog = ({open, closeDialog, startActivity}) => {
+export const StartDialog = ({open, closeDialog, startActivity, usedTags}) => {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const [name, setName] = useState('')
@@ -38,7 +38,7 @@ export const StartDialog = ({open, closeDialog, startActivity}) => {
                   data-testid='tags'
                   tags={tags}
                   setTags={setTags}
-                  usedTags={[]}/>
+                  usedTags={usedTags}/>
 
         <FormControlLabel
           data-testid='change-start-time'
@@ -78,10 +78,15 @@ export const StartDialog = ({open, closeDialog, startActivity}) => {
 }
 
 export default ({open, closeDialog}) => {
-  const {startActivity} = useActivity()
+  const {startActivity, usedTags, loadUsedTags} = useActivity()
+
+  useEffect(() => {
+    loadUsedTags()
+  }, [])
 
   return <StartDialog open={open}
                       closeDialog={closeDialog}
+                      usedTags={usedTags}
                       startActivity={activity => startActivity(activity)
                         .then(() => closeDialog())}
   />
