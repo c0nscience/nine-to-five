@@ -24,7 +24,10 @@ const Edit = ({activity, saveActivity, cancel, usedTags}) => {
   useEffect(() => {
     setState(s => ({
       ...s,
-      id, name, start, end, tags
+      id, name,
+      start: DateTime.fromISO(start, {zone: 'utc'}).toLocal(),
+      end: DateTime.fromISO(end, {zone: 'utc'}).toLocal(),
+      tags
     }))
   }, [id, name, start, end])
 

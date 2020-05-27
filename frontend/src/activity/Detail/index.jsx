@@ -33,7 +33,7 @@ export const Detail = ({id, start: _start, end: _end, name, tags}) => {
       <Button color='inherit'
               startIcon={<ArrowBackIos/>}
               data-testid='back-btn'
-              onClick={() => history.goBack()}>
+              onClick={() => history.replace('/')}>
         Back
       </Button>
       <div className={classes.spacer}/>
