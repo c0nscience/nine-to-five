@@ -2,11 +2,11 @@ package io.ntf.api.activity
 
 import io.ntf.api.activity.model.Activity
 import io.ntf.api.logger
+import io.ntf.api.name
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.util.function.component1
 import reactor.kotlin.core.util.function.component2
@@ -14,6 +14,7 @@ import java.security.Principal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
 
 @RestController
 class ActivityResource(private val activityService: ActivityService) {
@@ -44,6 +45,21 @@ class ActivityResource(private val activityService: ActivityService) {
               "remainingEntries" to remainingEntries
             )
           }
+      }
+  }
+
+  @GetMapping("/activities/{id}")
+  fun getActivity(principal: Mono<Principal>, @PathVariable id: String): Mono<ActivityDetail> {
+    return principal.name()
+      .flatMap { userId -> activityService.findByUserIdAndId(userId, id) }
+      .map { activity ->
+        ActivityDetail(
+          id = activity.id!!,
+          name = activity.name,
+          start = activity.start,
+          end = activity.end,
+          tags = activity.tags
+        )
       }
   }
 
@@ -100,4 +116,12 @@ class ActivityResource(private val activityService: ActivityService) {
   data class StartActivity(val name: String, val start: LocalDateTime?, val tags: List<String> = emptyList())
 
   data class DeletedActivity(val id: String?, val start: LocalDateTime)
+
+  data class ActivityDetail(
+    val id: String,
+    val name: String,
+    val start: LocalDateTime,
+    val end: LocalDateTime?,
+    val tags: List<String> = emptyList()
+  )
 }

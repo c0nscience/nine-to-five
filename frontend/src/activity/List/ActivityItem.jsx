@@ -9,6 +9,7 @@ import Chip from '@material-ui/core/Chip'
 import {formatDuration} from 'functions'
 import Typography from '@material-ui/core/Typography'
 import ListSubheader from '@material-ui/core/ListSubheader'
+import {useHistory} from 'react-router'
 
 const useStyles = makeStyles(theme => {
   return {
@@ -37,6 +38,7 @@ const useStyles = makeStyles(theme => {
 })
 
 const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [], hideStartTime = false, hideEndTime = false}, ref) => {
+  const history = useHistory()
   const classes = useStyles()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
@@ -56,7 +58,13 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [],
                                       disableGutters>
       {start.toFormat('T')}
     </ListSubheader>}
-    <ListItem ref={ref} className={classes.item} disableGutters disabled={isInTheFuture}>
+    <ListItem ref={ref}
+              className={classes.item}
+              disableGutters
+              disabled={isInTheFuture}
+              button
+              onClick={() => history.push(`/activities/${id}`)}
+    >
       <ListItemText className={classes.itemText}>
         <Card>
           <CardHeader title={name}

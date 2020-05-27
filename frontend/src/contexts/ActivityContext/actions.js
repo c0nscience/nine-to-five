@@ -48,3 +48,9 @@ export const USED_TAGS_LOADED = 'USED_TAGS_LOADED'
 
 export const usedTagsLoaded = tags =>
   ({type: USED_TAGS_LOADED, payload: tags})
+
+export const LOAD_ACTIVITY = 'LOAD_ACTIVITY'
+export const ACTIVITY_LOADED = 'ACTIVITY_LOADED'
+
+export const activityLoaded = activity =>
+  ({type: ACTIVITY_LOADED, payload: activity})

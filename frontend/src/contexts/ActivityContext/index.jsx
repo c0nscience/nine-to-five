@@ -1,25 +1,17 @@
-import React, {createContext, useContext, useEffect, useReducer} from 'react'
+import React, {createContext, useContext, useReducer} from 'react'
 import {createApi} from 'api'
 import {
   activitiesInRangeLoaded,
-  activityDeleted,
-  activitySaved,
   activityStarted,
-  activityStopped,
-  DELETE_ACTIVITY,
-  deselectActivity as deselectActivityAction,
   LOAD_ACTIVITIES_IN_RANGE,
-  LOAD_RUNNING_ACTIVITY, LOAD_USED_TAGS,
-  runningActivityLoaded,
-  SAVE_ACTIVITY,
-  selectActivity as selectActivityAction,
+  LOAD_USED_TAGS,
   START_ACTIVITY,
-  STOP_ACTIVITY,
   usedTagsLoaded
 } from './actions'
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {useAuth} from 'contexts/AuthenticationContext'
+import {activityLoaded, LOAD_ACTIVITY} from 'contexts/ActivityContext/actions'
 
 const ActivityContext = createContext()
 
@@ -91,6 +83,12 @@ export const ActivityProvider = ({children}) => {
   //   startActivity(name)
   // }
 
+  const loadActivity = id => {
+    request(get(`activities/${id}`)
+      .then(activity => dispatch(activityLoaded(activity)))
+    ).with(LOAD_ACTIVITY)
+  }
+
   return <ActivityContext.Provider value={{
     ...state,
     startActivity,
@@ -102,7 +100,7 @@ export const ActivityProvider = ({children}) => {
     // switchActivity,
     // continueActivity,
     loadActivitiesInRange,
-
+    loadActivity,
     loadUsedTags
   }}>
     {children}

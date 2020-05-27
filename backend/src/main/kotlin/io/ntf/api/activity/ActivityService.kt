@@ -22,7 +22,7 @@ class ActivityService(private val activityRepository: ActivityRepository, privat
     return activityRepository.findByUserIdOrderByStartDesc(userId)
   }
 
-  private fun findByUserIdAndId(userId: String, id: String): Mono<Activity> {
+  fun findByUserIdAndId(userId: String, id: String): Mono<Activity> {
     return activityRepository.findByUserIdAndId(userId, id)
   }
 
