@@ -1,3 +1,4 @@
+import React from 'react'
 import {Duration} from 'luxon'
 
 export const positiveDurationFrom = isoDurationString => {
@@ -11,7 +12,7 @@ export const positiveDurationFrom = isoDurationString => {
 
 export const ZERO_DURATION = () => Duration.fromMillis(0)
 
-export const formatDuration = duration => {
+export const formatDuration = (duration, opts = {multiline: false}) => {
   if (!duration) {
     return ''
   }
@@ -20,7 +21,17 @@ export const formatDuration = duration => {
     duration = Duration.fromISO(duration)
   }
 
-  return duration.toFormat('h\'h\' m\'m\'')
+  if (opts.multiline) {
+    const hours = Math.floor(duration.as('hours'))
+    if (hours > 0) {
+      return <>{duration.toFormat('h\'h\'')}<br/>{duration.minus({hours}).toFormat('m\'m\'')}</>
+    } else {
+      return duration.toFormat('m\'m\'')
+    }
+  } else {
+    return duration.toFormat('h\'h\' m\'m\'')
+  }
+
 }
 
 export const callValueWith = f => event => {

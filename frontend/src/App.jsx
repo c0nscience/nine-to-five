@@ -51,6 +51,7 @@ const App = ({history}) => {
                 <PrivateRoute exact path="/metrics" component={() =>
                   <MetricsProvider>
                     <MetricList/>
+                    <Navigation/>
                   </MetricsProvider>
                 }/>
 
@@ -58,11 +59,14 @@ const App = ({history}) => {
                   <ActivityDetail/>
                 }/>
 
-                <PrivateRoute exact path="/" component={() => <Activity/>}/>
+                <PrivateRoute exact path="/" component={() =>
+                  <>
+                    <Activity/>
+                    <Navigation/>
+                  </>
+                }/>
 
               </Switch>
-
-              <Navigation/>
 
             </ActivityProvider>
           </TitleProvider>
