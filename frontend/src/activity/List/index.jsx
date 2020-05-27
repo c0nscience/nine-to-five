@@ -8,6 +8,12 @@ import makeStyles from '@material-ui/core/styles/makeStyles'
 import Fab from '@material-ui/core/Fab'
 import {Add} from '@material-ui/icons'
 import StartDialog from 'activity/List/StartDialog'
+import Card from '@material-ui/core/Card'
+import {CardHeader} from '@material-ui/core'
+import Chip from '@material-ui/core/Chip'
+import {formatDuration} from 'functions'
+import Typography from '@material-ui/core/Typography'
+import {useHistory} from 'react-router'
 
 const useStyles = makeStyles(theme => ({
   list: {
@@ -17,6 +23,16 @@ const useStyles = makeStyles(theme => ({
     position: 'fixed',
     bottom: theme.mixins.toolbar.minHeight + theme.spacing(2),
     right: theme.spacing(2)
+  },
+  runningStartButton: {
+    position: 'fixed',
+    bottom: theme.mixins.toolbar.minHeight + theme.spacing(12),
+    right: theme.spacing(2)
+  },
+  runningCard: {
+    position: 'fixed',
+    width: '100%',
+    bottom: theme.mixins.toolbar.minHeight + theme.spacing(1)
   }
 }))
 
@@ -47,14 +63,22 @@ export const List = ({activities}) => {
 }
 
 export default () => {
-  const {loadActivitiesInRange, activities} = useActivity()
+  const {loadActivitiesInRange, activities, loadRunning, running} = useActivity()
   const classes = useStyles()
   const [startDialogOpen, setStartDialogOpen] = useState(false)
+  const history = useHistory()
 
   const now = DateTime.local()
   useEffect(() => {
     loadActivitiesInRange(now, now)
+    loadRunning()
   }, [])
+
+  let duration
+  if (running) {
+    const start = DateTime.fromISO(running.start, {zone: 'utc'}).toLocal()
+    duration = now.diff(start)
+  }
 
   return <>
     <StartDialog open={startDialogOpen}
@@ -67,9 +91,28 @@ export default () => {
 
     <List activities={activities}/>
 
-    <Fab className={classes.startButton}
+    <Fab className={running ? classes.runningStartButton : classes.startButton}
          onClick={() => setStartDialogOpen(true)}>
       <Add/>
     </Fab>
+
+    {/*TODO figure out how this is supposed to work*/}
+    {/*TODO ok that feels so dirty right now ...*/}
+    {
+      running &&
+      <Card className={classes.runningCard}
+            variant='outlined'
+            square>
+        <CardHeader title={running.name}
+                    onClick={() => history.push(`/activities/${running.id}`)}
+                    subheader={<div className={classes.tagContainer}>
+                      {running.tags.map(t => <Chip key={t} label={t} size='small'/>)}
+                    </div>}
+                    avatar={<Typography variant='h6'
+                                        aria-label="worked duration">
+                      {formatDuration(duration)}
+                    </Typography>}/>
+      </Card>
+    }
   </>
 }

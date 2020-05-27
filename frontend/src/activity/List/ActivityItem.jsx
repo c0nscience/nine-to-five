@@ -42,9 +42,9 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [],
   const classes = useStyles()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
-  const isInTheFuture = DateTime.local() < start
   const endOrNow = end || DateTime.local()
   const duration = endOrNow.diff(start)
+  const isInTheFuture = DateTime.local() < start
 
   const avatar = <Typography variant='h6'
                              aria-label="worked duration">

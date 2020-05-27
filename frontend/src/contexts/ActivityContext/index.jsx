@@ -11,7 +11,13 @@ import {
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {useAuth} from 'contexts/AuthenticationContext'
-import {activityLoaded, LOAD_ACTIVITY, SAVE_ACTIVITY} from 'contexts/ActivityContext/actions'
+import {
+  activityLoaded,
+  LOAD_ACTIVITY,
+  LOAD_RUNNING_ACTIVITY,
+  runningActivityLoaded,
+  SAVE_ACTIVITY
+} from 'contexts/ActivityContext/actions'
 
 const ActivityContext = createContext()
 
@@ -21,11 +27,11 @@ export const ActivityProvider = ({children}) => {
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
   const {get, post, put, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
-  // const loadRunning = () => {
-  //   request(get('activity/running')
-  //     .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
-  //   ).with(LOAD_RUNNING_ACTIVITY)
-  // }
+  const loadRunning = () => {
+    request(get('activity/running')
+      .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
+    ).with(LOAD_RUNNING_ACTIVITY)
+  }
 
   //TODO this should move into an own TagsContext, which then also can take care of providing methods to maintain tags like changing color and such
   const loadUsedTags = () => {
@@ -87,6 +93,7 @@ export const ActivityProvider = ({children}) => {
   return <ActivityContext.Provider value={{
     ...state,
     startActivity,
+    loadRunning,
     // stopActivity,
     // selectActivity,
     // deselectActivity,
