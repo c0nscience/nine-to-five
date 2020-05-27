@@ -24,8 +24,9 @@ const useStyles = makeStyles(theme => ({
 export const Detail = ({id, start: _start, end: _end, name, tags}) => {
   const classes = useStyles()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
-  const end = DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
-  const duration = end.diff(start)
+  const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
+  const endOrNow = end || DateTime.local()
+  const duration = endOrNow.diff(start)
   const history = useHistory()
 
   return <>
