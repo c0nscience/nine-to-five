@@ -8,12 +8,8 @@ import makeStyles from '@material-ui/core/styles/makeStyles'
 import Fab from '@material-ui/core/Fab'
 import {Add} from '@material-ui/icons'
 import StartDialog from 'activity/List/StartDialog'
-import Card from '@material-ui/core/Card'
-import {CardHeader} from '@material-ui/core'
-import Chip from '@material-ui/core/Chip'
-import {formatDuration} from 'functions'
-import Typography from '@material-ui/core/Typography'
 import {useHistory} from 'react-router'
+import RunningBox from "./RunningBox";
 
 const useStyles = makeStyles(theme => ({
   list: {
@@ -74,12 +70,6 @@ export default () => {
     loadRunning()
   }, [])
 
-  let duration
-  if (running) {
-    const start = DateTime.fromISO(running.start, {zone: 'utc'}).toLocal()
-    duration = now.diff(start)
-  }
-
   return <>
     <StartDialog open={startDialogOpen}
                  closeDialog={() => setStartDialogOpen(false)}/>
@@ -100,19 +90,10 @@ export default () => {
     {/*TODO ok that feels so dirty right now ...*/}
     {
       running &&
-      <Card className={classes.runningCard}
-            variant='outlined'
-            square>
-        <CardHeader title={running.name}
-                    onClick={() => history.push(`/activities/${running.id}`)}
-                    subheader={<div className={classes.tagContainer}>
-                      {running.tags.map(t => <Chip key={t} label={t} size='small'/>)}
-                    </div>}
-                    avatar={<Typography variant='h6'
-                                        aria-label="worked duration">
-                      {formatDuration(duration)}
-                    </Typography>}/>
-      </Card>
+      <div className={classes.runningCard}
+           onClick={() => history.push(`/activities/${running.id}`)}>
+        <RunningBox activity={running}/>
+      </div>
     }
   </>
 }
