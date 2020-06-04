@@ -13,7 +13,6 @@ import reactor.core.scheduler.Scheduler
 import reactor.core.scheduler.Schedulers
 import reactor.test.StepVerifier
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Predicate
@@ -84,9 +83,9 @@ class ActivityServiceTest {
 
   }
 
-  companion object {
+  companion object : TimeTrait {
 
-    private val NOW = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)
+    private val NOW = LocalDateTime.now().adjust()
     private val USER_ID = UUID.randomUUID().toString()
   }
 }

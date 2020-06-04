@@ -37,19 +37,33 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [], hideStartTime = false, hideEndTime = false}, ref) => {
+export const ActivityItemCard = ({name, tags, duration, since}) => {
+  const classes = useStyles()
+
+  return <Card>
+    <CardHeader
+      data-testid='name'
+      title={name}
+      subheader={<div className={classes.tagContainer}>
+        {tags.map(t => <Chip key={t} data-testid={`tag-${t}`} label={t} size='small'/>)}
+      </div>}
+      avatar={<Typography variant='h6'
+                          data-testid='duration'
+                          aria-label="worked duration">
+        {formatDuration(duration)}
+      </Typography>}/>
+  </Card>
+
+}
+
+const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [], hideStartTime = false, hideEndTime = false, now = DateTime.local()}, ref) => {
   const history = useHistory()
   const classes = useStyles()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
-  const endOrNow = end || DateTime.local()
+  const endOrNow = end || now
   const duration = endOrNow.diff(start)
   const isInTheFuture = DateTime.local() < start
-
-  const avatar = <Typography variant='h6'
-                             aria-label="worked duration">
-    {formatDuration(duration)}
-  </Typography>
 
   return <>
     {!hideStartTime && <ListSubheader data-testid='start-time'
@@ -66,13 +80,7 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [],
               onClick={() => history.push(`/activities/${id}`)}
     >
       <ListItemText className={classes.itemText}>
-        <Card>
-          <CardHeader title={name}
-                      subheader={<div className={classes.tagContainer}>
-                        {tags.map(t => <Chip key={t} label={t} size='small'/>)}
-                      </div>}
-                      avatar={avatar}/>
-        </Card>
+        <ActivityItemCard name={name} duration={duration} tags={tags}/>
       </ListItemText>
     </ListItem>
     {!hideEndTime && <ListSubheader data-testid='end-time'
