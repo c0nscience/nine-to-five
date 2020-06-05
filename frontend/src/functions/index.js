@@ -36,11 +36,10 @@ export const formatDuration = (duration, opts = {multiline: false}) => {
 
 export const callValueWith = f => event => {
   const target = event.target
-  if (target.value) {
-    f(target.value)
-  } else {
+  if (target.type === 'checkbox') {
     f(target.checked)
-  }
-}
+  } else {
+    f(target.value)
+  }}
 
 export const toHyphenCase = e => e.replace(/\s+/g, '-').toLowerCase()

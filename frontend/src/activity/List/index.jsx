@@ -9,7 +9,8 @@ import Fab from '@material-ui/core/Fab'
 import {Add} from '@material-ui/icons'
 import StartDialog from 'activity/List/StartDialog'
 import {useHistory} from 'react-router'
-import RunningBox from "./RunningBox";
+import RunningBox from './RunningBox'
+import ButtonBase from '@material-ui/core/ButtonBase'
 
 const useStyles = makeStyles(theme => ({
   list: {
@@ -24,13 +25,19 @@ const useStyles = makeStyles(theme => ({
     position: 'fixed',
     width: '100%',
     bottom: theme.mixins.toolbar.minHeight + theme.spacing(1)
+  },
+  runningSpacer: {
+    width: '100%',
+    height: theme.mixins.toolbar.minHeight + theme.spacing(4)
   }
 }))
 
 export const List = ({activities}) => {
   const classes = useStyles()
 
-  return <MuiList className={classes.list}>
+  return <MuiList className={classes.list}
+                  disablePadding
+                  dense>
     {
       activities
         .sort((a, b) => DateTime.fromISO(a.start).diff(DateTime.fromISO(b.start)).valueOf())
@@ -79,18 +86,26 @@ export default () => {
     {
       !running &&
       <Fab className={classes.startButton}
-           onClick={() => setStartDialogOpen(true)}>
+           onClick={() => setStartDialogOpen(true)}
+           color='primary'>
         <Add/>
       </Fab>
     }
-    {/*TODO figure out how this is supposed to work*/}
-    {/*TODO ok that feels so dirty right now ...*/}
+
     {
       running &&
-      <div className={classes.runningCard}
-           onClick={() => history.push(`/activities/${running.id}`)}>
-        <RunningBox activity={running}/>
-      </div>
+      <ButtonBase component='div'
+                  className={classes.runningCard}
+                  onClick={() => history.push(`/activities/${running.id}`)}>
+        <div style={{minWidth: '100%'}}>
+          <RunningBox activity={running}/>
+        </div>
+      </ButtonBase>
+    }
+
+    {
+      running &&
+      <div className={classes.runningSpacer}/>
     }
   </>
 }

@@ -29,7 +29,7 @@ const Navigation = () => {
       >
         <BottomNavigationAction label="Activities" value='/' icon={<Restore/>}/>
         <BottomNavigationAction label="Metrics" value='/metrics' icon={<Favorite/>}/>
-        <BottomNavigationAction label="Settings" value='/settings' icon={<LocationOn/>}/>
+        {/*<BottomNavigationAction label="Settings" value='/settings' icon={<LocationOn/>}/>*/}
       </BottomNavigation>
     </Grid>
   </Grid>

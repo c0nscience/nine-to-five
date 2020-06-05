@@ -37,21 +37,33 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-export const ActivityItemCard = ({name, tags, duration, since}) => {
+export const ActivityItemCard = ({name, tags, duration, since, raised = false}) => {
   const classes = useStyles()
 
-  return <Card>
+  return <Card raised={raised}>
     <CardHeader
       data-testid='name'
       title={name}
       subheader={<div className={classes.tagContainer}>
         {tags.map(t => <Chip key={t} data-testid={`tag-${t}`} label={t} size='small'/>)}
       </div>}
-      avatar={<Typography variant='h6'
-                          data-testid='duration'
-                          aria-label="worked duration">
-        {formatDuration(duration)}
-      </Typography>}/>
+      avatar={
+        <>
+          <Typography variant='h6'
+                      data-testid='duration'
+                      aria-label="worked duration">
+            {formatDuration(duration)}
+          </Typography>
+          {
+            since &&
+            <Typography variant='caption'
+                        data-testid='since'
+                        aria-label='worked since'>
+              since {since}
+            </Typography>
+          }
+        </>
+      }/>
   </Card>
 
 }

@@ -12,7 +12,8 @@ describe('Running Activity Box', function () {
   const runningActivity = {
     name: 'overtime',
     duration: Duration.fromISO('PT1H45M'),
-    tags: ['1', '2']
+    tags: ['1', '2'],
+    since: '08:00'
   }
 
   it('should show the activity name', function () {
@@ -29,6 +30,11 @@ describe('Running Activity Box', function () {
     const {getByTestId} = render(<RunningBox {...runningActivity}/>)
     expect(getByTestId('tag-1')).toHaveTextContent('1')
     expect(getByTestId('tag-2')).toHaveTextContent('2')
+  })
+
+  it('should show the start time', function () {
+    const {getByTestId} = render(<RunningBox {...runningActivity}/>)
+    expect(getByTestId('since')).toHaveTextContent('08:00')
   })
 
 })

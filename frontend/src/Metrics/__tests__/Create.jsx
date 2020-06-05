@@ -33,6 +33,12 @@ describe('Create Metric Page', () => {
     expect(getByTestId('formula')).toBeVisible()
   })
 
+  it('should contain a threshold field', () => {
+    const {getByTestId} = render(<CreatePage/>)
+
+    expect(getByTestId('threshold')).toBeVisible()
+  })
+
   describe('has time unit select field', () => {
     it('should exist', () => {
       const {getByTestId} = render(<CreatePage/>)

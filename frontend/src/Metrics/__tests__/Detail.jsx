@@ -23,7 +23,7 @@ describe('Metric Detail', () => {
 
     const {getByTestId} = render(<Detail metric={metric}/>)
 
-    expect(getByTestId('total-heading')).toHaveTextContent('Total Overtime')
+    expect(getByTestId('total-heading')).toHaveTextContent('Exceeding Overtime')
     expect(getByTestId('total-value')).toHaveTextContent('4h 30m')
   })
 
@@ -34,19 +34,19 @@ describe('Metric Detail', () => {
 
     const {getByTestId} = render(<Detail metric={metric}/>)
 
-    expect(getByTestId('total-heading')).toHaveTextContent('Total Meetings')
+    expect(getByTestId('total-heading')).toHaveTextContent('Exceeding Meetings')
   })
 
   it('should show a delete button', () => {
-    const {getByTestId} = render(<Detail metric={{}}/>)
+    const {getByTestId} = render(<Detail metric={{}} deleteMetric={() => {}}/>)
 
-    expect(getByTestId('delete-button')).toBeVisible()
+    expect(getByTestId('delete-btn')).toBeVisible()
   })
 
   it('should show a edit button', () => {
     const {getByTestId} = render(<Detail metric={{}}/>)
 
-    expect(getByTestId('edit-button')).toBeVisible()
+    expect(getByTestId('edit-btn')).toBeVisible()
   })
 
   it.skip('should show the graph', () => {

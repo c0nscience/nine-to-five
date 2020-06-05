@@ -32,6 +32,7 @@ export const StartDialog = ({open, closeDialog, startActivity, usedTags}) => {
                    name='name'
                    label='Name'
                    value={name}
+                   fullWidth
                    onChange={callValueWith(setName)}/>
 
         <TagField allowNewValues
@@ -57,8 +58,8 @@ export const StartDialog = ({open, closeDialog, startActivity, usedTags}) => {
                               value={startTime}
                               minutesStep={5}
                               onChange={d => setStartTime(d)}
-                              openTo='hours'
-                              variant='static'/>
+                              fullWidth
+                              openTo='hours'/>
             </MuiPickersUtilsProvider>
           </div>
         }
@@ -66,13 +67,19 @@ export const StartDialog = ({open, closeDialog, startActivity, usedTags}) => {
     </DialogContent>
     <DialogActions>
       <Button data-testid='cancel-btn'
-              onClick={() => closeDialog()}>Cancel</Button>
+              onClick={() => closeDialog()}
+              variant='contained'
+              color='secondary'>
+        Cancel
+      </Button>
       <Button data-testid='start-btn'
               onClick={() => startActivity({
                 name,
                 tags,
                 start: showStartTimePicker && startTime.toUTC().toISO() || undefined
-              })}>Start</Button>
+              })}
+              variant='contained'
+              color='primary'>Start</Button>
     </DialogActions>
   </Dialog>
 }

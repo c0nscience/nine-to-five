@@ -39,6 +39,7 @@ export const CreatePage = ({saveNewConfiguration, usedTags}) => {
   const [tags, setTags] = useState([])
   const [formula, setFormula] = useState('')
   const [timeUnit, setTimeUnit] = useState('')
+  const [threshold, setThreshold] = useState(0)
 
   return <form noValidate>
     <Grid container className={classes.root} alignItems='flex-start'>
@@ -81,6 +82,15 @@ export const CreatePage = ({saveNewConfiguration, usedTags}) => {
             </Grid>
           </Grid>
         </Grid>
+        <Grid item xs={12}>
+          <TextField data-testid='threshold'
+                     label='Threshold'
+                     variant='filled'
+                     value={threshold}
+                     type='number'
+                     fullWidth
+                     onChange={callValueWith(setThreshold)}/>
+        </Grid>
       </Grid>
 
       <Grid container item xs={12} justify='flex-end' className={classes.buttonContainer}>
@@ -96,7 +106,7 @@ export const CreatePage = ({saveNewConfiguration, usedTags}) => {
           <Button color='primary'
                   variant='contained'
                   data-testid='save-button'
-                  onClick={() => saveNewConfiguration({name, tags, formula, timeUnit})
+                  onClick={() => saveNewConfiguration({name, tags, formula, timeUnit, threshold})
                     .then(() => history.replace('/metrics'))}>
             Save
           </Button>

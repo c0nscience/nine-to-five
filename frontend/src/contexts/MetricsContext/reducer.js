@@ -23,7 +23,6 @@ export const reducer = (state = initialState, action) => {
         metricDetail: action.payload
       }
     case METRIC_CONFIGURATION_LOADED:
-      console.log('METRIC_CONFIGURATION_LOADED', action.payload)
       return {
         ...state,
         configuration: action.payload

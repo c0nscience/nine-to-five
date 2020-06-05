@@ -61,13 +61,15 @@ const Edit = ({activity, saveActivity, cancel, usedTags}) => {
         </Grid>
 
         <MuiPickersUtilsProvider utils={LuxonUtils}>
-          <DateTimeField name='start'
-                         date={state.start}
-                         handleInputChange={handleDateTimeChange('start')}/>
+          <>
+            <DateTimeField name='start'
+                           date={state.start}
+                           handleInputChange={handleDateTimeChange('start')}/>
 
-          {state.end && <DateTimeField name='end'
-                                       date={state.end}
-                                       handleInputChange={handleDateTimeChange('end')}/>}
+            {state.end && <DateTimeField name='end'
+                                         date={state.end}
+                                         handleInputChange={handleDateTimeChange('end')}/>}
+          </>
         </MuiPickersUtilsProvider>
 
         <Grid item xs={12}>
@@ -82,7 +84,9 @@ const Edit = ({activity, saveActivity, cancel, usedTags}) => {
       </Grid>
     </form>
     {/*TODO maybe move this into a toolbar up top as a back button, to be consistent*/}
-    <Button onClick={() => cancel()}>
+    <Button onClick={() => cancel()}
+            color='secondary'
+            variant='contained'>
       Cancel
     </Button>
     <Button
@@ -96,7 +100,8 @@ const Edit = ({activity, saveActivity, cancel, usedTags}) => {
         })
       }}
       disabled={state.name.length < 3}
-      color="primary">
+      color="primary"
+      variant='contained'>
       Save
     </Button>
   </>
