@@ -27,7 +27,8 @@ export const List = ({metrics = []}) => {
     <Fab aria-label="add"
          data-testid='add-button'
          className={classes.addButton}
-    onClick={() => history.push('metrics/new')}>
+         onClick={() => history.push('metrics/new')}
+         color='primary'>
       <Add/>
     </Fab>
     {(metrics.length > 0) && <MuiList disablePadding>

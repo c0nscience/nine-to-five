@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import reactor.kotlin.core.publisher.toFlux
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import java.time.temporal.WeekFields
 
 //@Component
 class DataBasePopulator(private val activityRepository: ActivityRepository) : CommandLineRunner {
@@ -19,7 +20,7 @@ class DataBasePopulator(private val activityRepository: ActivityRepository) : Co
       userId = "auth0|59ac17508f649c3f85124ec1",
       weeks = 5,
       dailyOvertime = 30,
-      now = { LocalDateTime.now().minusWeeks(4).withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES) },
+      now = { LocalDateTime.now().with(WeekFields.ISO.firstDayOfWeek).minusWeeks(2).withHour(8).withMinute(0).truncatedTo(ChronoUnit.MINUTES) },
       tags = listOf("acme", "meeting")
     )
       .toFlux()

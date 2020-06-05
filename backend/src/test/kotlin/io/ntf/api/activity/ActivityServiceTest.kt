@@ -39,7 +39,7 @@ class ActivityServiceTest {
   }
 
   @Test
-  fun shouldReturnAllActivitiesOfAGivenUser() {
+  fun `should return all activities of a given user`() {
     StepVerifier.create(activityService.findByUserId(USER_ID))
       .expectNextMatches(activityWith("activity 1", NOW))
       .expectNextMatches(activityWith("activity 2", NOW.minusHours(1), NOW))
@@ -70,6 +70,21 @@ class ActivityServiceTest {
 
     StepVerifier.create(activityService.start(USER_ID, "new task", NOW, listOf("new-tag")))
       .expectNextMatches(activityWith(name = "new task", start = NOW, tags = listOf("new-tag")))
+      .verifyComplete()
+  }
+
+  @Test
+  internal fun `should return all activities which contain all the given tags`() {
+    activityRepository.run {
+      deleteAll().block()
+      save(Activity(userId = USER_ID, name = "task #1", start = NOW, end = NOW.plusHours(1), tags = listOf("acme", "meeting"))).block()
+      save(Activity(userId = USER_ID, name = "task #2", start = NOW.minusHours(1), end = NOW, tags = listOf("acme"))).block()
+      save(Activity(userId = USER_ID, name = "task #3", start = NOW.plusHours(1), end = NOW.plusHours(2), tags = listOf("meeting","acme"))).block()
+    }
+
+    StepVerifier.create(activityService.findByUserIdAndTags(USER_ID, listOf("acme", "meeting")))
+      .expectNextMatches(activityWith(name = "task #1", start = NOW, end = NOW.plusHours(1), tags = listOf("acme", "meeting")))
+      .expectNextMatches(activityWith(name = "task #3", start = NOW.plusHours(1), end = NOW.plusHours(2), tags = listOf("meeting", "acme")))
       .verifyComplete()
   }
 

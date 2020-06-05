@@ -7,7 +7,6 @@ import {AUTH_CONFIG} from 'contexts/AuthenticationContext/auth0-config'
 import PrivateRoute from 'component/PrivateRoute'
 import {NetworkActivityProvider} from 'contexts/NetworkContext'
 import {ActivityProvider} from 'contexts/ActivityContext'
-import {BulkModeProvider} from 'contexts/BulkModeContext'
 import {TitleProvider} from 'contexts/TitleContext'
 import MetricList from 'Metrics/List'
 import MetricCreatePage from 'Metrics/CreatePage'
@@ -26,7 +25,6 @@ const App = ({history}) => {
                        scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:overtime read:logs create:log update:log read:metrics create:metrics delete:metrics update:metric'}>
     <Router history={history}>
       <NetworkActivityProvider>
-        <BulkModeProvider>
           <TitleProvider>
             <ActivityProvider>
 
@@ -75,7 +73,6 @@ const App = ({history}) => {
 
             </ActivityProvider>
           </TitleProvider>
-        </BulkModeProvider>
       </NetworkActivityProvider>
     </Router>
   </AuthProvider>

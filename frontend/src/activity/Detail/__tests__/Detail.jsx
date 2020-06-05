@@ -49,7 +49,7 @@ describe('Activity Detail Page', () => {
     expect(getByTestId('edit-btn')).toBeVisible()
   })
 
-  it('should display a delete button', () => {
+  it.skip('should display a delete button', () => {
     const {getByTestId} = render(<Detail {...activity}/>)
 
     expect(getByTestId('delete-btn')).toBeVisible()

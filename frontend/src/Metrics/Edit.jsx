@@ -5,8 +5,17 @@ import {useMetrics} from 'contexts/MetricsContext'
 import {useHistory, useParams} from 'react-router'
 import Button from '@material-ui/core/Button'
 import {callValueWith} from 'functions'
+import {useActivity} from 'contexts/ActivityContext'
 
-export const Edit = ({metricConfiguration = {name: '', formula: '', tags: [], unit: '', threshold: 0}, save}) => {
+export const Edit = ({
+                       metricConfiguration = {
+                         name: '',
+                         formula: '',
+                         tags: [],
+                         unit: '',
+                         threshold: 0
+                       }, save, usedTags
+                     }) => {
   const [name, setName] = useState('')
   const [formula, setFormula] = useState('')
   const [tags, setTags] = useState([])
@@ -34,7 +43,7 @@ export const Edit = ({metricConfiguration = {name: '', formula: '', tags: [], un
 
     <TagField tags={tags}
               setTags={setTags}
-              usedTags={[]}
+              usedTags={usedTags}
               allowNewValues={true}/>
 
     <TextField label='Unit'
@@ -48,7 +57,9 @@ export const Edit = ({metricConfiguration = {name: '', formula: '', tags: [], un
                value={threshold}
                onChange={callValueWith(setThreshold)}/>
 
-    <Button onClick={() => save({id: metricConfiguration.id, name, formula, tags, unit, threshold})}>Save</Button>
+    <Button onClick={() => save({id: metricConfiguration.id, name, formula, tags, unit, threshold})}
+            variant='contained'
+            color='primary'>Save</Button>
   </form>
 }
 
@@ -56,16 +67,22 @@ export default () => {
   const {configuration, loadMetricConfiguration, saveMetricConfiguration} = useMetrics()
   const {id} = useParams()
   const history = useHistory()
+  const {loadUsedTags, usedTags} = useActivity()
 
   useEffect(() => {
+    loadUsedTags()
     loadMetricConfiguration(id)
   }, [id])
 
   return <>
-    {configuration && <Edit metricConfiguration={{id, ...configuration}}
-           save={config => {
-             saveMetricConfiguration(config)
-               .then(() => history.replace(`/metrics/${id}`))
-           }}/>}
+    {
+      configuration &&
+      <Edit metricConfiguration={{id, ...configuration}}
+            usedTags={usedTags}
+            save={config => {
+              saveMetricConfiguration(config)
+                .then(() => history.replace(`/metrics/${id}`))
+            }}/>
+    }
   </>
 }
