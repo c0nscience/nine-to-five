@@ -20,11 +20,6 @@ const useStyles = makeStyles(theme => ({
     bottom: theme.mixins.toolbar.minHeight + theme.spacing(2),
     right: theme.spacing(2)
   },
-  runningStartButton: {
-    position: 'fixed',
-    bottom: theme.mixins.toolbar.minHeight + theme.spacing(12),
-    right: theme.spacing(2)
-  },
   runningCard: {
     position: 'fixed',
     width: '100%',
@@ -81,11 +76,13 @@ export default () => {
 
     <List activities={activities}/>
 
-    <Fab className={running ? classes.runningStartButton : classes.startButton}
-         onClick={() => setStartDialogOpen(true)}>
-      <Add/>
-    </Fab>
-
+    {
+      !running &&
+      <Fab className={classes.startButton}
+           onClick={() => setStartDialogOpen(true)}>
+        <Add/>
+      </Fab>
+    }
     {/*TODO figure out how this is supposed to work*/}
     {/*TODO ok that feels so dirty right now ...*/}
     {

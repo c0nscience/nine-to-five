@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export const Detail = ({id, start: _start, end: _end, name, tags}) => {
+export const Detail = ({id, start: _start, end: _end, name, tags, stop, back, edit}) => {
   const classes = useStyles()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
@@ -34,7 +34,7 @@ export const Detail = ({id, start: _start, end: _end, name, tags}) => {
       <Button color='inherit'
               startIcon={<ArrowBackIos/>}
               data-testid='back-btn'
-              onClick={() => history.replace('/')}>
+              onClick={() => back()}>
         Back
       </Button>
       <div className={classes.spacer}/>
@@ -42,7 +42,7 @@ export const Detail = ({id, start: _start, end: _end, name, tags}) => {
       <IconButton color='inherit'
                   edge='end'
                   data-testid='edit-btn'
-                  onClick={() => history.push(`/activities/${id}/edit`)}>
+                  onClick={() => edit()}>
         <Edit/>
       </IconButton>
     </Toolbar>
@@ -63,17 +63,32 @@ export const Detail = ({id, start: _start, end: _end, name, tags}) => {
         {tags && tags.map(t => <Chip data-testid={`tag-${t}`} key={t} label={t} size='small'/>)}
       </Grid>
       <Grid item xs={1}/>
+      <Grid item xs={12}>
+        {!end && <Button onClick={() => stop()}>Stop</Button>}
+      </Grid>
     </Grid>
   </>
 }
 
 export default () => {
   const {id} = useParams()
-  const {loadActivity, activity} = useActivity()
+  const {loadActivity, activity, stopActivity} = useActivity()
+  const history = useHistory()
 
   useEffect(() => {
     loadActivity(id)
   }, [id])
 
-  return <Detail {...activity}/>
+  return <Detail {...activity}
+                 stop={() => {
+                   stopActivity().then(() => {
+                     history.replace('/')
+                   })
+                 }}
+                 back={() => {
+                   history.replace('/')
+                 }}
+                 edit={() => {
+                   history.push(`/activities/${id}/edit`)
+                 }}/>
 }

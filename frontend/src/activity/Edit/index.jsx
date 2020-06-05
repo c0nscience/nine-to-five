@@ -26,7 +26,7 @@ const Edit = ({activity, saveActivity, cancel, usedTags}) => {
       ...s,
       id, name,
       start: DateTime.fromISO(start, {zone: 'utc'}).toLocal(),
-      end: DateTime.fromISO(end, {zone: 'utc'}).toLocal(),
+      end: end && DateTime.fromISO(end, {zone: 'utc'}).toLocal(),
       tags
     }))
   }, [id, name, start, end])
@@ -91,7 +91,7 @@ const Edit = ({activity, saveActivity, cancel, usedTags}) => {
           id: state.id,
           name: state.name,
           start: DateTime.fromISO(state.start).toUTC().toISO(),
-          end: DateTime.fromISO(state.end).toUTC().toISO(),
+          end: state.end && DateTime.fromISO(state.end).toUTC().toISO(),
           tags: state.tags
         })
       }}
