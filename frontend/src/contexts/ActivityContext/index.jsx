@@ -2,10 +2,10 @@ import React, {createContext, useContext, useReducer} from 'react'
 import {createApi} from 'api'
 import {
   activitiesInRangeLoaded,
-  activityStarted,
+  activityStarted, activityStopped,
   LOAD_ACTIVITIES_IN_RANGE,
   LOAD_USED_TAGS,
-  START_ACTIVITY,
+  START_ACTIVITY, STOP_ACTIVITY,
   usedTagsLoaded
 } from './actions'
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
@@ -56,12 +56,12 @@ export const ActivityProvider = ({children}) => {
       .then(activity => dispatch(activityStarted(activity)))
     ).with(START_ACTIVITY)
   }
-  //
-  // const stopActivity = () => {
-  //   return request(post('activity/stop')
-  //     .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
-  //   ).with(STOP_ACTIVITY)
-  // }
+
+  const stopActivity = () => {
+    return request(post('activity/stop')
+      .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
+    ).with(STOP_ACTIVITY)
+  }
 
   const saveActivity = (changedActivity) => {
     return request(put(`activity/${changedActivity.id}`, changedActivity))
@@ -94,7 +94,7 @@ export const ActivityProvider = ({children}) => {
     ...state,
     startActivity,
     loadRunning,
-    // stopActivity,
+    stopActivity,
     // selectActivity,
     // deselectActivity,
     saveActivity,

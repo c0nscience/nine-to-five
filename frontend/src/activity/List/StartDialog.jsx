@@ -78,7 +78,7 @@ export const StartDialog = ({open, closeDialog, startActivity, usedTags}) => {
 }
 
 export default ({open, closeDialog}) => {
-  const {startActivity, usedTags, loadUsedTags} = useActivity()
+  const {startActivity, usedTags, loadUsedTags, loadRunning} = useActivity()
 
   useEffect(() => {
     loadUsedTags()
@@ -88,6 +88,7 @@ export default ({open, closeDialog}) => {
                       closeDialog={closeDialog}
                       usedTags={usedTags}
                       startActivity={activity => startActivity(activity)
+                        .then(() => loadRunning())
                         .then(() => closeDialog())}
   />
 }

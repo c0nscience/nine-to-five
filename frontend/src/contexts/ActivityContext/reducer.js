@@ -1,4 +1,10 @@
-import {ACTIVITIES_IN_RANGE_LOADED, ACTIVITY_LOADED, RUNNING_ACTIVITY_LOADED, USED_TAGS_LOADED} from './actions'
+import {
+  ACTIVITIES_IN_RANGE_LOADED,
+  ACTIVITY_LOADED, ACTIVITY_STOPPED,
+  RUNNING_ACTIVITY_LOADED,
+  STOP_ACTIVITY,
+  USED_TAGS_LOADED
+} from './actions'
 
 export const initialState = {
   activities: [],
@@ -20,16 +26,21 @@ export const reducer = (state = initialState, action) => {
         ...state,
         activity: action.payload
       }
-      case USED_TAGS_LOADED:
-          return {
-              ...state,
-              usedTags: action.payload
-          }
-      case RUNNING_ACTIVITY_LOADED:
-          return {
-              ...state,
-              running: action.payload
-          }
+    case USED_TAGS_LOADED:
+      return {
+        ...state,
+        usedTags: action.payload
+      }
+    case RUNNING_ACTIVITY_LOADED:
+      return {
+        ...state,
+        running: action.payload
+      }
+    case ACTIVITY_STOPPED:
+      return  {
+        ...state,
+        running: undefined
+      }
     default:
       return state
   }
