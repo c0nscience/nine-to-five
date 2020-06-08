@@ -37,10 +37,11 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-export const ActivityItemCard = ({name, tags, duration, since, raised = false}) => {
+export const ActivityItemCard = ({name, tags, duration, since, raised = false, square = false}) => {
   const classes = useStyles()
 
-  return <Card raised={raised}>
+  return <Card raised={raised}
+               square={square}>
     <CardHeader
       data-testid='name'
       title={name}

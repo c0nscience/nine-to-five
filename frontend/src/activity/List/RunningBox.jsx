@@ -7,7 +7,8 @@ export const RunningBox = ({name, tags, duration, since}) =>
                     tags={tags}
                     duration={duration}
                     since={since}
-  raised={true}/>
+                    raised
+                    square/>
 
 export default ({activity}) => {
   const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
