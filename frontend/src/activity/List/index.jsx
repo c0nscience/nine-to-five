@@ -14,7 +14,14 @@ import ButtonBase from '@material-ui/core/ButtonBase'
 
 const useStyles = makeStyles(theme => ({
   list: {
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
     marginBottom: theme.mixins.toolbar.minHeight
+  },
+  listRunning: {
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    marginBottom: theme.mixins.toolbar.minHeight + theme.spacing(12)
   },
   startButton: {
     position: 'fixed',
@@ -25,18 +32,15 @@ const useStyles = makeStyles(theme => ({
     position: 'fixed',
     width: '100%',
     bottom: theme.mixins.toolbar.minHeight + theme.spacing(1)
-  },
-  runningSpacer: {
-    width: '100%',
-    height: theme.mixins.toolbar.minHeight + theme.spacing(4)
   }
 }))
 
-export const List = ({activities}) => {
+export const List = ({activities, running}) => {
   const classes = useStyles()
 
-  return <MuiList className={classes.list}
+  return <MuiList className={running ? classes.listRunning : classes.list}
                   disablePadding
+                  gutters
                   dense>
     {
       activities
@@ -46,10 +50,12 @@ export const List = ({activities}) => {
           let hideEndTime = false
           const next = activities[index + 1]
 
-          if (next) {
+          if (next && next.end) {
             const currentEndTime = DateTime.fromISO(activity.end)
             const nextEndTime = next && DateTime.fromISO(next.start)
             hideEndTime = +currentEndTime === +nextEndTime
+          } else if (next && !next.end){
+            hideEndTime = false
           }
 
           return <ActivityItem {...activity}
@@ -81,7 +87,7 @@ export default () => {
                  loadActivitiesInRange(d, d)
                }}/>
 
-    <List activities={activities}/>
+    <List activities={activities} running={typeof running !== 'undefined'}/>
 
     {
       !running &&
@@ -101,11 +107,6 @@ export default () => {
           <RunningBox activity={running}/>
         </div>
       </ButtonBase>
-    }
-
-    {
-      running &&
-      <div className={classes.runningSpacer}/>
     }
   </>
 }
