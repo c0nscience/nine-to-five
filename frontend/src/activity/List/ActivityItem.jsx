@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => {
     },
     cardHeaderContent: {
       overflow: 'hidden',
-      flex: '1 1 auto',
+      flex: '1 1 auto'
     },
     cardHeaderTitle: {
       overflow: 'hidden',
@@ -45,11 +45,12 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-export const ActivityItemCard = ({name, tags, duration, since, raised = false, square = false}) => {
+export const ActivityItemCard = ({name, tags, duration, since, raised = false, square = false, cardClass}) => {
   const classes = useStyles()
 
   return <Card raised={raised}
-               square={square}>
+               square={square}
+               className={cardClass}>
     <CardHeader
       classes={{
         content: classes.cardHeaderContent,
