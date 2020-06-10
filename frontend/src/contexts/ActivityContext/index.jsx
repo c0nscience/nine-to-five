@@ -2,17 +2,21 @@ import React, {createContext, useContext, useReducer} from 'react'
 import {createApi} from 'api'
 import {
   activitiesInRangeLoaded,
-  activityStarted, activityStopped,
+  activityStarted,
+  activityStopped,
   LOAD_ACTIVITIES_IN_RANGE,
   LOAD_USED_TAGS,
-  START_ACTIVITY, STOP_ACTIVITY,
+  START_ACTIVITY,
+  STOP_ACTIVITY,
   usedTagsLoaded
 } from './actions'
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {useAuth} from 'contexts/AuthenticationContext'
 import {
+  activityDeleted,
   activityLoaded,
+  DELETE_ACTIVITY,
   LOAD_ACTIVITY,
   LOAD_RUNNING_ACTIVITY,
   runningActivityLoaded,
@@ -68,12 +72,11 @@ export const ActivityProvider = ({children}) => {
       .with(SAVE_ACTIVITY)
   }
 
-  // const deleteActivity = id => {
-  //   dispatch(deselectActivityAction())
-  //   request(del(`activity/${id}`)
-  //     .then(deletedActivity => dispatch(activityDeleted(deletedActivity))))
-  //     .with(DELETE_ACTIVITY)
-  // }
+  const deleteActivity = id => {
+    return request(del(`activity/${id}`)
+      .then(deletedActivity => dispatch(activityDeleted(deletedActivity)))
+    ).with(DELETE_ACTIVITY)
+  }
 
   // const switchActivity = name => {
   //   stopActivity()
@@ -98,7 +101,7 @@ export const ActivityProvider = ({children}) => {
     // selectActivity,
     // deselectActivity,
     saveActivity,
-    // deleteActivity,
+    deleteActivity,
     // switchActivity,
     // continueActivity,
     loadActivitiesInRange,

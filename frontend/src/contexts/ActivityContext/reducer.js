@@ -1,15 +1,15 @@
 import {
   ACTIVITIES_IN_RANGE_LOADED,
-  ACTIVITY_LOADED, ACTIVITY_STOPPED,
+  ACTIVITY_DELETED,
+  ACTIVITY_LOADED,
+  ACTIVITY_STOPPED,
   RUNNING_ACTIVITY_LOADED,
-  STOP_ACTIVITY,
   USED_TAGS_LOADED
 } from './actions'
 
 export const initialState = {
   activities: [],
   activity: undefined,
-  selectedActivity: undefined,
   running: undefined,
   usedTags: []
 }
@@ -37,10 +37,29 @@ export const reducer = (state = initialState, action) => {
         running: action.payload
       }
     case ACTIVITY_STOPPED:
-      return  {
+      return {
         ...state,
         running: undefined
       }
+    case ACTIVITY_DELETED:
+      const idToDelete = action.payload.id
+      let newState = state
+      if (state.running && state.running.id === idToDelete) {
+        newState = {
+          ...state,
+          running: undefined
+        }
+      }
+
+      console.log(state.activities)
+      if (state.activities) {
+        newState = {
+          ...newState,
+          activities: state.activities.filter(a => a.id !== idToDelete)
+        }
+      }
+
+      return newState
     default:
       return state
   }
