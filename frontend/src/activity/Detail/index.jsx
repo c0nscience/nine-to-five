@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit}) => {
+export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, onDelete}) => {
   const classes = useStyles()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
@@ -27,7 +27,7 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit})
   const duration = endOrNow.diff(start)
 
   return <>
-    <DetailToolBar onBack={back} onEdit={edit}/>
+    <DetailToolBar onBack={back} onEdit={edit} onDelete={onDelete}/>
 
     <Grid container className={classes.root}>
       <Grid item xs={12}>
@@ -54,7 +54,7 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit})
 
 export default () => {
   const {id} = useParams()
-  const {loadActivity, activity, stopActivity} = useActivity()
+  const {loadActivity, activity, stopActivity, deleteActivity} = useActivity()
   const history = useHistory()
 
   useEffect(() => {
@@ -62,16 +62,12 @@ export default () => {
   }, [id])
 
   return <Detail {...activity}
-                 stop={() => {
-                   stopActivity()
-                     .then(() => {
-                       history.replace('/')
-                     })
-                 }}
-                 back={() => {
-                   history.replace('/')
-                 }}
-                 edit={() => {
-                   history.push(`/activities/${id}/edit`)
-                 }}/>
+                 stop={() => stopActivity()
+                   .then(() => history.replace('/'))
+                 }
+                 back={() => history.replace('/')}
+                 edit={() => history.push(`/activities/${id}/edit`)}
+                 onDelete={() => deleteActivity(id)
+                   .then(() => history.replace('/'))
+                 }/>
 }

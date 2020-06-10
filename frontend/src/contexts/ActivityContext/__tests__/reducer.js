@@ -1,6 +1,6 @@
 import {initialState, reducer} from '../reducer'
 import {
-  activitiesInRangeLoaded,
+  activitiesInRangeLoaded, activityDeleted,
   activityLoaded,
   activityStarted,
   activityStopped, runningActivityLoaded
@@ -72,5 +72,39 @@ describe('Activity Context Reducer', () => {
     const newState = reducer(currentState, action);
 
     expect(newState.running).toBeUndefined()
-  });
+  })
+
+  it('should remove the deleted running activity from running', function () {
+    const now = DateTime.local()
+    const activity = {
+      id: 'activity-id',
+      name: 'task #1',
+      start: now.toISO(),
+      tags: ['a-tag']
+    }
+    const currentState = reducer(initialState, runningActivityLoaded(activity))
+
+    const action = activityDeleted(activity)
+
+    const newState = reducer(currentState, action);
+
+    expect(newState.running).toBeUndefined()
+  })
+
+  it('should remove the deleted activity from activities', function () {
+    const now = DateTime.local()
+    const activity = {
+      id: 'activity-id',
+      name: 'task #1',
+      start: now.toISO(),
+      tags: ['a-tag']
+    }
+    const currentState = reducer(initialState, activitiesInRangeLoaded({entries: [activity]}))
+
+    const action = activityDeleted(activity)
+
+    const newState = reducer(currentState, action);
+
+    expect(newState.activities).toEqual([])
+  })
 })
