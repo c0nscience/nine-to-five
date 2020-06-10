@@ -24,12 +24,16 @@ export const formatDuration = (duration, opts = {multiline: false}) => {
   if (opts.multiline) {
     const hours = Math.floor(duration.as('hours'))
     if (hours > 0) {
-      return <>{duration.toFormat('h\'h\'')}<br/>{duration.minus({hours}).toFormat('m\'m\'')}</>
+      return <>
+        {duration.toFormat('h\'h\'')}
+        <br/>
+        {duration.minus({hours}).toFormat('mm\'m\'')}
+        </>
     } else {
       return duration.toFormat('m\'m\'')
     }
   } else {
-    return duration.toFormat('h\'h\' m\'m\'')
+    return duration.toFormat('h\'h\' mm\'m\'')
   }
 
 }
