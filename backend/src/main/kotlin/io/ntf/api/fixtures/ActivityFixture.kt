@@ -31,7 +31,7 @@ fun createActivitiesFrom(
     .addRange(days)
     .addRange(end = hours, step = duration)
     .map { (week, day, hour) ->
-      val overtime = if (hour == 0L) {
+      val overtime = if (hour == 6L) {
         dailyOvertime
       } else {
         0

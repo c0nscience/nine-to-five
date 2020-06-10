@@ -20,10 +20,18 @@ const useStyles = makeStyles(theme => {
     itemText: {
       margin: 0
     },
+    cardHeaderContent: {
+      overflow: 'hidden',
+      flex: '1 1 auto',
+    },
+    cardHeaderTitle: {
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis'
+    },
     tagContainer: {
       display: 'flex',
       justifyContent: 'start',
-      flexWrap: 'wrap',
       '& > *': {
         margin: theme.spacing(0.5)
       },
@@ -43,6 +51,10 @@ export const ActivityItemCard = ({name, tags, duration, since, raised = false, s
   return <Card raised={raised}
                square={square}>
     <CardHeader
+      classes={{
+        content: classes.cardHeaderContent,
+        title: classes.cardHeaderTitle
+      }}
       data-testid='name'
       title={name}
       subheader={<div className={classes.tagContainer}>
