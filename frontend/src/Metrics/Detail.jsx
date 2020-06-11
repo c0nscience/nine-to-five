@@ -5,6 +5,7 @@ import {useMetrics} from 'contexts/MetricsContext'
 import {useHistory, useParams} from 'react-router'
 import Grid from '@material-ui/core/Grid'
 import {ResponsiveBar} from '@nivo/bar'
+import {BasicTooltip} from '@nivo/tooltip'
 import {DateTime, Duration} from 'luxon'
 import {DetailToolBar} from 'component/DetailToolbar'
 
@@ -20,6 +21,7 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
     <DetailToolBar onBack={back}
                    onEdit={editMetric}
                    onDelete={deleteMetric}/>
+
     <Grid container alignContent='flex-start'>
 
       <Grid item xs={12}>
@@ -47,6 +49,7 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
           labelTextColor={{from: 'color', modifiers: [['darker', 1.6]]}}
           label={d => formatDuration(d.data.duration)}
           animate={false}
+          isInteractive={false}
         />
       </Grid>
 

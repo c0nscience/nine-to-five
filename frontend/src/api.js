@@ -36,7 +36,10 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       with: networkActivity => {
         addNetworkActivity(networkActivity)
         return promise
-          .then(() => removeNetworkActivity(networkActivity))
+          .then(d => {
+            removeNetworkActivity(networkActivity)
+            return d
+          })
           .catch(() => removeNetworkActivity(networkActivity))
       }
     }

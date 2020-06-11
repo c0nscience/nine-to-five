@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, onDelete}) => {
+export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, onDelete, isActivityInProgress, onSwitch, onContinue}) => {
   const classes = useStyles()
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
@@ -46,7 +46,23 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, 
       </Grid>
       <Grid item xs={1}/>
       <Grid item xs={12}>
-        {!end && <Button onClick={() => stop()} color='secondary'>Stop</Button>}
+        {
+          !isActivityInProgress &&
+          <Button data-testid='continue-btn'
+                  variant='contained'
+                  color='primary'
+                  onClick={() => onContinue({name, tags})}
+          >Continue</Button>
+        }
+        {
+          isActivityInProgress &&
+          <Button data-testid='switch-btn'
+                  variant='contained'
+                  color='primary'
+                  onClick={() => onSwitch({name, tags})}
+          >Switch</Button>
+        }
+        {!end && <Button onClick={() => stop()} color='secondary' variant='contained'>Stop</Button>}
       </Grid>
     </Grid>
   </>
@@ -54,20 +70,34 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, 
 
 export default () => {
   const {id} = useParams()
-  const {loadActivity, activity, stopActivity, deleteActivity} = useActivity()
+  const {loadActivity, activity, stopActivity, deleteActivity, loadRunning, running, switchActivity, continueActivity} = useActivity()
   const history = useHistory()
 
   useEffect(() => {
     loadActivity(id)
+    loadRunning()
   }, [id])
 
-  return <Detail {...activity}
-                 stop={() => stopActivity()
-                   .then(() => history.replace('/'))
-                 }
-                 back={() => history.replace('/')}
-                 edit={() => history.push(`/activities/${id}/edit`)}
-                 onDelete={() => deleteActivity(id)
-                   .then(() => history.replace('/'))
-                 }/>
+  return <>
+    {
+      activity &&
+      <Detail {...activity}
+              isActivityInProgress={typeof running !== 'undefined'}
+              stop={() => stopActivity()
+                .then(() => history.replace('/'))
+              }
+              back={() => history.replace('/')}
+              edit={() => history.push(`/activities/${id}/edit`)}
+              onDelete={() => deleteActivity(id)
+                .then(() => history.replace('/'))
+              }
+              onSwitch={a => switchActivity(a)
+                .then(a => history.push(`/activities/${a.id}`))
+              }
+              onContinue={a => continueActivity(a)
+                .then(a => history.push(`/activities/${a.id}`))
+              }
+      />
+    }
+  </>
 }

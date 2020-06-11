@@ -43,6 +43,20 @@ describe('Activity Detail Page', () => {
     expect(getByTestId('back-btn')).toHaveTextContent('Back')
   })
 
+  it('should display a continue button', () => {
+    const {getByTestId,queryByTestId} = render(<Detail {...activity} isActivityInProgress={false}/>)
+
+    expect(getByTestId('continue-btn')).toBeVisible()
+    expect(queryByTestId('switch-btn')).toBeNull()
+  })
+
+  it('should display a switch button if a activity is currently running', () => {
+    const {getByTestId, queryByTestId} = render(<Detail {...activity} isActivityInProgress={true}/>)
+
+    expect(queryByTestId('continue-btn')).toBeNull()
+    expect(getByTestId('switch-btn')).toBeVisible()
+  })
+
   it('should display a edit button', () => {
     const {getByTestId} = render(<Detail {...activity}/>)
 
@@ -50,7 +64,7 @@ describe('Activity Detail Page', () => {
   })
 
   it('should display a delete button', () => {
-    const {getByTestId} = render(<Detail {...activity}/>)
+    const {getByTestId} = render(<Detail {...activity} onDelete={() => {}}/>)
 
     expect(getByTestId('delete-btn')).toBeVisible()
   })
