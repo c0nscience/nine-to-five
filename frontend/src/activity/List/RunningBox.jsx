@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import {ActivityItemCard} from './ActivityItem'
 import {DateTime} from 'luxon'
 import {amber} from '@material-ui/core/colors'
@@ -21,9 +21,25 @@ export const RunningBox = ({name, tags, duration, since}) => {
                            square/>
 }
 
+const updateInterval = 30000
+let timeUpdater
+
 export default ({activity}) => {
+  const [end, setEnd] = useState(DateTime.local())
   const start = DateTime.fromISO(activity.start, {zone: 'utc'}).toLocal()
-  const duration = DateTime.local().diff(start)
+  const duration = end.diff(start)
+
+  useEffect(() => {
+    timeUpdater = setInterval(() =>
+      setEnd(DateTime.local())
+    , updateInterval)
+
+    return () => {
+      if (timeUpdater) {
+        clearInterval(timeUpdater)
+      }
+    }
+  })
 
   return <RunningBox name={activity.name}
                      tags={activity.tags}
