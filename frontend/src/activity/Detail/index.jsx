@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import Typography from '@material-ui/core/Typography'
 import {formatDuration} from 'functions'
 import Chip from '@material-ui/core/Chip'
@@ -9,6 +9,10 @@ import {DateTime} from 'luxon'
 import makeStyles from '@material-ui/core/styles/makeStyles'
 import Grid from '@material-ui/core/Grid'
 import {DetailToolBar} from 'component/DetailToolbar'
+import Dialog from '@material-ui/core/Dialog'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogActions from '@material-ui/core/DialogActions'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -19,15 +23,40 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const DeleteConfirmationDialog = ({open, onCancel, onDelete}) => <Dialog
+  disableBackdropClick
+  disableEscapeKeyDown
+  maxWidth="xs"
+  aria-labelledby="confirmation-dialog-title"
+  open={open}
+>
+  <DialogTitle id="confirmation-dialog-title">Delete Activity</DialogTitle>
+  <DialogContent dividers>
+    <Typography>Do you really want to delete this activity?</Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button autoFocus onClick={onCancel} color="primary">
+      No
+    </Button>
+    <Button onClick={onDelete} color="secondary">
+      Yes
+    </Button>
+  </DialogActions>
+</Dialog>
+
 export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, onDelete, isActivityInProgress, onSwitch, onContinue}) => {
   const classes = useStyles()
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false)
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
   const endOrNow = end || DateTime.local()
   const duration = endOrNow.diff(start)
 
   return <>
-    <DetailToolBar onBack={back} onEdit={edit} onDelete={onDelete}/>
+    <DeleteConfirmationDialog open={openConfirmDialog}
+                              onCancel={() => setOpenConfirmDialog(false)}
+                              onDelete={onDelete}/>
+    <DetailToolBar onBack={back} onEdit={edit} onDelete={() => setOpenConfirmDialog(true)}/>
 
     <Grid container className={classes.root}>
       <Grid item xs={12}>
