@@ -57,7 +57,10 @@ export const ActivityProvider = ({children}) => {
 
   const startActivity = activity => {
     return request(post('activity', activity)
-      .then(activity => dispatch(activityStarted(activity)))
+      .then(activity => {
+        dispatch(activityStarted(activity))
+        return activity
+      })
     ).with(START_ACTIVITY)
   }
 
@@ -78,14 +81,14 @@ export const ActivityProvider = ({children}) => {
     ).with(DELETE_ACTIVITY)
   }
 
-  // const switchActivity = name => {
-  //   stopActivity()
-  //     .then(() => startActivity(name))
-  // }
+  const switchActivity = name => {
+    return stopActivity()
+      .then(() => startActivity(name))
+  }
 
-  // const continueActivity = name => {
-  //   startActivity(name)
-  // }
+  const continueActivity = name => {
+    return startActivity(name)
+  }
 
   const loadActivity = id => {
     request(get(`activities/${id}`)
@@ -102,8 +105,8 @@ export const ActivityProvider = ({children}) => {
     // deselectActivity,
     saveActivity,
     deleteActivity,
-    // switchActivity,
-    // continueActivity,
+    switchActivity,
+    continueActivity,
     loadActivitiesInRange,
     loadActivity,
     loadUsedTags
