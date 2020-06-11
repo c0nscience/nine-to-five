@@ -12,7 +12,8 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
   const {name, totalExceedingDuration = 0, values = [], threshold = 0} = metric
   const data = values.map(v => ({
     id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
-    value: Duration.fromISO(v.duration).as('hours')
+    value: Duration.fromISO(v.duration).as('hours'),
+    duration: Duration.fromISO(v.duration)
   }))
 
   return <>
@@ -44,7 +45,7 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
           labelSkipWidth={12}
           labelSkipHeight={12}
           labelTextColor={{from: 'color', modifiers: [['darker', 1.6]]}}
-          label={d => formatDuration(Duration.fromObject({hours: d.value}))}
+          label={d => formatDuration(d.data.duration)}
           animate={false}
         />
       </Grid>
