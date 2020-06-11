@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import Typography from '@material-ui/core/Typography'
 import {formatDuration} from 'functions'
 import {useMetrics} from 'contexts/MetricsContext'
@@ -8,9 +8,36 @@ import {ResponsiveBar} from '@nivo/bar'
 import {BasicTooltip} from '@nivo/tooltip'
 import {DateTime, Duration} from 'luxon'
 import {DetailToolBar} from 'component/DetailToolbar'
+import Dialog from '@material-ui/core/Dialog'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogActions from '@material-ui/core/DialogActions'
+import Button from '@material-ui/core/Button'
+
+const DeleteConfirmationDialog = ({open, onCancel, onDelete}) => <Dialog
+  disableBackdropClick
+  disableEscapeKeyDown
+  maxWidth="xs"
+  aria-labelledby="confirmation-dialog-title"
+  open={open}
+>
+  <DialogTitle id="confirmation-dialog-title">Delete Activity</DialogTitle>
+  <DialogContent dividers>
+    <Typography>Do you really want to delete this activity?</Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button autoFocus onClick={onCancel} color="primary">
+      No
+    </Button>
+    <Button onClick={onDelete} color="secondary">
+      Yes
+    </Button>
+  </DialogActions>
+</Dialog>
 
 export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
   const {name, totalExceedingDuration = 0, values = [], threshold = 0} = metric
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const data = values.map(v => ({
     id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
     value: Duration.fromISO(v.duration).as('hours'),
@@ -18,9 +45,13 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
   }))
 
   return <>
+    <DeleteConfirmationDialog open={confirmDialogOpen}
+                              onCancel={() => setConfirmDialogOpen(false)}
+                              onDelete={deleteMetric}/>
+
     <DetailToolBar onBack={back}
                    onEdit={editMetric}
-                   onDelete={deleteMetric}/>
+                   onDelete={() => setConfirmDialogOpen(true)}/>
 
     <Grid container alignContent='flex-start'>
 
