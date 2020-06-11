@@ -56,6 +56,7 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, 
     <DeleteConfirmationDialog open={openConfirmDialog}
                               onCancel={() => setOpenConfirmDialog(false)}
                               onDelete={onDelete}/>
+
     <DetailToolBar onBack={back} onEdit={edit} onDelete={() => setOpenConfirmDialog(true)}/>
 
     <Grid container className={classes.root}>
