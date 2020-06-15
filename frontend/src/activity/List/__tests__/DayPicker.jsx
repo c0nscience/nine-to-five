@@ -21,14 +21,14 @@ describe('Day Picker', () => {
   })
 
   it('should display next date after clicking the next button', () => {
-    const date = DateTime.fromISO("2020-05-22")
+    const date = DateTime.fromISO("2020-05-21")
 
     const {getByTestId} = render(<DayPicker date={date}/>)
 
     const nextButton = getByTestId('next')
     fireEvent.click(nextButton)
 
-    expect(getByTestId('label')).toHaveTextContent('May 23, 2020')
+    expect(getByTestId('label')).toHaveTextContent('May 22, 2020')
   })
 
   it('should display previous date after clicking the previous button', () => {
@@ -42,7 +42,7 @@ describe('Day Picker', () => {
   })
 
   it('should call onChanged function after the next button is clicked with the new value', () => {
-    const date = DateTime.fromISO("2020-05-22")
+    const date = DateTime.fromISO("2020-05-21")
 
     const onChanged = jest.fn()
     const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
@@ -50,7 +50,7 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('next'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0]).toEqual(DateTime.fromISO("2020-05-23"))
+    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-05-22")
   })
 
   it('should call onChanged function after the previous button is clicked with the new value', () => {
@@ -62,6 +62,54 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('previous'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0]).toEqual(DateTime.fromISO("2020-05-21"))
+    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-05-21")
+  })
+
+  it('should skip sunday for previous day', () => {
+    const date = DateTime.fromISO("2020-06-15")
+
+    const onChanged = jest.fn()
+    const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
+
+    fireEvent.click(getByTestId('previous'))
+
+    expect(onChanged).toHaveBeenCalled()
+    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-12")
+  })
+
+  it('should skip saturday for previous day', () => {
+    const date = DateTime.fromISO("2020-06-14")
+
+    const onChanged = jest.fn()
+    const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
+
+    fireEvent.click(getByTestId('previous'))
+
+    expect(onChanged).toHaveBeenCalled()
+    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-12")
+  })
+
+  it('should skip saturday for next day', () => {
+    const date = DateTime.fromISO("2020-06-12")
+
+    const onChanged = jest.fn()
+    const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
+
+    fireEvent.click(getByTestId('next'))
+
+    expect(onChanged).toHaveBeenCalled()
+    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-15")
+  })
+
+  it('should skip sunday for next day', () => {
+    const date = DateTime.fromISO("2020-06-13")
+
+    const onChanged = jest.fn()
+    const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
+
+    fireEvent.click(getByTestId('next'))
+
+    expect(onChanged).toHaveBeenCalled()
+    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-15")
   })
 })

@@ -15,7 +15,8 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const noOp = () => {}
+const noOp = () => {
+}
 
 export default ({date, onChanged = noOp}) => {
   const classes = useStyles()
@@ -32,7 +33,13 @@ export default ({date, onChanged = noOp}) => {
       <IconButton data-testid='previous'
                   onClick={() => {
                     setCurrentDate(d => {
-                      const newDate = d.minus({days: 1})
+                      let newDate = d.minus({days: 1})
+                      if (newDate.weekday === 7) {
+                        newDate = d.minus({days: 3})
+                      } else if (newDate.weekday === 6) {
+                        newDate = d.minus({days: 2})
+                      }
+
                       onChanged(newDate)
                       return newDate
                     })
@@ -50,7 +57,14 @@ export default ({date, onChanged = noOp}) => {
       <IconButton data-testid='next'
                   onClick={() => {
                     setCurrentDate(d => {
-                      const newDate = d.plus({days: 1})
+                      let newDate = d.plus({days: 1})
+
+                      if (newDate.weekday === 6) {
+                        newDate = d.plus({days: 3})
+                      } else if (newDate.weekday === 7) {
+                        newDate = d.plus({days: 2})
+                      }
+
                       onChanged(newDate)
                       return newDate
                     })
