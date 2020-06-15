@@ -26,19 +26,12 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
       .pathMatchers(GET, "/activity/running").hasAuthority("SCOPE_read:activities")
       .pathMatchers(PUT, "/activity/{id}").hasAuthority("SCOPE_update:activity")
       .pathMatchers(DELETE, "/activity/{id}").hasAuthority("SCOPE_delete:activity")
-      .pathMatchers(DELETE, "/activity/{id}").hasAuthority("SCOPE_delete:activity")
       .pathMatchers(GET, "/activities").hasAuthority("SCOPE_read:activities")
       .pathMatchers(GET, "/activities/{id}").hasAuthority("SCOPE_read:activities")
       .pathMatchers(GET, "/activities/{from}/{to}").hasAuthority("SCOPE_read:activities")
       .pathMatchers(HEAD, "/activities").hasAuthority("SCOPE_read:activities")
       .pathMatchers(GET, "/activities/tags").hasAuthority("SCOPE_read:activities")
       .pathMatchers(DELETE, "/activities").hasAuthority("SCOPE_delete:activity")
-
-      .pathMatchers(GET, "/statistics/overtime").hasAuthority("SCOPE_read:overtime")
-
-      .pathMatchers(GET, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
-      .pathMatchers(POST, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
-      .pathMatchers(PUT, "/statistic/configurations").hasAuthority("SCOPE_read:overtime")
 
       .pathMatchers(GET, "/metrics").hasAuthority("SCOPE_read:metrics")
       .pathMatchers(POST, "/metrics").hasAuthority("SCOPE_create:metrics")
