@@ -21,58 +21,59 @@ const App = ({history}) => {
   return <AuthProvider domain={AUTH_CONFIG.domain}
                        client_id={AUTH_CONFIG.clientId}
                        redirect_uri={AUTH_CONFIG.callbackUrl}
-                       audience={'https://api.ntf.io'}
-                       scope={'openid read:activities start:activity stop:activity update:activity delete:activity read:metrics create:metrics delete:metrics update:metric'}>
+                       audience='https://api.ntf.io'
+                       scope='openid read:activities start:activity stop:activity update:activity delete:activity read:metrics create:metrics delete:metrics update:metric'
+                       useRefreshTokens={true}>
     <Router history={history}>
       <NetworkActivityProvider>
-          <TitleProvider>
-            <ActivityProvider>
+        <TitleProvider>
+          <ActivityProvider>
 
-              <Switch>
-                <PrivateRoute exact path="/metrics/new" component={() =>
-                  <MetricsProvider>
-                    <MetricCreatePage/>
-                  </MetricsProvider>
-                }/>
+            <Switch>
+              <PrivateRoute exact path="/metrics/new" component={() =>
+                <MetricsProvider>
+                  <MetricCreatePage/>
+                </MetricsProvider>
+              }/>
 
-                <PrivateRoute exact path="/metrics/:id" component={() =>
-                  <MetricsProvider>
-                    <MetricDetailPage/>
-                  </MetricsProvider>
-                }/>
+              <PrivateRoute exact path="/metrics/:id" component={() =>
+                <MetricsProvider>
+                  <MetricDetailPage/>
+                </MetricsProvider>
+              }/>
 
-                <PrivateRoute exact path="/metrics/:id/edit" component={() =>
-                  <MetricsProvider>
-                    <MetricEditPage/>
-                  </MetricsProvider>
-                }/>
+              <PrivateRoute exact path="/metrics/:id/edit" component={() =>
+                <MetricsProvider>
+                  <MetricEditPage/>
+                </MetricsProvider>
+              }/>
 
-                <PrivateRoute exact path="/metrics" component={() =>
-                  <MetricsProvider>
-                    <MetricList/>
-                    <Navigation/>
-                  </MetricsProvider>
-                }/>
+              <PrivateRoute exact path="/metrics" component={() =>
+                <MetricsProvider>
+                  <MetricList/>
+                  <Navigation/>
+                </MetricsProvider>
+              }/>
 
-                <PrivateRoute exact path="/activities/:id/edit" component={() =>
-                  <ActivityEdit/>
-                }/>
+              <PrivateRoute exact path="/activities/:id/edit" component={() =>
+                <ActivityEdit/>
+              }/>
 
-                <PrivateRoute exact path="/activities/:id" component={() =>
-                  <ActivityDetail/>
-                }/>
+              <PrivateRoute exact path="/activities/:id" component={() =>
+                <ActivityDetail/>
+              }/>
 
-                <PrivateRoute exact path="/" component={() =>
-                  <>
-                    <Activity/>
-                    <Navigation/>
-                  </>
-                }/>
+              <PrivateRoute exact path="/" component={() =>
+                <>
+                  <Activity/>
+                  <Navigation/>
+                </>
+              }/>
 
-              </Switch>
+            </Switch>
 
-            </ActivityProvider>
-          </TitleProvider>
+          </ActivityProvider>
+        </TitleProvider>
       </NetworkActivityProvider>
     </Router>
   </AuthProvider>

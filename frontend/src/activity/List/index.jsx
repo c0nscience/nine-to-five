@@ -40,7 +40,6 @@ export const List = ({activities, running}) => {
 
   return <MuiList className={running ? classes.listRunning : classes.list}
                   disablePadding
-                  gutters
                   dense>
     {
       activities
