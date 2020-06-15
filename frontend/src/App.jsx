@@ -23,7 +23,8 @@ const App = ({history}) => {
                        redirect_uri={AUTH_CONFIG.callbackUrl}
                        audience='https://api.ntf.io'
                        scope='openid read:activities start:activity stop:activity update:activity delete:activity read:metrics create:metrics delete:metrics update:metric'
-                       useRefreshTokens={true}>
+                       useRefreshTokens={true}
+                       cacheLocation='localstorage'>
     <Router history={history}>
       <NetworkActivityProvider>
         <TitleProvider>
