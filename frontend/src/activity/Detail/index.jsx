@@ -85,7 +85,7 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, 
           >Continue</Button>
         }
         {
-          isActivityInProgress &&
+          (isActivityInProgress && end) &&
           <Button data-testid='switch-btn'
                   variant='contained'
                   color='primary'
