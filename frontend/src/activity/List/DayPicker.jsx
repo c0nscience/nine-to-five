@@ -22,6 +22,8 @@ export default ({date, onChanged = noOp}) => {
   const classes = useStyles()
   const [currentDate, setCurrentDate] = useState(DateTime.local())
 
+  const isToday = currentDate.toISODate() === DateTime.local().toISODate()
+
   useEffect(() => {
     if (typeof date !== 'undefined') {
       setCurrentDate(date)
@@ -51,7 +53,11 @@ export default ({date, onChanged = noOp}) => {
       <Typography data-testid='label'
                   variant='h6'
                   className={classes.label}
-                  align='center'>{currentDate.toFormat('DD')}</Typography>
+                  align='center'>{
+                    isToday
+                      ? 'Today'
+                      : currentDate.toFormat('DD')
+                  }</Typography>
     </Grid>
     <Grid item xs={4} style={{textAlign: 'start'}}>
       <IconButton data-testid='next'

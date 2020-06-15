@@ -112,4 +112,13 @@ describe('Day Picker', () => {
     expect(onChanged).toHaveBeenCalled()
     expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-15")
   })
+
+  it(`should display today as 'Today'`, () => {
+    const date = DateTime.local()
+
+    const onChanged = jest.fn()
+    const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
+
+    expect(getByTestId('label')).toHaveTextContent('Today')
+  })
 })
