@@ -22,11 +22,14 @@ jobs:
       - image: cimg/openjdk:14.0-node
       - image: mongo:latest
     steps:
-      - checkout
       - restore_cache:
           keys:
             - repo-{{ .Environment.CIRCLE_SHA1 }}
             - repo-
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "backend/pom.xml" }}
+            - m2-
       - run:
           command: |
             cd backend
@@ -38,13 +41,44 @@ jobs:
       - store_test_results:
           path: backend/target/surefire-reports
 
+  build_frontend:
+    docker:
+      - image: cimg/openjdk:14.0-node
+      - image: mongo:latest
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - repo-
+      - restore_cache:
+          keys:
+            - node-{{ checksum "frontend/package-lock.json" }}
+            - node-
+      - run:
+          command: |
+            cd frontend
+            npm install
+            npm test
+      - save_cache:
+          path:
+            - ~/frontend/node_modules
+          key: node-{{ checksum "frontend/package-lock.json" }}
+
+
 workflows:
   build-and-deploy:
     jobs:
       - checkout_code
+          filters:
+            branches:
+              only:
+                - master
       - build_server:
           requires:
             - checkout_code
       - heroku/deploy-via-git:
           requires:
             - build_server
+      - build_frontend:
+          requires:
+            - checkout_code
