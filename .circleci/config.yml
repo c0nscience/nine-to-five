@@ -103,5 +103,5 @@ workflows:
 #            - build_frontend
       - deploy_frontend:
           requires:
-            - build_server
+#            - build_server
             - build_frontend
