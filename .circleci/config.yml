@@ -75,9 +75,11 @@ workflows:
       - build_server:
           requires:
             - checkout_code
-      - heroku/deploy-via-git:
-          requires:
-            - build_server
       - build_frontend:
           requires:
             - checkout_code
+
+      - heroku/deploy-via-git:
+          requires:
+            - build_server
+            - build_frontend

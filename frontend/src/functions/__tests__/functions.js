@@ -38,7 +38,7 @@ describe('functions', () => {
     <div>
       1h
       <br />
-      0m
+      00m
     </div>
     `)
     })
