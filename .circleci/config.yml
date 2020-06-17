@@ -64,6 +64,20 @@ jobs:
             - ~/frontend/node_modules
           key: node-{{ checksum "frontend/package-lock.json" }}
 
+  deploy_frontend:
+    docker:
+      - image: cimg/openjdk:14.0-node
+      - image: mongo:latest
+    steps:
+      - restore_cache:
+          keys:
+            - node-{{ checksum "frontend/package-lock.json" }}
+            - node-
+      - run:
+          command: |
+            cd frontend
+            npm install -g vercel
+            vercel --prod -t $VERCEL_TOKEN
 
 workflows:
   build-and-deploy:
@@ -72,6 +86,7 @@ workflows:
           filters:
             branches:
               only: master
+
       - build_server:
           requires:
             - checkout_code
@@ -80,6 +95,10 @@ workflows:
             - checkout_code
 
       - heroku/deploy-via-git:
+          requires:
+            - build_server
+            - build_frontend
+      - deploy_frontend:
           requires:
             - build_server
             - build_frontend
