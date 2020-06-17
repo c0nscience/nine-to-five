@@ -41,7 +41,7 @@ jobs:
       - store_test_results:
           path: backend/target/surefire-reports
 
-  build_frontend:
+  test_frontend:
     docker:
       - image: cimg/openjdk:14.0-node
       - image: mongo:latest
@@ -89,18 +89,18 @@ workflows:
             branches:
               only: master
 
-#      - build_server:
-#          requires:
-#            - checkout_code
-      - build_frontend:
+      - build_server:
+          requires:
+            - checkout_code
+      - test_frontend:
           requires:
             - checkout_code
 
-#      - heroku/deploy-via-git:
-#          requires:
-#            - build_server
-#            - build_frontend
+      - heroku/deploy-via-git:
+          requires:
+            - build_server
+            - test_frontend
       - deploy_frontend:
           requires:
-#            - build_server
-            - build_frontend
+            - build_server
+            - test_frontend
