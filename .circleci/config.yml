@@ -60,7 +60,7 @@ jobs:
             npm install
             npm test
       - save_cache:
-          path:
+          paths:
             - ~/frontend/node_modules
           key: node-{{ checksum "frontend/package-lock.json" }}
 
