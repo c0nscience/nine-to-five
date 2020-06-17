@@ -80,8 +80,7 @@ jobs:
       - run:
           command: |
             cd frontend
-            npm install -g vercel
-            vercel --prod -t $VERCEL_TOKEN
+            npx vercel --prod -t $VERCEL_TOKEN
 
 workflows:
   build-and-deploy:
