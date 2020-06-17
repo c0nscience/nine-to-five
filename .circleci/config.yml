@@ -1,0 +1,50 @@
+version: 2.1
+
+orbs:
+  heroku: circleci/heroku@1.0.1
+
+jobs:
+  checkout_code:
+    docker:
+      - image: cimg/openjdk:14.0-node
+      - image: mongo:latest
+        environment:
+          MONGO_INITDB_DATABASE: ntf-db-test
+    steps:
+      - checkout
+      - save_cache:
+          key: repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/project
+
+  build_server:
+    docker:
+      - image: cimg/openjdk:14.0-node
+      - image: mongo:latest
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - repo-
+      - run:
+          command: |
+            cd backend
+            ./mvnw verify
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: m2-{{ checksum "backend/pom.xml" }}
+      - store_test_results:
+          path: backend/target/surefire-reports
+
+workflows:
+  build-and-deploy:
+    jobs:
+      - checkout_code
+      - build_server:
+          requires:
+            - checkout_code
+      - heroku/deploy-via-git:
+          requires:
+            - build_server
