@@ -3,9 +3,6 @@ import ReactDOM from 'react-dom'
 import App from 'App'
 import * as serviceWorker from './serviceWorker'
 import {createBrowserHistory} from 'history'
-import {Settings} from 'luxon'
-
-Settings.defaultZoneName = 'Europe/Berlin'
 
 const history = createBrowserHistory()
 

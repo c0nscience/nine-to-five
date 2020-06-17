@@ -48,5 +48,8 @@
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "jest": {
+    "globalSetup": "<rootDir>/config/jest/setupTests.js"
   }
 }
