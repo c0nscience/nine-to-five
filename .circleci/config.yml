@@ -79,8 +79,7 @@ jobs:
             - node-
       - run:
           command: |
-            cd frontend
-            npx vercel --prod -t $VERCEL_TOKEN
+            npx vercel --prod -t -c $VERCEL_TOKEN
 
 workflows:
   build-and-deploy:

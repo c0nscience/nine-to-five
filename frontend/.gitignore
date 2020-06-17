@@ -25,3 +25,5 @@ yarn-error.log*
 *.iws
 *.iml
 *.ipr
+
+.vercel
