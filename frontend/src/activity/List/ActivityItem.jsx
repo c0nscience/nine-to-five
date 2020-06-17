@@ -3,7 +3,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import ListItem from '@material-ui/core/ListItem'
 import Card from '@material-ui/core/Card'
 import makeStyles from '@material-ui/core/styles/makeStyles'
-import {DateTime} from 'luxon'
+import {DateTime,Settings} from 'luxon'
 import {CardHeader} from '@material-ui/core'
 import Chip from '@material-ui/core/Chip'
 import {formatDuration} from 'functions'
@@ -81,6 +81,9 @@ export const ActivityItemCard = ({name, tags, duration, since, raised = false, s
   </Card>
 
 }
+
+//TODO dirty hack for the time beeing
+Settings.defaultZoneName = 'Europe/Berlin'
 
 const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [], hideStartTime = false, hideEndTime = false, now = DateTime.local()}, ref) => {
   const history = useHistory()
