@@ -68,11 +68,10 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
-      - checkout_code
+      - checkout_code:
           filters:
             branches:
-              only:
-                - master
+              only: master
       - build_server:
           requires:
             - checkout_code
