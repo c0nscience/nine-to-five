@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27018/ntf-db-test
+      uri: mongodb://localhost:27017/ntf-db-test
 
   jackson:
     default-property-inclusion: non_null
