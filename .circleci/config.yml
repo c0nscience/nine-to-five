@@ -63,7 +63,7 @@ jobs:
             npm install
             npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: ~/frontend/reports/junit/
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
       - save_cache:
           paths:
             - ~/frontend/node_modules
