@@ -6,7 +6,7 @@ orbs:
 jobs:
   checkout_code:
     docker:
-      - image: cimg/base:2020.01
+      - image: cimg/base:stable
 
     steps:
       - checkout
