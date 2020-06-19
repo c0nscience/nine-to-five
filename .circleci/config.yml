@@ -15,7 +15,7 @@ jobs:
           paths:
             - ~/project
 
-  build_server:
+  test_server:
     docker:
       - image: cimg/openjdk:14.0
       - image: mongo:latest
@@ -75,6 +75,44 @@ jobs:
       - store_artifacts:
           path: frontend/reports/junit
 
+  test_cli:
+    docker:
+      - image: cimg/go:1.14
+
+
+    environment:
+      TEST_RESULTS: /tmp/test-results
+
+    steps:
+      - run: mkdir -p $TEST_RESULTS
+
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - repo-
+      - restore_cache:
+          keys:
+            - go-mod-{{ checksum "go.sum" }}
+
+      - run:
+          name: Run unit tests
+          command: |
+            cd cli
+            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+      - run: make
+      - save_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+          paths: cli/go/pkg/mod
+
+
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: raw-test-output
+
+      - store_test_results:
+          path: /tmp/test-results
+
   deploy_frontend:
     docker:
       - image: cimg/node:lts
@@ -100,7 +138,10 @@ workflows:
             branches:
               only: master
 
-      - build_server:
+      - test_cli:
+          requires:
+            - checkout_code
+      - test_server:
           requires:
             - checkout_code
       - test_frontend:
@@ -109,9 +150,9 @@ workflows:
 
       - heroku/deploy-via-git:
           requires:
-            - build_server
+            - test_server
             - test_frontend
       - deploy_frontend:
           requires:
-            - build_server
+            - test_server
             - test_frontend
