@@ -71,9 +71,9 @@ jobs:
       - store_artifacts:
           path: coverage
       - store_test_results:
-          path: ./reports/junit/
+          path: ~/frontend/reports/junit/
       - store_artifacts:
-          path: ./reports/junit
+          path: ~/frontend/reports/junit
 
   deploy_frontend:
     docker:
