@@ -6,10 +6,8 @@ orbs:
 jobs:
   checkout_code:
     docker:
-      - image: cimg/openjdk:14.0-node
-      - image: mongo:latest
-        environment:
-          MONGO_INITDB_DATABASE: ntf-db-test
+      - image: cimg/base
+
     steps:
       - checkout
       - save_cache:
@@ -18,6 +16,12 @@ jobs:
             - ~/project
 
   build_server:
+    docker:
+      - image: cimg/openjdk:14.0
+      - image: mongo:latest
+        environment:
+          MONGO_INITDB_DATABASE: ntf-db-test
+
     steps:
       - restore_cache:
           keys:
@@ -41,6 +45,9 @@ jobs:
           path: backend/target/surefire-reports
 
   test_frontend:
+    docker:
+      - image: cimg/node:lts
+
     steps:
       - restore_cache:
           keys:
@@ -69,6 +76,9 @@ jobs:
           path: ./reports/junit
 
   deploy_frontend:
+    docker:
+      - image: cimg/node:lts
+
     steps:
       - restore_cache:
           keys:
