@@ -92,7 +92,7 @@ jobs:
             - repo-
       - restore_cache:
           keys:
-            - go-mod-{{ checksum "go.sum" }}
+            - go-mod-{{ checksum "cli/go.sum" }}
 
       - run:
           name: Run unit tests
@@ -102,7 +102,7 @@ jobs:
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
       - run: make
       - save_cache:
-          key: go-mod-{{ checksum "go.sum" }}
+          key: go-mod-{{ checksum "cli/go.sum" }}
           paths: cli/go/pkg/mod
 
 
