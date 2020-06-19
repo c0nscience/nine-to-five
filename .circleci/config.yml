@@ -66,14 +66,14 @@ jobs:
             JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
       - save_cache:
           paths:
-            - ~/frontend/node_modules
+            - frontend/node_modules
           key: node-{{ checksum "frontend/package-lock.json" }}
       - store_artifacts:
-          path: ~/frontend/coverage
+          path: frontend/coverage
       - store_test_results:
-          path: ~/frontend/reports/junit/
+          path: frontend/reports/junit/
       - store_artifacts:
-          path: ~/frontend/reports/junit
+          path: frontend/reports/junit
 
   deploy_frontend:
     docker:
