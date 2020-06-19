@@ -18,9 +18,6 @@ jobs:
             - ~/project
 
   build_server:
-    docker:
-      - image: cimg/openjdk:14.0-node
-      - image: mongo:latest
     steps:
       - restore_cache:
           keys:
@@ -34,6 +31,8 @@ jobs:
           command: |
             cd backend
             ./mvnw verify
+          environment:
+            SPRING_PROFILES_ACTIVE: ci
       - save_cache:
           paths:
             - ~/.m2
@@ -42,9 +41,6 @@ jobs:
           path: backend/target/surefire-reports
 
   test_frontend:
-    docker:
-      - image: cimg/openjdk:14.0-node
-      - image: mongo:latest
     steps:
       - restore_cache:
           keys:
@@ -58,16 +54,21 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm test
+            npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
       - save_cache:
           paths:
             - ~/frontend/node_modules
           key: node-{{ checksum "frontend/package-lock.json" }}
+      - store_artifacts:
+          path: coverage
+      - store_test_results:
+          path: ./reports/junit/
+      - store_artifacts:
+          path: ./reports/junit
 
   deploy_frontend:
-    docker:
-      - image: cimg/openjdk:14.0-node
-      - image: mongo:latest
     steps:
       - restore_cache:
           keys:
