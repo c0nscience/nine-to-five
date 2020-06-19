@@ -100,7 +100,10 @@ jobs:
             cd cli
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
-      - run: make
+      - run:
+        command: |
+          cd cli
+          make
       - save_cache:
           key: go-mod-{{ checksum "cli/go.sum" }}
           paths: cli/go/pkg/mod
