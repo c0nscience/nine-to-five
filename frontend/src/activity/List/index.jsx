@@ -11,6 +11,7 @@ import StartDialog from 'activity/List/StartDialog'
 import {useHistory} from 'react-router'
 import RunningBox from './RunningBox'
 import ButtonBase from '@material-ui/core/ButtonBase'
+import SkeletonActivityItem from 'activity/List/SkeletonActivityItem'
 
 const useStyles = makeStyles(theme => ({
   list: {
@@ -53,7 +54,7 @@ export const List = ({activities, running}) => {
             const currentEndTime = DateTime.fromISO(activity.end)
             const nextEndTime = next && DateTime.fromISO(next.start)
             hideEndTime = +currentEndTime === +nextEndTime
-          } else if (next && !next.end){
+          } else if (next && !next.end) {
             hideEndTime = false
           }
 
@@ -66,7 +67,7 @@ export const List = ({activities, running}) => {
 }
 
 export default () => {
-  const {loadActivitiesInRange, activities, loadRunning, running} = useActivity()
+  const {loadActivitiesInRange, activities, loadRunning, running, isLoadingActivitiesInRange} = useActivity()
   const classes = useStyles()
   const [startDialogOpen, setStartDialogOpen] = useState(false)
   const history = useHistory()
@@ -86,7 +87,20 @@ export default () => {
                  loadActivitiesInRange(d, d)
                }}/>
 
-    <List activities={activities} running={typeof running !== 'undefined'}/>
+    {
+      !isLoadingActivitiesInRange() &&
+      <List activities={activities} running={typeof running !== 'undefined'}/>
+    }
+
+    {
+      isLoadingActivitiesInRange() &&
+      <>
+        <SkeletonActivityItem/>
+        <SkeletonActivityItem/>
+        <SkeletonActivityItem/>
+        <SkeletonActivityItem/>
+      </>
+    }
 
     {
       !running &&

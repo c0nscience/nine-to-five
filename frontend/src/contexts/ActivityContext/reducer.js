@@ -6,6 +6,7 @@ import {
   RUNNING_ACTIVITY_LOADED,
   USED_TAGS_LOADED
 } from './actions'
+import {ACTIVITY_CLEARED} from 'contexts/ActivityContext/actions'
 
 export const initialState = {
   activities: [],
@@ -59,6 +60,11 @@ export const reducer = (state = initialState, action) => {
       }
 
       return newState
+    case ACTIVITY_CLEARED:
+      return {
+        ...state,
+        activity: undefined
+      }
     default:
       return state
   }
