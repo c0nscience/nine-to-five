@@ -11,10 +11,13 @@ export const NetworkActivityProvider = ({children}) => {
   const addActivity = activity => dispatch(addNetworkActivity(activity))
   const removeActivity = activity => dispatch(removeNetworkActivity(activity))
 
+  const isLoading = (actionType) => state.runningRequests.indexOf(actionType) > -1
+
   return <NetworkContext.Provider value={{
     runningRequests: state.runningRequests,
     addNetworkActivity: addActivity,
-    removeNetworkActivity: removeActivity
+    removeNetworkActivity: removeActivity,
+    isLoading
   }}>
     {children}
   </NetworkContext.Provider>

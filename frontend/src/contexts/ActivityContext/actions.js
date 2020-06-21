@@ -54,3 +54,7 @@ export const ACTIVITY_LOADED = 'ACTIVITY_LOADED'
 
 export const activityLoaded = activity =>
   ({type: ACTIVITY_LOADED, payload: activity})
+
+export const ACTIVITY_CLEARED = 'ACTIVITY_CLEARED'
+export const activityCleared = () =>
+  ({type: ACTIVITY_CLEARED})

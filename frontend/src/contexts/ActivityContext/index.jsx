@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useReducer} from 'react'
 import {createApi} from 'api'
 import {
-  activitiesInRangeLoaded,
+  activitiesInRangeLoaded, activityCleared,
   activityStarted,
   activityStopped,
   LOAD_ACTIVITIES_IN_RANGE,
@@ -28,19 +28,19 @@ const ActivityContext = createContext()
 export const ActivityProvider = ({children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const {getTokenSilently} = useAuth()
-  const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
+  const {addNetworkActivity, removeNetworkActivity, isLoading} = useNetworkActivity()
   const {get, post, put, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadRunning = () => {
     request(get('activity/running')
       .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
-        .catch(e => {
-            if (e.status === 404) {
-                dispatch(runningActivityLoaded(undefined))
-            } else {
-                return e
-            }
-        })
+      .catch(e => {
+        if (e.status === 404) {
+          dispatch(runningActivityLoaded(undefined))
+        } else {
+          return e
+        }
+      })
     ).with(LOAD_RUNNING_ACTIVITY)
   }
 
@@ -52,10 +52,12 @@ export const ActivityProvider = ({children}) => {
   }
 
   const loadActivitiesInRange = (from, to, signal) => {
-    request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
+    return request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
       .then(activities => dispatch(activitiesInRangeLoaded(activities)))
     ).with(LOAD_ACTIVITIES_IN_RANGE)
   }
+
+  const isLoadingActivitiesInRange = () => isLoading(LOAD_ACTIVITIES_IN_RANGE)
 
   const startActivity = activity => {
     return request(post('activity', activity)
@@ -98,20 +100,25 @@ export const ActivityProvider = ({children}) => {
     ).with(LOAD_ACTIVITY)
   }
 
+  const clearActivity = () => {
+    dispatch(activityCleared())
+  }
+
   return <ActivityContext.Provider value={{
     ...state,
     startActivity,
     loadRunning,
     stopActivity,
-    // selectActivity,
-    // deselectActivity,
     saveActivity,
     deleteActivity,
     switchActivity,
     continueActivity,
     loadActivitiesInRange,
     loadActivity,
-    loadUsedTags
+    loadUsedTags,
+    clearActivity,
+
+    isLoadingActivitiesInRange
   }}>
     {children}
   </ActivityContext.Provider>

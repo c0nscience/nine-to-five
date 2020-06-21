@@ -72,7 +72,7 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, 
       <Grid item xs={1}/>
       <Grid item xs={1}/>
       <Grid item xs={10}>
-        {tags && tags.map(t => <Chip data-testid={`tag-${t}`} key={t} label={t} size='small'/>)}
+        {tags && tags.sort().map(t => <Chip data-testid={`tag-${t}`} key={t} label={t} size='small'/>)}
       </Grid>
       <Grid item xs={1}/>
       <Grid item xs={12}>
@@ -100,7 +100,7 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, 
 
 export default () => {
   const {id} = useParams()
-  const {loadActivity, activity, stopActivity, deleteActivity, loadRunning, running, switchActivity, continueActivity} = useActivity()
+  const {loadActivity, activity, stopActivity, deleteActivity, loadRunning, running, switchActivity, continueActivity, clearActivity} = useActivity()
   const history = useHistory()
 
   useEffect(() => {
@@ -114,17 +114,27 @@ export default () => {
       <Detail {...activity}
               isActivityInProgress={typeof running !== 'undefined'}
               stop={() => stopActivity()
+                .then(() => clearActivity())
                 .then(() => history.replace('/'))
               }
-              back={() => history.replace('/')}
-              edit={() => history.push(`/activities/${id}/edit`)}
+              back={() => {
+                clearActivity()
+                history.replace('/')
+              }}
+              edit={() => {
+                clearActivity()
+                history.push(`/activities/${id}/edit`)
+              }}
               onDelete={() => deleteActivity(id)
+                .then(() => clearActivity())
                 .then(() => history.replace('/'))
               }
               onSwitch={a => switchActivity(a)
+                .then(() => clearActivity())
                 .then(a => history.push(`/activities/${a.id}`))
               }
               onContinue={a => continueActivity(a)
+                .then(() => clearActivity())
                 .then(a => history.push(`/activities/${a.id}`))
               }
       />

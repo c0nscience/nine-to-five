@@ -1,6 +1,6 @@
 import {initialState, reducer} from '../reducer'
 import {
-  activitiesInRangeLoaded, activityDeleted,
+  activitiesInRangeLoaded, activityCleared, activityDeleted,
   activityLoaded,
   activityStarted,
   activityStopped, runningActivityLoaded
@@ -106,5 +106,21 @@ describe('Activity Context Reducer', () => {
     const newState = reducer(currentState, action);
 
     expect(newState.activities).toEqual([])
+  })
+
+  it('should clear loaded activity', () => {
+    const currentState = {
+      ...initialState,
+      activity: {
+        id: 'activity-id',
+        name: 'task #1',
+        start: DateTime.local().toISO(),
+        tags: ['tag-1']
+      }
+    }
+
+    const newState = reducer(currentState, activityCleared())
+
+    expect(newState.activity).toBeUndefined()
   })
 })
