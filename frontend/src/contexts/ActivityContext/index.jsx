@@ -34,6 +34,13 @@ export const ActivityProvider = ({children}) => {
   const loadRunning = () => {
     request(get('activity/running')
       .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
+        .catch(e => {
+            if (e.status === 404) {
+                dispatch(runningActivityLoaded(undefined))
+            } else {
+                return e
+            }
+        })
     ).with(LOAD_RUNNING_ACTIVITY)
   }
 
@@ -43,11 +50,6 @@ export const ActivityProvider = ({children}) => {
       .then(tags => dispatch(usedTagsLoaded(tags))))
       .with(LOAD_USED_TAGS)
   }
-
-  // useEffect(() => {
-  //   // loadUsedTags()
-  //   loadRunning()
-  // }, [])
 
   const loadActivitiesInRange = (from, to, signal) => {
     request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)

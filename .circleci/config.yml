@@ -141,9 +141,9 @@ workflows:
             branches:
               only: master
 
-      - test_cli:
-          requires:
-            - checkout_code
+#      - test_cli:
+#          requires:
+#            - checkout_code
       - test_server:
           requires:
             - checkout_code
