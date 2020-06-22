@@ -89,7 +89,7 @@ describe('Day Picker', () => {
     expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-12")
   })
 
-  it('should skip saturday for next day', () => {
+  it.skip('should sp saturday for next day', () => {
     const date = DateTime.fromISO("2020-06-12")
 
     const onChanged = jest.fn()
@@ -101,7 +101,7 @@ describe('Day Picker', () => {
     expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-15")
   })
 
-  it('should skip sunday for next day', () => {
+  it.skip('should skip sunday for next day', () => {
     const date = DateTime.fromISO("2020-06-13")
 
     const onChanged = jest.fn()
