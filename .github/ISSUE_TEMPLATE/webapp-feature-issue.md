@@ -1,7 +1,7 @@
 ---
-name: Feature Issue
+name: Webapp Feature Issue
 about: This issue type describes a new feature
-title: "[FEATURE] ✨Something ✨"
+title: "[FEATURE] ✨Something✨"
 labels: feature, webapp
 assignees: ''
 
