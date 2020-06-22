@@ -7,11 +7,11 @@ assignees: ''
 
 ---
 
-*As* Persona
-*I want* to be able todo
-*So that* I get this done
+**As** Persona
+**I want** to be able todo
+**So that** I get this done
 
-#### Acceptance Criteria
+**Acceptance Criteria**
 ```gherkin
 Given I have this
 And also this
