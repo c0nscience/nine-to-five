@@ -130,11 +130,17 @@ export default () => {
                 .then(() => history.replace('/'))
               }
               onSwitch={a => switchActivity(a)
-                .then(() => clearActivity())
+                .then(a => {
+                  clearActivity()
+                  return a
+                })
                 .then(a => history.push(`/activities/${a.id}`))
               }
               onContinue={a => continueActivity(a)
-                .then(() => clearActivity())
+                .then(a => {
+                  clearActivity()
+                  return a
+                })
                 .then(a => history.push(`/activities/${a.id}`))
               }
       />
