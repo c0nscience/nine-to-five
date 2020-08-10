@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: ${DB_URI}?retryWrites=false
+      uri: ${DB_URI}
 
   jackson:
     default-property-inclusion: non_null
