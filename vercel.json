@@ -4,7 +4,7 @@
   "builds": [
     {"src": "frontend/package.json", "use": "@now/static-build", "config": {"distDir": "build"}}
   ],
-  "regions": ["bru"],
+  "regions": ["arn"],
   "build": {
     "env": {
       "REACT_APP_API_HOST": "https://ntf-japi.herokuapp.com",
