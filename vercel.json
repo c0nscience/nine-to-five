@@ -8,7 +8,7 @@
   "build": {
     "env": {
       "REACT_APP_API_HOST": "https://ntf-japi.herokuapp.com",
-      "REACT_APP_CALLBACK_URL": "https://ninetofive.tech"
+      "REACT_APP_CALLBACK_URL": "https://9to5.app"
     }
   },
   "routes": [
