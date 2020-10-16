@@ -9,7 +9,7 @@ class WebConfiguration : WebFluxConfigurer {
 
   override fun addCorsMappings(registry: CorsRegistry) {
     registry.addMapping("/**")
-      .allowedOrigins("http://localhost:3000", "https://ninetofive.tech")
+      .allowedOrigins("http://localhost:3000", "https://9to5.app")
       .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD")
   }
 
