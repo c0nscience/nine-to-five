@@ -59,6 +59,12 @@ class MetricsService(private val metricConfigurationRepository: MetricConfigurat
               .map { it.minus(configuration.thresholdAsDuration()) }
               .fold(Duration.ZERO) { r, d -> r + d }
 
+            val totalPrevExceedingDuration = metricValues
+              .dropLast(1)
+              .map { it.duration }
+              .map { it.minus(configuration.thresholdAsDuration()) }
+              .fold(Duration.ZERO) { r, d -> r + d }
+
             MetricDetail(
               id = configuration.id!!,
               name = configuration.name,
