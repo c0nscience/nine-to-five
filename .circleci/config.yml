@@ -17,8 +17,8 @@ jobs:
 
   test_server:
     docker:
-      - image: cimg/openjdk:14.0
-      - image: mongo:latest
+      - image: cimg/openjdk:15.0
+      - image: mongo:4.2.11
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
 
