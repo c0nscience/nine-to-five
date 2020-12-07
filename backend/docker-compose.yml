@@ -1,7 +1,7 @@
 version: '3'
 services:
   mongo:
-    image: mongo:latest
+    image: library/mongo:4.2.11
     environment:
       MONGO_INITDB_DATABASE: ntf-db
     ports:
@@ -13,7 +13,7 @@ services:
       - 8081:8081
 
   test-mongodb:
-    image: mongo:latest
+    image: library/mongo:4.2.11
     environment:
       MONGO_INITDB_DATABASE: ntf-db-test
     ports:
