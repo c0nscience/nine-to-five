@@ -1,11 +1,12 @@
 import React, {createContext, useContext, useReducer} from 'react'
 import {createApi} from 'api'
 import {
-  activitiesInRangeLoaded, activityCleared,
+  activitiesInRangeLoaded,
+  activityCleared,
   activityStarted,
   activityStopped,
   LOAD_ACTIVITIES_IN_RANGE,
-  LOAD_USED_TAGS,
+  LOAD_USED_TAGS, REPEAT_ACTIVITY,
   START_ACTIVITY,
   STOP_ACTIVITY,
   usedTagsLoaded
@@ -68,6 +69,11 @@ export const ActivityProvider = ({children}) => {
     ).with(START_ACTIVITY)
   }
 
+  const repeatActivity = ac => {
+    return request(post('activity/repeat', ac))
+      .with(REPEAT_ACTIVITY)
+  }
+
   const stopActivity = () => {
     return request(post('activity/stop')
       .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
@@ -107,6 +113,7 @@ export const ActivityProvider = ({children}) => {
   return <ActivityContext.Provider value={{
     ...state,
     startActivity,
+    repeatActivity,
     loadRunning,
     stopActivity,
     saveActivity,

@@ -108,6 +108,12 @@ class ActivityService(
     .query(Activity::class.java)
     .matching(query(where(Activity::userId).`is`(userId).and(Activity::tags).all(tags)))
     .all()
+
+  fun create(userId: String, name: String, start: LocalDateTime, end: LocalDateTime, tags: List<String>): Mono<Void> {
+    return Mono.just(Activity(userId = userId, name = name, start = start, end = end, tags = tags))
+      .flatMap { activityRepository.save(it) }
+      .thenEmpty(Mono.empty())
+  }
 }
 
 data class UpdateActivity(val id: String, val name: String, val start: LocalDateTime, val end: LocalDateTime?, val tags: List<String>?)
