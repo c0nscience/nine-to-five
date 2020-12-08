@@ -32,6 +32,7 @@ class SecurityConfiguration(private val auth0ConfigurationProperties: Auth0Confi
       .pathMatchers(HEAD, "/activities").hasAuthority("SCOPE_read:activities")
       .pathMatchers(GET, "/activities/tags").hasAuthority("SCOPE_read:activities")
       .pathMatchers(DELETE, "/activities").hasAuthority("SCOPE_delete:activity")
+      .pathMatchers(POST, "/activity/repeat").hasAuthority("SCOPE_start:activity")
 
       .pathMatchers(GET, "/metrics").hasAuthority("SCOPE_read:metrics")
       .pathMatchers(POST, "/metrics").hasAuthority("SCOPE_create:metrics")

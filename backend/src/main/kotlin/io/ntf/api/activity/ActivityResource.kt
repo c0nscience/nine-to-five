@@ -7,13 +7,17 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.util.function.component1
 import reactor.kotlin.core.util.function.component2
 import java.security.Principal
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 
 @RestController
@@ -33,7 +37,11 @@ class ActivityResource(private val activityService: ActivityService) {
       }
 
   @GetMapping("/activities/{from}/{to}")
-  fun allInRange(principal: Mono<Principal>, @PathVariable from: String, @PathVariable to: String): Mono<Map<String, Any>> {
+  fun allInRange(
+    principal: Mono<Principal>,
+    @PathVariable from: String,
+    @PathVariable to: String
+  ): Mono<Map<String, Any>> {
     return principal.map { it.name }
       .zipWith(principal.flatMap { activityService.countBefore(it.name, LocalDate.parse(from)) })
       .flatMap { (name, remainingEntries) ->
@@ -64,7 +72,10 @@ class ActivityResource(private val activityService: ActivityService) {
   }
 
   @PostMapping("/activity")
-  fun start(@RequestBody startActivity: Mono<StartActivity>, principal: Mono<Principal>): Mono<ResponseEntity<Activity>> {
+  fun start(
+    @RequestBody startActivity: Mono<StartActivity>,
+    principal: Mono<Principal>
+  ): Mono<ResponseEntity<Activity>> {
     return principal.map { it.name }
       .zipWith(startActivity)
       .flatMap { (userId, activity) -> activityService.start(userId, activity.name, activity.start, activity.tags) }
@@ -85,7 +96,11 @@ class ActivityResource(private val activityService: ActivityService) {
   }
 
   @PutMapping("/activity/{id}")
-  fun update(@PathVariable("id") id: String, @RequestBody updateActivity: Mono<UpdateActivity>, principal: Mono<Principal>): Mono<Activity> {
+  fun update(
+    @PathVariable("id") id: String,
+    @RequestBody updateActivity: Mono<UpdateActivity>,
+    principal: Mono<Principal>
+  ): Mono<Activity> {
     return principal.map { it.name }
       .zipWith(updateActivity)
       .flatMap { (userId, activity) -> activityService.update(userId, activity) }
@@ -113,6 +128,26 @@ class ActivityResource(private val activityService: ActivityService) {
       .flatMap { activityService.findAllUsedTags(it).collectList() }
   }
 
+  @PostMapping("/activity/repeat")
+  fun repeat(
+    @RequestBody activityWithConfig: Mono<ActivityWithConfig>,
+    principal: Mono<Principal>
+  ): Mono<ResponseEntity<Void>> {
+    return principal.map { it.name }
+      .zipWith(activityWithConfig)
+      .flatMap { (userId, awc) ->
+        val (activity, config) = awc
+        val d = ChronoUnit.DAYS.between(config.from, config.to.plusDays(1))
+
+        Flux.range(0, d.toInt())
+          .map { config.from.plusDays(it.toLong()) }
+          .filter { it.dayOfWeek.value in config.selectedDays }
+          .flatMap { activityService.create(userId = userId, name = activity.name, start = LocalDateTime.of(it, activity.start), end = LocalDateTime.of(it, activity.end), tags = activity.tags) }
+          .then()
+      }
+      .thenReturn(ResponseEntity.status(HttpStatus.CREATED).build())
+  }
+
   data class StartActivity(val name: String, val start: LocalDateTime?, val tags: List<String> = emptyList())
 
   data class DeletedActivity(val id: String?, val start: LocalDateTime)
@@ -123,5 +158,23 @@ class ActivityResource(private val activityService: ActivityService) {
     val start: LocalDateTime,
     val end: LocalDateTime?,
     val tags: List<String> = emptyList()
+  )
+
+  data class ActivityWithConfig(
+    val activity: RepeatActivity,
+    val config: RepeatConfig
+  )
+
+  data class RepeatActivity(
+    val name: String,
+    val tags: List<String> = emptyList(),
+    val start: LocalTime,
+    val end: LocalTime
+  )
+
+  data class RepeatConfig(
+    val from: LocalDate,
+    val to: LocalDate,
+    val selectedDays: List<Int> = emptyList()
   )
 }

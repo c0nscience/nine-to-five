@@ -58,3 +58,5 @@ export const activityLoaded = activity =>
 export const ACTIVITY_CLEARED = 'ACTIVITY_CLEARED'
 export const activityCleared = () =>
   ({type: ACTIVITY_CLEARED})
+
+export const REPEAT_ACTIVITY = 'REPEAT_ACTIVITY'

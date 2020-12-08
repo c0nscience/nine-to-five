@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.security.core.userdetails.User
 import reactor.core.scheduler.Scheduler
 import reactor.core.scheduler.Schedulers
 import reactor.test.StepVerifier
@@ -85,6 +86,15 @@ class ActivityServiceTest {
     StepVerifier.create(activityService.findByUserIdAndTags(USER_ID, listOf("acme", "meeting")))
       .expectNextMatches(activityWith(name = "task #1", start = NOW, end = NOW.plusHours(1), tags = listOf("acme", "meeting")))
       .expectNextMatches(activityWith(name = "task #3", start = NOW.plusHours(1), end = NOW.plusHours(2), tags = listOf("meeting", "acme")))
+      .verifyComplete()
+  }
+
+  @Test
+  internal fun `should create activity with start and end date time`() {
+    activityService.create(userId = USER_ID, name = "ended", start = NOW, end = NOW.plusHours(1), tags = listOf("repeated")).block()
+
+    StepVerifier.create(activityRepository.findByUserIdAndTags(USER_ID, listOf("repeated")))
+      .expectNextMatches(activityWith(name = "ended", start = NOW, end = NOW.plusHours(1), tags = listOf("repeated")))
       .verifyComplete()
   }
 
