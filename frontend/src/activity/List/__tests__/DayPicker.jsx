@@ -121,4 +121,15 @@ describe('Day Picker', () => {
 
     expect(getByTestId('label')).toHaveTextContent('Today')
   })
+
+  it(`should show a date picker on click`, () => {
+    const date = DateTime.local()
+
+    const onChanged = jest.fn()
+    const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
+
+    fireEvent.click(getByTestId('label'))
+
+    expect(getByTestId('date-picker')).toBeVisible()
+  })
 })
