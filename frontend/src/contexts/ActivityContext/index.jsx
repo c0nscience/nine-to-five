@@ -6,14 +6,15 @@ import {
   activityStarted,
   activityStopped,
   LOAD_ACTIVITIES_IN_RANGE,
-  LOAD_USED_TAGS, REPEAT_ACTIVITY,
+  LOAD_USED_TAGS,
+  REPEAT_ACTIVITY,
   START_ACTIVITY,
   STOP_ACTIVITY,
   usedTagsLoaded
 } from './actions'
 import {initialState, reducer} from 'contexts/ActivityContext/reducer'
 import {useNetworkActivity} from 'contexts/NetworkContext'
-import {useAuth} from 'contexts/AuthenticationContext'
+import {useAuth0} from '@auth0/auth0-react'
 import {
   activityDeleted,
   activityLoaded,
@@ -28,9 +29,9 @@ const ActivityContext = createContext()
 
 export const ActivityProvider = ({children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const {getTokenSilently} = useAuth()
+  const {getAccessTokenSilently} = useAuth0()
   const {addNetworkActivity, removeNetworkActivity, isLoading} = useNetworkActivity()
-  const {get, post, put, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
+  const {get, post, put, del, request} = createApi(getAccessTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadRunning = () => {
     request(get('activity/running')
