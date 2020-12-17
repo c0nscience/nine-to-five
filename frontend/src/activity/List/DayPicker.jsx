@@ -2,12 +2,14 @@ import React, {useEffect, useState} from 'react'
 import Typography from '@material-ui/core/Typography'
 import {DateTime} from 'luxon'
 import IconButton from '@material-ui/core/IconButton'
+import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import {ArrowBackIos, ArrowForwardIos} from '@material-ui/icons'
 import Grid from '@material-ui/core/Grid'
 import {makeStyles} from '@material-ui/core/styles'
 import {Popover} from "@material-ui/core";
 import LuxonUtils from "@date-io/luxon";
 import {DatePicker, MuiPickersUtilsProvider} from "@material-ui/pickers";
+import {useAuth0} from '@auth0/auth0-react'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -23,6 +25,7 @@ const noOp = () => {
 
 export default ({date, onChanged = noOp}) => {
   const classes = useStyles()
+  const {logout} = useAuth0()
   const [currentDate, setCurrentDate] = useState(DateTime.local())
   const [anchorEl, setAnchorEl] = React.useState(null)
 
@@ -97,7 +100,7 @@ export default ({date, onChanged = noOp}) => {
         </div>
       </Popover>
     </Grid>
-    <Grid item xs={4} style={{textAlign: 'start'}}>
+    <Grid item xs={2} style={{textAlign: 'start'}}>
       <IconButton data-testid='next'
                   onClick={() => {
                     setCurrentDate(d => {
@@ -107,6 +110,14 @@ export default ({date, onChanged = noOp}) => {
                     })
                   }}>
         <ArrowForwardIos/>
+      </IconButton>
+    </Grid>
+    <Grid item xs={2} style={{textAlign: 'start'}}>
+      <IconButton data-testid='logout'
+                  onClick={() => {
+                    logout()
+                  }}>
+        <ExitToAppIcon/>
       </IconButton>
     </Grid>
   </Grid>
