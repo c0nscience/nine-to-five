@@ -4,7 +4,6 @@ const url = (endpoint) => {
   return `${BASE_URL}/${endpoint}`
 }
 
-//TODO handle expired token properly
 const authorizationHeader = async (getToken) => {
   const token = await getToken()
   return {
@@ -40,7 +39,9 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
             removeNetworkActivity(networkActivity)
             return d
           })
-          .catch(() => removeNetworkActivity(networkActivity))
+          .catch(e => {
+            removeNetworkActivity(networkActivity)
+          })
       }
     }
   }
