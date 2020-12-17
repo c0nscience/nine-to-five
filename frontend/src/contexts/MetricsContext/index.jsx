@@ -1,5 +1,5 @@
 import React, {createContext, useContext, useReducer} from 'react'
-import {useAuth0} from '@auth0/auth0-react'
+import {useAuth} from 'contexts/AuthenticationContext'
 import {useNetworkActivity} from 'contexts/NetworkContext'
 import {createApi} from 'api'
 import {initialState, reducer} from 'contexts/MetricsContext/reducer'
@@ -13,9 +13,9 @@ const MetricsContext = createContext()
 
 export const MetricsProvider = ({children}) => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const {getAccessTokenSilently} = useAuth0()
+  const {getTokenSilently} = useAuth()
   const {addNetworkActivity, removeNetworkActivity} = useNetworkActivity()
-  const {get, post, del, request} = createApi(getAccessTokenSilently, addNetworkActivity, removeNetworkActivity)
+  const {get, post, del, request} = createApi(getTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadMetricConfigurations = () => {
     request(get('metrics')

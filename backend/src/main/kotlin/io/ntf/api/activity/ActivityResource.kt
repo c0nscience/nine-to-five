@@ -47,6 +47,7 @@ class ActivityResource(private val activityService: ActivityService) {
       .flatMap { (name, remainingEntries) ->
         activityService.allInRange(name, LocalDate.parse(from), LocalDate.parse(to)).collectList()
           .map {
+            log.info("remaining entries $remainingEntries for $name")
             mapOf(
               "entries" to it,
               "remainingEntries" to remainingEntries
