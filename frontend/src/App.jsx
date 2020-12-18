@@ -35,7 +35,8 @@ const App = () => {
                         onRedirectCallback={onRedirectCallback}
                         audience='https://api.ntf.io'
                         scope='openid read:activities start:activity stop:activity update:activity delete:activity read:metrics create:metrics delete:metrics update:metric'
-                        cacheLocation='localstorage'>
+                        cacheLocation='localstorage'
+                        useRefreshTokens={true}>
     <Router history={history}>
       <NetworkActivityProvider>
         <TitleProvider>
