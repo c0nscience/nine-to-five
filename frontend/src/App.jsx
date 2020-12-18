@@ -18,14 +18,14 @@ import {createBrowserHistory} from 'history'
 
 const history = createBrowserHistory()
 
-const ProtectedRoute = ({ component, ...args }) => (
+const ProtectedRoute = ({component, ...args}) => (
   <Route component={withAuthenticationRequired(component)} {...args} />
-);
+)
 
 const onRedirectCallback = (appState) => {
   // Use the router's history module to replace the url
-  history.replace(appState?.returnTo || window.location.pathname);
-};
+  history.replace(appState?.returnTo || window.location.pathname)
+}
 
 
 const App = () => {
@@ -34,7 +34,8 @@ const App = () => {
                         redirectUri={process.env.REACT_APP_CALLBACK_URL}
                         onRedirectCallback={onRedirectCallback}
                         audience='https://api.ntf.io'
-                        scope='openid read:activities start:activity stop:activity update:activity delete:activity read:metrics create:metrics delete:metrics update:metric'>
+                        scope='openid read:activities start:activity stop:activity update:activity delete:activity read:metrics create:metrics delete:metrics update:metric'
+                        cacheLocation='localstorage'>
     <Router history={history}>
       <NetworkActivityProvider>
         <TitleProvider>
