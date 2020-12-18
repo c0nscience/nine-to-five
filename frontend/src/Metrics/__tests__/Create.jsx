@@ -1,9 +1,10 @@
 import '@testing-library/jest-dom'
 
 import React from 'react'
-import {fireEvent, render} from '@testing-library/react'
+import {fireEvent, getByTestId, render} from '@testing-library/react'
 import {CreatePage} from '../CreatePage'
 import {useHistory} from 'react-router'
+import {within} from "@testing-library/dom";
 
 jest.mock('react-router')
 
@@ -47,10 +48,12 @@ describe('Create Metric Page', () => {
     })
 
     it('should contain \'week\' as time unit', () => {
-      const {getByRole, getAllByRole} = render(<CreatePage/>)
+      const {getByRole, getByTestId, debug} = render(<CreatePage/>)
+      const {getByRole: childByRole} = within(getByTestId('time-unit'))
+      const button = childByRole['button'];
+      fireEvent.click(button)
 
-      fireEvent.mouseDown(getAllByRole('button')[0])
-
+debug()
       expect(getByRole('option')).toHaveTextContent('Week')
     })
   })

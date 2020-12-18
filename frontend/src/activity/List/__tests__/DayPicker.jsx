@@ -128,7 +128,8 @@ describe('Day Picker', () => {
     const onChanged = jest.fn()
     const {getByTestId} = render(<DayPicker date={date} onChanged={onChanged}/>)
 
-    fireEvent.click(getByTestId('label'))
+    const label = getByTestId('label')
+    fireEvent.click(label)
 
     expect(getByTestId('date-picker')).toBeVisible()
   })
