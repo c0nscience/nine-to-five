@@ -104,7 +104,6 @@ const ActivityItem = forwardRef(({id, name, start: _start, end: _end, tags = [],
     <ListItem ref={ref}
               className={classes.item}
               disableGutters
-              disabled={isInTheFuture}
               button
               onClick={() => history.push(`/activities/${id}`)}
     >
