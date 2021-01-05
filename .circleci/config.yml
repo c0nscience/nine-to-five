@@ -190,6 +190,7 @@ workflows:
           app-name: ntf-japi
 
       - heroku/deploy-via-git:
+          name: deploy gpi
           requires:
             - test_gpi
           app-name: ntf-gpi
