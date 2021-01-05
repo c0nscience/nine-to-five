@@ -180,31 +180,33 @@ workflows:
       - test_server:
           name: test legacy api
           requires:
-            - checkout_code
+            - checkout code
       - test_frontend:
           name: test frontend
           requires:
-            - checkout_code
+            - checkout code
       - test_gpi:
           name: test golang api
           requires:
-            - checkout_code
+            - checkout code
 
       - heroku/deploy-via-git:
           name: deploy legacy api
           requires:
-            - test_server
-            - test_frontend
+            - test legacy api
+            - test frontend
           app-name: ntf-japi
 
       - heroku/deploy-via-git:
           name: deploy gpi
           requires:
-            - test_gpi
+            - test golang api
+            - test frontend
           app-name: ntf-gpi
 
       - deploy_frontend:
           name: deploy frontend
           requires:
-            - test_server
-            - test_frontend
+            - test golang api
+            - test legacy api
+            - test frontend
