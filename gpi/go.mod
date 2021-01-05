@@ -1,5 +1,5 @@
 module github.com/c0nscience/nine-to-five/gpi
-
+// +heroku goVersion go1.15
 go 1.15
 
 require (
