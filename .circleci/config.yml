@@ -155,6 +155,11 @@ workflows:
           requires:
             - test_server
             - test_frontend
+          app-name: ntf-japi
+
+      - heroku/deploy-via-git:
+          app-name: ntf-gpi
+
       - deploy_frontend:
           requires:
             - test_server
