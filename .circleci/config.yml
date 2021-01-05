@@ -169,6 +169,7 @@ workflows:
   build-and-deploy:
     jobs:
       - checkout_code:
+          name: checkout code
           filters:
             branches:
               only: master
@@ -177,16 +178,20 @@ workflows:
 #          requires:
 #            - checkout_code
       - test_server:
+          name: test legacy api
           requires:
             - checkout_code
       - test_frontend:
+          name: test frontend
           requires:
             - checkout_code
       - test_gpi:
+          name: test golang api
           requires:
             - checkout_code
 
       - heroku/deploy-via-git:
+          name: deploy legacy api
           requires:
             - test_server
             - test_frontend
@@ -199,6 +204,7 @@ workflows:
           app-name: ntf-gpi
 
       - deploy_frontend:
+          name: deploy frontend
           requires:
             - test_server
             - test_frontend
