@@ -44,13 +44,43 @@ const DeleteConfirmationDialog = ({open, onCancel, onDelete}) => <Dialog
   </DialogActions>
 </Dialog>
 
-export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, onDelete, isActivityInProgress, onSwitch, onContinue}) => {
+const updateInterval = 30000
+let timeUpdater
+
+export const Detail = ({
+                         start: _start,
+                         end: _end,
+                         name,
+                         tags,
+                         stop,
+                         back,
+                         edit,
+                         onDelete,
+                         isActivityInProgress,
+                         onSwitch,
+                         onContinue
+                       }) => {
   const classes = useStyles()
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false)
   const start = DateTime.fromISO(_start, {zone: 'utc'}).toLocal()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
-  const endOrNow = end || DateTime.local()
+  const [endOrNow, setEndOrNow] = useState(end || DateTime.local())
   const duration = endOrNow.diff(start)
+
+  useEffect(() => {
+    if (end) {
+      return
+    }
+    timeUpdater = setInterval(() => {
+      console.log("update time")
+      setEndOrNow(DateTime.local())
+    }, updateInterval)
+    return () => {
+      if (timeUpdater) {
+        clearInterval(timeUpdater)
+      }
+    }
+  })
 
   return <>
     <DeleteConfirmationDialog open={openConfirmDialog}
@@ -100,7 +130,17 @@ export const Detail = ({start: _start, end: _end, name, tags, stop, back, edit, 
 
 export default () => {
   const {id} = useParams()
-  const {loadActivity, activity, stopActivity, deleteActivity, loadRunning, running, switchActivity, continueActivity, clearActivity} = useActivity()
+  const {
+    loadActivity,
+    activity,
+    stopActivity,
+    deleteActivity,
+    loadRunning,
+    running,
+    switchActivity,
+    continueActivity,
+    clearActivity
+  } = useActivity()
   const history = useHistory()
 
   useEffect(() => {
