@@ -140,8 +140,6 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            export DB_URI='mongodb://localhost:27018/ntf-db-test?retryWrites=false'
-            export DB_NAME='ntf-db-test'
             cd gpi/internal
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
