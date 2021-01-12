@@ -1,7 +1,11 @@
 const BASE_URL = process.env.REACT_APP_API_HOST
+const BASE_URL_GPI = process.env.REACT_APP_GPI_HOST
 
-const url = (endpoint) => {
-  return `${BASE_URL}/${endpoint}`
+const url = (endpoint, url) => {
+  if (!url) {
+    url = BASE_URL
+  }
+  return `${url}/${endpoint}`
 }
 
 const authorizationHeader = async (getToken) => {
@@ -66,9 +70,13 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       }))
   }
 
-  const post = (endpoint, body) => {
+  const post = (endpoint, body, gpi) => {
+    let u = url(endpoint)
+    if (gpi) {
+      u = url(endpoint, BASE_URL_GPI)
+    }
     return authorizationHeader(getToken)
-      .then(token => fetch(url(endpoint), {
+      .then(token => fetch(u, {
         method: 'POST',
         body: JSON.stringify(body),
         headers: {
