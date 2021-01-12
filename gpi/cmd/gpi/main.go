@@ -17,6 +17,8 @@ import (
 )
 
 func main() {
+	setupLog()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "9000"
@@ -25,8 +27,6 @@ func main() {
 	dbUri := os.Getenv("DB_URI")
 	dbName := os.Getenv("DB_NAME")
 	mongoClient := store.New(dbUri, dbName)
-
-	setupLog()
 
 	r := mux.NewRouter()
 
