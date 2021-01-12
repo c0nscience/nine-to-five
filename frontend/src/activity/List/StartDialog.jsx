@@ -10,7 +10,7 @@ import {TagField} from 'component/TagField'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import {callValueWith} from 'functions'
-import {DatePicker, DateTimePicker, TimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers'
+import {DatePicker, DateTimePicker, MuiPickersUtilsProvider, TimePicker} from '@material-ui/pickers'
 import {DateTime} from 'luxon'
 import LuxonUtils from '@date-io/luxon'
 import {useActivity} from 'contexts/ActivityContext'
@@ -29,6 +29,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const [name, setName] = useState('')
   const [tags, setTags] = useState([])
+  //TODO the state gets more complicated, introduce a reducer to have it better understandable what the dataflow is
   const [showStartDateTimePicker, setShowStartDateTimePicker] = useState(false)
   const [repeatActivity, setRepeatActivity] = useState(false)
   const [startDateTime, setStartDateTime] = useState(DateTime.local())
@@ -60,7 +61,22 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
   }
 
   return <Dialog open={open}
-                 fullScreen={fullScreen}>
+                 fullScreen={fullScreen}
+                 onExit={() => {
+                   setShowStartDateTimePicker(false)
+                   setRepeatActivity(false)
+                   setName("")
+                   setTags([])
+                 }}
+                 onEnter={() => {
+                   setStartDateTime(DateTime.local())
+
+                   setStartTime(DateTime.local())
+                   setEndTime(DateTime.local())
+
+                   setFromDate(DateTime.local())
+                   setToDate(DateTime.local())
+                 }}>
     <DialogTitle>Start New Activity</DialogTitle>
     <DialogContent>
       <form>
