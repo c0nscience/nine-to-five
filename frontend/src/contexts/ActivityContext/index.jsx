@@ -62,7 +62,7 @@ export const ActivityProvider = ({children}) => {
   const isLoadingActivitiesInRange = () => isLoading(LOAD_ACTIVITIES_IN_RANGE)
 
   const startActivity = activity => {
-    return request(post('activity', activity)
+    return request(post('activity', activity, true)
       .then(activity => {
         dispatch(activityStarted(activity))
         return activity

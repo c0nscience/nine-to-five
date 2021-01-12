@@ -119,6 +119,9 @@ jobs:
   test_gpi:
     docker:
       - image: cimg/go:1.15
+      - image: mongo:4.2.11
+        environment:
+          MONGO_INITDB_DATABASE: ntf-db-test
 
     environment:
       TEST_RESULTS: /tmp/test-results
@@ -137,7 +140,9 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            cd gpi
+            export DB_URI='mongodb://localhost:27018/ntf-db-test?retryWrites=false'
+            export DB_NAME='ntf-db-test'
+            cd gpi/internal
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 
