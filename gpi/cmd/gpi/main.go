@@ -7,6 +7,7 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/logger"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
+	_ "github.com/heroku/x/hmetrics/onload"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
