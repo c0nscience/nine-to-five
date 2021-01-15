@@ -6,6 +6,7 @@ import (
 	"errors"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"time"
 )
@@ -49,17 +50,22 @@ func validationKeyGetter(token *jwt.Token) (interface{}, error) {
 	checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(audience, false)
 
 	if !checkAud {
-		return token, errors.New("Invalid Audience")
+		err := errors.New("Invalid Audience")
+		log.Error().Err(err)
+		return token, err
 	}
 
 	checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(issuer, false)
 
 	if !checkIss {
-		return token, errors.New("Invalid Issuer")
+		err := errors.New("Invalid Issuer")
+		log.Error().Err(err)
+		return token, err
 	}
 
 	cert, err := getPemCert(token)
 	if err != nil {
+		log.Error().Err(err)
 		return nil, err
 	}
 
@@ -97,8 +103,7 @@ func getPemCert(token *jwt.Token) (string, error) {
 	}
 
 	if cert == "" {
-		err := errors.New("Unable to find correct key")
-		return cert, err
+		return cert, errors.New("Unable to find correct key")
 	}
 
 	return cert, nil
