@@ -2,6 +2,7 @@ package activity
 
 import (
 	"encoding/json"
+	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/rs/zerolog/log"
@@ -13,7 +14,9 @@ import (
 
 func Start(store *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		token, ok := r.Context().Value("user").(*jwt.Token)
+		clock.Track(start, "handlers.Start::get-jwt-from-context")
 
 		if !ok {
 			log.Error().Msg("Token not found")
@@ -21,7 +24,9 @@ func Start(store *store.Store) http.HandlerFunc {
 			return
 		}
 
+		start = time.Now()
 		userId, ok := token.Claims.(jwt.MapClaims)["sub"].(string)
+		clock.Track(start, "handlers.Start::get-user-id")
 
 		if !ok {
 			log.Error().Msg("User Id not found")
@@ -30,8 +35,10 @@ func Start(store *store.Store) http.HandlerFunc {
 		}
 
 		bdy := startActivity{}
+		start = time.Now()
 		b, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(b, &bdy)
+		clock.Track(start, "handlers.Start::read-and-unmarshal-body")
 		defer r.Body.Close()
 		if err != nil {
 			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
@@ -39,11 +46,13 @@ func Start(store *store.Store) http.HandlerFunc {
 		}
 
 		var a *Activity
+		start = time.Now()
 		if bdy.Start == nil {
 			a = New(userId, bdy.Name, bdy.Tags)
 		} else {
 			a = NewWithStart(userId, bdy.Name, *bdy.Start, bdy.Tags)
 		}
+		clock.Track(start, "handlers.Start::create-activity")
 
 		id, err := store.Save(r.Context(), userId, a)
 
@@ -55,10 +64,14 @@ func Start(store *store.Store) http.HandlerFunc {
 		a.Id = id.(primitive.ObjectID)
 
 		w.Header().Set("Content-Type", "application/json")
+		start = time.Now()
 		b, err = json.Marshal(a)
+		clock.Track(start, "handlers.Start::marshal-json")
 		if err != nil {
 			http.Error(w, "Wrong data format", http.StatusInternalServerError)
+			return
 		}
+
 		w.WriteHeader(http.StatusCreated)
 		w.Write(b)
 	}

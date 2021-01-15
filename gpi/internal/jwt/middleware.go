@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -47,6 +48,7 @@ func Middleware() *jwtmiddleware.JWTMiddleware {
 }
 
 func validationKeyGetter(token *jwt.Token) (interface{}, error) {
+	defer clock.Track(time.Now(), "middleware.validationKeyGetter")
 	checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(audience, false)
 
 	if !checkAud {
@@ -74,6 +76,7 @@ func validationKeyGetter(token *jwt.Token) (interface{}, error) {
 }
 
 func getPemCert(token *jwt.Token) (string, error) {
+	defer clock.Track(time.Now(), "middleware.getPemCert")
 	cert := ""
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
