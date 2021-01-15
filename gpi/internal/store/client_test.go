@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const timeout = 10 * time.Millisecond
+const timeout = 100 * time.Millisecond
 
 func TestStore_New(t *testing.T) {
 	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
