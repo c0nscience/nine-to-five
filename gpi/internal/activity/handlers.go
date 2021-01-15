@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
 	"net/http"
@@ -15,6 +16,7 @@ func Start(store *store.Store) http.HandlerFunc {
 		token, ok := r.Context().Value("user").(*jwt.Token)
 
 		if !ok {
+			log.Error().Msg("Token not found")
 			http.Error(w, "Token not found", http.StatusBadRequest)
 			return
 		}
@@ -22,6 +24,7 @@ func Start(store *store.Store) http.HandlerFunc {
 		userId, ok := token.Claims.(jwt.MapClaims)["sub"].(string)
 
 		if !ok {
+			log.Error().Msg("User Id not found")
 			http.Error(w, "User Id not found", http.StatusBadRequest)
 			return
 		}
