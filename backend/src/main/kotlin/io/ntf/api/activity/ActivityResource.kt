@@ -23,20 +23,72 @@ import java.time.temporal.ChronoUnit
 @RestController
 class ActivityResource(private val activityService: ActivityService) {
 
-  private val log = logger()
+  @PostMapping("/activity")//✅
+  fun start(
+    @RequestBody startActivity: Mono<StartActivity>,
+    principal: Mono<Principal>
+  ): Mono<ResponseEntity<Activity>> {
+    return principal.map { it.name }
+      .zipWith(startActivity)
+      .flatMap { (userId, activity) -> activityService.start(userId, activity.name, activity.start, activity.tags) }
+      .map { activity -> ResponseEntity.status(HttpStatus.CREATED).body(activity) }
+  }
 
-  @RequestMapping(value = ["/activities"], method = [RequestMethod.HEAD])
-  fun headLastModified(principal: Mono<Principal>) =
-    principal
-      .map { it.name }
-      .flatMap { activityService.getLastModifiedDate(it) }
-      .map { lastModifiedDate ->
-        ResponseEntity.ok()
-          .header("Last-Modified", lastModifiedDate.format(DateTimeFormatter.ISO_DATE_TIME))
-          .build<Unit>()
+  @GetMapping("/activity/running")//✅
+  fun running(principal: Mono<Principal>): Mono<Activity> {
+    return principal.map { it.name }
+      .flatMap { activityService.running(it) }
+      .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
+  }
+
+  @PostMapping("/activity/stop")//✅
+  fun stop(principal: Mono<Principal>): Mono<Activity> {
+    return principal.map { it.name }
+      .flatMap { activityService.stop(it) }
+  }
+
+  @GetMapping("/activities/{id}")//TODO
+  fun getActivity(principal: Mono<Principal>, @PathVariable id: String): Mono<ActivityDetail> {
+    return principal.name()
+      .flatMap { userId -> activityService.findByUserIdAndId(userId, id) }
+      .map { activity ->
+        ActivityDetail(
+          id = activity.id!!,
+          name = activity.name,
+          start = activity.start,
+          end = activity.end,
+          tags = activity.tags
+        )
       }
+  }
 
-  @GetMapping("/activities/{from}/{to}")
+  @PutMapping("/activity/{id}")//TODO
+  fun update(
+    @PathVariable("id") id: String,
+    @RequestBody updateActivity: Mono<UpdateActivity>,
+    principal: Mono<Principal>
+  ): Mono<Activity> {
+    return principal.map { it.name }
+      .zipWith(updateActivity)
+      .flatMap { (userId, activity) -> activityService.update(userId, activity) }
+      .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
+  }
+
+  @DeleteMapping("/activity/{id}")//TODO
+  fun delete(@PathVariable("id") id: String, principal: Mono<Principal>): Mono<DeletedActivity> {
+    return principal.map { it.name }
+      .flatMap { userId -> activityService.delete(userId, id) }
+      .map { (id1, _, _, start) -> DeletedActivity(id = id1, start = start) }
+      .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
+  }
+
+  @GetMapping("/activities/tags")//TODO
+  fun getAllTags(principal: Mono<Principal>): Mono<List<String>> {
+    return principal.map { it.name }
+      .flatMap { activityService.findAllUsedTags(it).collectList() }
+  }
+
+  @GetMapping("/activities/{from}/{to}")//TODO
   fun allInRange(
     principal: Mono<Principal>,
     @PathVariable from: String,
@@ -55,79 +107,7 @@ class ActivityResource(private val activityService: ActivityService) {
       }
   }
 
-  @GetMapping("/activities/{id}")
-  fun getActivity(principal: Mono<Principal>, @PathVariable id: String): Mono<ActivityDetail> {
-    return principal.name()
-      .flatMap { userId -> activityService.findByUserIdAndId(userId, id) }
-      .map { activity ->
-        ActivityDetail(
-          id = activity.id!!,
-          name = activity.name,
-          start = activity.start,
-          end = activity.end,
-          tags = activity.tags
-        )
-      }
-  }
-
-  @PostMapping("/activity")
-  fun start(
-    @RequestBody startActivity: Mono<StartActivity>,
-    principal: Mono<Principal>
-  ): Mono<ResponseEntity<Activity>> {
-    return principal.map { it.name }
-      .zipWith(startActivity)
-      .flatMap { (userId, activity) -> activityService.start(userId, activity.name, activity.start, activity.tags) }
-      .map { activity -> ResponseEntity.status(HttpStatus.CREATED).body(activity) }
-  }
-
-  @GetMapping("/activity/running")
-  fun running(principal: Mono<Principal>): Mono<Activity> {
-    return principal.map { it.name }
-      .flatMap { activityService.running(it) }
-      .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
-  }
-
-  @PostMapping("/activity/stop")
-  fun stop(principal: Mono<Principal>): Mono<Activity> {
-    return principal.map { it.name }
-      .flatMap { activityService.stop(it) }
-  }
-
-  @PutMapping("/activity/{id}")
-  fun update(
-    @PathVariable("id") id: String,
-    @RequestBody updateActivity: Mono<UpdateActivity>,
-    principal: Mono<Principal>
-  ): Mono<Activity> {
-    return principal.map { it.name }
-      .zipWith(updateActivity)
-      .flatMap { (userId, activity) -> activityService.update(userId, activity) }
-      .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
-  }
-
-  @DeleteMapping("/activity/{id}")
-  fun delete(@PathVariable("id") id: String, principal: Mono<Principal>): Mono<DeletedActivity> {
-    return principal.map { it.name }
-      .flatMap { userId -> activityService.delete(userId, id) }
-      .map { (id1, _, _, start) -> DeletedActivity(id = id1, start = start) }
-      .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
-  }
-
-  @DeleteMapping("/activities")
-  fun deleteAll(@RequestBody idsToDelete: Mono<List<String>>, principal: Mono<Principal>): Mono<ResponseEntity<Void>> {
-    return principal.map { it.name }
-      .flatMap { userId -> activityService.deleteAll(userId, idsToDelete) }
-      .thenReturn(ResponseEntity.noContent().build<Void>())
-  }
-
-  @GetMapping("/activities/tags")
-  fun getAllTags(principal: Mono<Principal>): Mono<List<String>> {
-    return principal.map { it.name }
-      .flatMap { activityService.findAllUsedTags(it).collectList() }
-  }
-
-  @PostMapping("/activity/repeat")
+  @PostMapping("/activity/repeat")//TODO
   fun repeat(
     @RequestBody activityWithConfig: Mono<ActivityWithConfig>,
     principal: Mono<Principal>

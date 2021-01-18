@@ -30,13 +30,6 @@ class ActivityService(
     return activityRepository.findByUserIdAndId(userId, id)
   }
 
-  fun getLastModifiedDate(name: String): Mono<LocalDateTime> {
-    return activityRepository.findByUserIdOrderByLastModifiedDateDesc(name)
-      .take(1)
-      .toMono()
-      .map { it.lastModifiedDate }
-  }
-
   fun start(
     userId: String,
     name: String,
@@ -88,13 +81,6 @@ class ActivityService(
 
   fun countBefore(userId: String, until: LocalDate): Mono<Long> {
     return activityRepository.countByUserIdAndStartBefore(userId, until.atStartOfDay())
-  }
-
-  fun deleteAll(userId: String, idsToDelete: Mono<List<String>>): Mono<Void> {
-    return activityRepository.findAllById(idsToDelete.flatMapIterable { it })
-      .filter { it.userId == userId }
-      .collectList()
-      .flatMap { activityRepository.deleteAll(Flux.fromIterable(it)) }
   }
 
   fun findAllUsedTags(userId: String): Flux<String> = mongoTemplate

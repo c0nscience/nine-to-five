@@ -27,7 +27,7 @@ func (me *Activity) SetObjectId(id primitive.ObjectID) {
 }
 
 func New(userId, name string, tags []string) *Activity {
-	return NewWithStart(userId, name, clock.Now(), tags)
+	return NewWithStart(userId, name, clock.Now().UTC(), tags)
 }
 
 func NewWithStart(userId, name string, start time.Time, tags []string) *Activity {
@@ -41,5 +41,5 @@ func NewWithStart(userId, name string, start time.Time, tags []string) *Activity
 }
 
 func (a *Activity) Stop() {
-	a.End = clock.Adjust(clock.Now())
+	a.End = clock.Adjust(clock.Now().UTC())
 }
