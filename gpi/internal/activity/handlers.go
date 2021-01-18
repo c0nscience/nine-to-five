@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -146,6 +147,36 @@ func Running(store *store.Store) http.HandlerFunc {
 	}
 }
 
+func Get(store *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		vars := mux.Vars(r)
+
+		var activity Activity
+		err = store.Find(r.Context(), userId, byId(userId, vars["id"]), &activity)
+		if err != nil {
+			http.Error(w, "Activity not found", http.StatusNotFound)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, activity)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func runningBy(userId string) bson.M {
 	return bson.M{"userId": userId, "end": nil}
+}
+
+func byId(userId, id string) bson.M {
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	return bson.M{"userId": userId, "_id": objectID}
 }

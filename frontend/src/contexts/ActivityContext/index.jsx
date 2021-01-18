@@ -102,7 +102,7 @@ export const ActivityProvider = ({children}) => {
   }
 
   const loadActivity = id => {
-    request(get(`activities/${id}`)
+    request(get(`activities/${id}`, undefined, true)
       .then(activity => dispatch(activityLoaded(activity)))
     ).with(LOAD_ACTIVITY)
   }

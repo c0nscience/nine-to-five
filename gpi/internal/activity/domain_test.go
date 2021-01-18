@@ -30,6 +30,10 @@ func Test_Activity(t *testing.T) {
 		t.Run("should have a start set", func(t *testing.T) {
 			assert.Equal(t, now.Unix(), subj.Start.Unix())
 		})
+
+		t.Run("should have time in UTC", func(t *testing.T) {
+			assert.Equal(t, time.UTC, subj.Start.Location())
+		})
 	})
 
 	t.Run("NewWithStart", func(t *testing.T) {
@@ -51,10 +55,15 @@ func Test_Activity(t *testing.T) {
 			clock.SetTime(300)
 			a := activity.New("userId", "new activity", []string{})
 
-			assert.NotEqual(t, clock.Now(), a.End)
+			assert.NotEqual(t, clock.Now().Unix(), a.End.Unix())
 			clock.SetTime(600)
 			a.Stop()
-			assert.Equal(t, clock.Now(), a.End)
+			assert.Equal(t, clock.Now().Unix(), a.End.Unix())
+
+			t.Run("in UTC", func(t *testing.T) {
+				assert.Equal(t, time.UTC, a.End.Location())
+			})
 		})
+
 	})
 }

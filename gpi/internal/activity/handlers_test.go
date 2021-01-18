@@ -11,6 +11,7 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -183,7 +184,52 @@ func Test_Running(t *testing.T) {
 	})
 }
 
+func Test_Get(t *testing.T) {
+	var err error
+	privateKey, err = readPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+
+	t.Run("should return activity by id", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		defer mongoDbCli.DeleteAll(ctx, userId)
+		clock.SetTime(300)
+
+		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
+		startResp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+
+		startAct := activity.Activity{}
+		json.Unmarshal(startResp.Body.Bytes(), &startAct)
+
+		resp := makeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/"+startAct.Id.Hex(), "")
+
+		assert.Equal(t, http.StatusOK, resp.Code)
+
+		subj := activity.Activity{}
+		json.Unmarshal(resp.Body.Bytes(), &subj)
+
+		assert.Equal(t, startAct, subj)
+	})
+
+	t.Run("should return not found if activity does not exist", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		defer mongoDbCli.DeleteAll(ctx, userId)
+
+		resp := makeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/notexisting", "")
+
+		assert.Equal(t, http.StatusNotFound, resp.Code)
+	})
+}
+
 func makeAuthenticatedRequest(h http.HandlerFunc, userId, method, path, body string) *httptest.ResponseRecorder {
+	return makeAuthenticatedRequestWithPattern(h, "", userId, method, path, body)
+}
+func makeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, method, path, body string) *httptest.ResponseRecorder {
 	var buf io.Reader
 	if body != "" {
 		buf = bytes.NewBufferString(body)
@@ -200,7 +246,13 @@ func makeAuthenticatedRequest(h http.HandlerFunc, userId, method, path, body str
 
 	resp := httptest.NewRecorder()
 
-	JWT().Handler(h).ServeHTTP(resp, req)
+	if pattern == "" {
+		JWT().Handler(h).ServeHTTP(resp, req)
+	} else {
+		r := mux.NewRouter()
+		r.Handle(pattern, JWT().Handler(h)).Methods(method)
+		r.ServeHTTP(resp, req)
+	}
 
 	return resp
 }
