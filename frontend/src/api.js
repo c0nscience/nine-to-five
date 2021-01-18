@@ -57,9 +57,10 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
     }
   }
 
-  const get = (endpoint, signal) => {
+  const get = (endpoint, signal, gpi) => {
+    const u = resolveUrl(endpoint, gpi)
     return authorizationHeader(getToken)
-      .then(token => fetch(url(endpoint), {
+      .then(token => fetch(u, {
         method: 'GET',
         headers: {...token},
         mode: 'cors',

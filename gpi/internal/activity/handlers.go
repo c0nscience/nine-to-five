@@ -3,7 +3,6 @@ package activity
 import (
 	"encoding/json"
 	"errors"
-	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,10 +27,8 @@ func Start(store *store.Store) http.HandlerFunc {
 		}
 
 		bdy := startActivity{}
-		start := time.Now()
 		b, _ := ioutil.ReadAll(r.Body)
 		err = json.Unmarshal(b, &bdy)
-		clock.Track(start, "handlers.Start::read-and-unmarshal-body")
 		defer r.Body.Close()
 		if err != nil {
 			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
@@ -39,13 +36,11 @@ func Start(store *store.Store) http.HandlerFunc {
 		}
 
 		var a *Activity
-		start = time.Now()
 		if bdy.Start == nil {
 			a = New(userId, bdy.Name, bdy.Tags)
 		} else {
 			a = NewWithStart(userId, bdy.Name, *bdy.Start, bdy.Tags)
 		}
-		clock.Track(start, "handlers.Start::create-activity")
 
 		id, err := store.Save(r.Context(), userId, a)
 
@@ -58,24 +53,20 @@ func Start(store *store.Store) http.HandlerFunc {
 
 		err = jsonResponse(w, http.StatusCreated, a)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
 func userId(r *http.Request) (string, error) {
-	start := time.Now()
 	token, ok := r.Context().Value("user").(*jwt.Token)
-	clock.Track(start, "handlers.Start::get-jwt-from-context")
 
 	if !ok {
 		return "", errors.New("Token not found")
 	}
 
-	start = time.Now()
 	userId, ok := token.Claims.(jwt.MapClaims)["sub"].(string)
-	clock.Track(start, "handlers.Start::get-user-id")
 
 	if !ok {
 		return "", errors.New("User Id not found")
@@ -84,9 +75,7 @@ func userId(r *http.Request) (string, error) {
 }
 
 func jsonResponse(w http.ResponseWriter, status int, a interface{}) error {
-	start := time.Now()
 	b, err := json.Marshal(a)
-	clock.Track(start, "handlers.Start::marshal-json")
 	if err != nil {
 		return errors.New("Wrong data format")
 	}
@@ -128,7 +117,30 @@ func Stop(store *store.Store) http.HandlerFunc {
 
 		err = jsonResponse(w, http.StatusOK, running)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func Running(store *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var running Activity
+		err = store.Find(r.Context(), userId, runningBy(userId), &running)
+		if err != nil {
+			http.Error(w, "No running activity found", http.StatusNotFound)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, running)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 	}

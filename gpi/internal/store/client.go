@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -49,14 +48,9 @@ func (me *Store) Disconnect(ctx context.Context) error {
 }
 
 func (me *Store) Create(ctx context.Context, userId string, d interface{}) (interface{}, error) {
-	defer clock.Track(time.Now(), "Store.Create")
-	colStart := time.Now()
 	collection := me.db.Collection(collectionName)
-	clock.Track(colStart, "Store.Create::retrieve-collection")
 
-	insStart := time.Now()
 	result, err := collection.InsertOne(ctx, d)
-	clock.Track(insStart, "Store.Create::insert")
 	if err != nil {
 		return nil, err
 	}
