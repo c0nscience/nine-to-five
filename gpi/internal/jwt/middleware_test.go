@@ -7,12 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 )
 
 func Test_JWT_Middleware(t *testing.T) {
 	keyId := "keyID"
+	var wasCalled = false
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := json.Marshal(jwt.Jwks{
 			Keys: []jwt.JsonWebKeys{
@@ -25,8 +27,10 @@ func Test_JWT_Middleware(t *testing.T) {
 			},
 		})
 		w.Write(b)
+		wasCalled = true
 	}))
 	defer ts.Close()
+	cache := &sync.Map{}
 
 	t.Run("should return public key", func(t *testing.T) {
 
@@ -37,10 +41,28 @@ func Test_JWT_Middleware(t *testing.T) {
 			"iss": "https://ninetofive.eu.auth0.com/",
 		})
 		token.Header["kid"] = keyId
-		key, err := jwt.ValidationKeyGetter(token)
+		key, err := jwt.ValidationKeyGetter(cache)(token)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, key)
+		wasCalled = false
+	})
+
+	t.Run("should return public key from cache", func(t *testing.T) {
+
+		jwt.SetKeyHost(ts.URL)
+
+		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
+			"aud": "https://api.ntf.io",
+			"iss": "https://ninetofive.eu.auth0.com/",
+		})
+		token.Header["kid"] = keyId
+		key, err := jwt.ValidationKeyGetter(cache)(token)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, key)
+		assert.False(t, wasCalled)
+		wasCalled = false
 	})
 
 	t.Run("should fail for invalid audience", func(t *testing.T) {
@@ -52,7 +74,7 @@ func Test_JWT_Middleware(t *testing.T) {
 			"iss": "https://ninetofive.eu.auth0.com/",
 		})
 		token.Header["kid"] = keyId
-		_, err := jwt.ValidationKeyGetter(token)
+		_, err := jwt.ValidationKeyGetter(cache)(token)
 
 		assert.Error(t, err)
 	})
@@ -66,7 +88,7 @@ func Test_JWT_Middleware(t *testing.T) {
 			"iss": "https://wrong.issuer.com/",
 		})
 		token.Header["kid"] = keyId
-		_, err := jwt.ValidationKeyGetter(token)
+		_, err := jwt.ValidationKeyGetter(cache)(token)
 
 		assert.Error(t, err)
 	})
@@ -79,7 +101,7 @@ func Test_JWT_Middleware(t *testing.T) {
 			"iss": "https://ninetofive.eu.auth0.com/",
 		})
 		token.Header["kid"] = "anotherKeyId"
-		_, err := jwt.ValidationKeyGetter(token)
+		_, err := jwt.ValidationKeyGetter(cache)(token)
 
 		assert.Error(t, err)
 	})
@@ -93,7 +115,7 @@ func Test_JWT_Middleware(t *testing.T) {
 			"iss": "https://ninetofive.eu.auth0.com/",
 		})
 		token.Header["kid"] = "anotherKeyId"
-		_, err := jwt.ValidationKeyGetter(token)
+		_, err := jwt.ValidationKeyGetter(cache)(token)
 
 		assert.Error(t, err)
 	})
@@ -110,7 +132,7 @@ func Test_JWT_Middleware(t *testing.T) {
 			"iss": "https://ninetofive.eu.auth0.com/",
 		})
 		token.Header["kid"] = "anotherKeyId"
-		_, err := jwt.ValidationKeyGetter(token)
+		_, err := jwt.ValidationKeyGetter(cache)(token)
 
 		assert.Error(t, err)
 	})
