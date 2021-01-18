@@ -12,7 +12,7 @@ type Activity struct {
 	UserId string             `json:"userId,omitempty" bson:"userId,omitempty"`
 	Name   string             `json:"name,omitempty" bson:"name,omitempty"`
 	Start  time.Time          `json:"start,omitempty" bson:"start,omitempty"`
-	End    time.Time          `json:"end,omitempty" bson:"end,omitempty"`
+	End    *time.Time         `json:"end,omitempty" bson:"end,omitempty"`
 	Tags   []string           `json:"tags,omitempty" bson:"tags,omitempty"`
 }
 
@@ -41,5 +41,6 @@ func NewWithStart(userId, name string, start time.Time, tags []string) *Activity
 }
 
 func (a *Activity) Stop() {
-	a.End = clock.Adjust(clock.Now().UTC())
+	now := clock.Adjust(clock.Now().UTC())
+	a.End = &now
 }
