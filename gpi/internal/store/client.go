@@ -48,15 +48,15 @@ func (me *Store) Disconnect(ctx context.Context) error {
 	return me.client.Disconnect(ctx)
 }
 
-func (me *Store) Save(ctx context.Context, userId string, d interface{}) (interface{}, error) {
-	defer clock.Track(time.Now(), "Store.Save")
+func (me *Store) Create(ctx context.Context, userId string, d interface{}) (interface{}, error) {
+	defer clock.Track(time.Now(), "Store.Create")
 	colStart := time.Now()
 	collection := me.db.Collection(collectionName)
-	clock.Track(colStart, "Store.Save::retrieve-collection")
+	clock.Track(colStart, "Store.Create::retrieve-collection")
 
 	insStart := time.Now()
 	result, err := collection.InsertOne(ctx, d)
-	clock.Track(insStart, "Store.Save::insert")
+	clock.Track(insStart, "Store.Create::insert")
 	if err != nil {
 		return nil, err
 	}
@@ -64,10 +64,59 @@ func (me *Store) Save(ctx context.Context, userId string, d interface{}) (interf
 	return result.InsertedID, nil
 }
 
-func (me *Store) Find(ctx context.Context, userId string, id primitive.ObjectID, rec interface{}) error {
-	collection := me.db.Collection(collectionName)
+func (me *Store) Save(ctx context.Context, userId string, d HasObjectId) (interface{}, error) {
+	col := me.db.Collection(collectionName)
 
-	result := collection.FindOne(ctx, bson.M{"_id": id})
+	opts := options.
+		FindOneAndUpdate().
+		SetUpsert(true).
+		SetReturnDocument(options.After)
+	var objectId = d.ObjectId()
+	if objectId == primitive.NilObjectID {
+		objectId = primitive.NewObjectID()
+		d.SetObjectId(objectId)
+	}
+	res := col.FindOneAndUpdate(ctx, bson.M{"_id": objectId}, bson.D{{"$set", d}}, opts)
 
-	return result.Decode(rec)
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	var s bson.D
+	err := res.Decode(&s)
+	if err != nil {
+		return nil, err
+	}
+	return s.Map()["_id"], nil
+}
+
+func (me *Store) Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
+	col := me.db.Collection(collectionName)
+
+	res := col.FindOne(ctx, filter)
+
+	if rec != nil {
+		return res.Decode(rec)
+	}
+
+	return res.Err()
+}
+
+func (me *Store) DeleteAll(ctx context.Context, userId string) (int64, error) {
+	col := me.db.Collection(collectionName)
+	result, err := col.DeleteMany(ctx, bson.M{"userId": bson.M{"$eq": userId}})
+	if err != nil {
+		return 0, err
+	}
+
+	return result.DeletedCount, nil
+}
+
+func (me *Store) DropCollection(ctx context.Context) error {
+	return me.db.Collection(collectionName).Drop(ctx)
+}
+
+type HasObjectId interface {
+	ObjectId() primitive.ObjectID
+	SetObjectId(id primitive.ObjectID)
 }

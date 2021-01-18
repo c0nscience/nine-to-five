@@ -2,11 +2,13 @@ package activity
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/rs/zerolog/log"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -14,30 +16,21 @@ import (
 
 func Start(store *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		token, ok := r.Context().Value("user").(*jwt.Token)
-		clock.Track(start, "handlers.Start::get-jwt-from-context")
-
-		if !ok {
-			log.Error().Msg("Token not found")
-			http.Error(w, "Token not found", http.StatusBadRequest)
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		start = time.Now()
-		userId, ok := token.Claims.(jwt.MapClaims)["sub"].(string)
-		clock.Track(start, "handlers.Start::get-user-id")
-
-		if !ok {
-			log.Error().Msg("User Id not found")
-			http.Error(w, "User Id not found", http.StatusBadRequest)
+		if err := store.Find(r.Context(), userId, runningBy(userId), nil); err != mongo.ErrNoDocuments {
+			http.Error(w, "Activity already running", http.StatusBadRequest)
 			return
 		}
 
 		bdy := startActivity{}
-		start = time.Now()
+		start := time.Now()
 		b, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(b, &bdy)
+		err = json.Unmarshal(b, &bdy)
 		clock.Track(start, "handlers.Start::read-and-unmarshal-body")
 		defer r.Body.Close()
 		if err != nil {
@@ -63,22 +56,84 @@ func Start(store *store.Store) http.HandlerFunc {
 
 		a.Id = id.(primitive.ObjectID)
 
-		w.Header().Set("Content-Type", "application/json")
-		start = time.Now()
-		b, err = json.Marshal(a)
-		clock.Track(start, "handlers.Start::marshal-json")
+		err = jsonResponse(w, http.StatusCreated, a)
 		if err != nil {
-			http.Error(w, "Wrong data format", http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		w.WriteHeader(http.StatusCreated)
-		w.Write(b)
 	}
+}
+
+func userId(r *http.Request) (string, error) {
+	start := time.Now()
+	token, ok := r.Context().Value("user").(*jwt.Token)
+	clock.Track(start, "handlers.Start::get-jwt-from-context")
+
+	if !ok {
+		return "", errors.New("Token not found")
+	}
+
+	start = time.Now()
+	userId, ok := token.Claims.(jwt.MapClaims)["sub"].(string)
+	clock.Track(start, "handlers.Start::get-user-id")
+
+	if !ok {
+		return "", errors.New("User Id not found")
+	}
+	return userId, nil
+}
+
+func jsonResponse(w http.ResponseWriter, status int, a interface{}) error {
+	start := time.Now()
+	b, err := json.Marshal(a)
+	clock.Track(start, "handlers.Start::marshal-json")
+	if err != nil {
+		return errors.New("Wrong data format")
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write(b)
+	return nil
 }
 
 type startActivity struct {
 	Name  string     `json:"name"`
 	Start *time.Time `json:"start"`
 	Tags  []string   `json:"tags"`
+}
+
+func Stop(store *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var running Activity
+		err = store.Find(r.Context(), userId, runningBy(userId), &running)
+		if err != nil {
+			http.Error(w, "No activity stopped", http.StatusOK)
+			return
+		}
+
+		(&running).Stop()
+
+		_, err = store.Save(r.Context(), userId, &running)
+		if err != nil {
+			http.Error(w, "Running activity could not be stopped", http.StatusInternalServerError)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, running)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func runningBy(userId string) bson.M {
+	return bson.M{"userId": userId, "end": nil}
 }

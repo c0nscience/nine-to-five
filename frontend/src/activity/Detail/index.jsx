@@ -69,6 +69,7 @@ export const Detail = ({
 
   useEffect(() => {
     if (end) {
+      setEndOrNow(end)
       return
     }
     timeUpdater = setInterval(() => {
@@ -80,7 +81,7 @@ export const Detail = ({
         clearInterval(timeUpdater)
       }
     }
-  })
+  }, [_end])
 
   return <>
     <DeleteConfirmationDialog open={openConfirmDialog}

@@ -37,14 +37,13 @@ func main() {
 	// README: also a good source: https://auth0.com/blog/authentication-in-golang/#Authorization-with-Golang
 	// for middlewares https://drstearns.github.io/tutorials/gomiddleware/
 	r.Handle("/activity", jwtMiddleware.Handler(activity.Start(mongoClient))).Methods("POST", "OPTIONS")
-
-	//TODO finally setup e2e test after deployment was done
-	//TODO setup benchmark tests for the api just to see the needle moving
-	// maybe bind the result to a threshold which lets the build fail
-	log.Info().Msgf("server is listening at %s", port)
+	r.Handle("/activity/stop", jwtMiddleware.Handler(activity.Stop(mongoClient))).Methods("POST", "OPTIONS")
 
 	corsOpts := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000", "https://9to5.app"},
+		AllowedOrigins: []string{
+			"http://localhost:3000",
+			"https://9to5.app",
+		},
 		AllowedMethods: []string{
 			http.MethodGet,
 			http.MethodPost,
@@ -52,10 +51,7 @@ func main() {
 			http.MethodDelete,
 			http.MethodHead,
 		},
-
-		AllowedHeaders: []string{
-			"*",
-		},
+		AllowedHeaders: []string{"*"},
 	})
 
 	r.Use(logger.Middleware())
@@ -69,6 +65,7 @@ func main() {
 	signal.Notify(termChan, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
+		log.Info().Msgf("server is listening at %s", port)
 		if err := httpServer.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
 				log.Info().Err(err).Msgf("Server closed")

@@ -4,13 +4,21 @@ import (
 	"encoding/json"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	gjwt "github.com/dgrijalva/jwt-go"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"sync"
 	"testing"
 	"time"
 )
+
+func init() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+}
 
 func Test_JWT_Middleware(t *testing.T) {
 	keyId := "keyID"

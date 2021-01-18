@@ -46,4 +46,15 @@ func Test_Activity(t *testing.T) {
 		})
 	})
 
+	t.Run("Stop", func(t *testing.T) {
+		t.Run("should set the end time", func(t *testing.T) {
+			clock.SetTime(300)
+			a := activity.New("userId", "new activity", []string{})
+
+			assert.NotEqual(t, clock.Now(), a.End)
+			clock.SetTime(600)
+			a.Stop()
+			assert.Equal(t, clock.Now(), a.End)
+		})
+	})
 }

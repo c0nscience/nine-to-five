@@ -76,7 +76,7 @@ export const ActivityProvider = ({children}) => {
   }
 
   const stopActivity = () => {
-    return request(post('activity/stop')
+    return request(post('activity/stop', undefined, true)
       .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
     ).with(STOP_ACTIVITY)
   }
