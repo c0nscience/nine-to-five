@@ -142,6 +142,47 @@ func Test_Stop(t *testing.T) {
 	})
 }
 
+func Test_Running(t *testing.T) {
+	var err error
+	privateKey, err = readPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+
+	t.Run("should return currently running activity", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		defer mongoDbCli.DeleteAll(ctx, userId)
+
+		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
+		startResp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+
+		startAct := activity.Activity{}
+		json.Unmarshal(startResp.Body.Bytes(), &startAct)
+
+		resp := makeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
+
+		assert.Equal(t, http.StatusOK, resp.Code)
+
+		subj := activity.Activity{}
+		json.Unmarshal(resp.Body.Bytes(), &subj)
+
+		assert.Equal(t, startAct.Id.Hex(), subj.Id.Hex())
+	})
+
+	t.Run("should return not found if no activity is running", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		defer mongoDbCli.DeleteAll(ctx, userId)
+
+		resp := makeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
+
+		assert.Equal(t, http.StatusNotFound, resp.Code)
+	})
+}
+
 func makeAuthenticatedRequest(h http.HandlerFunc, userId, method, path, body string) *httptest.ResponseRecorder {
 	var buf io.Reader
 	if body != "" {

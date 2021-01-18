@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
+	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	"github.com/c0nscience/nine-to-five/gpi/internal/logger"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
@@ -15,9 +16,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
+const kidToCache = "NTJFQzgyMjFFMDZDQzJCNzdGNjNERTI0ODg2MzEyODY3OEM3NkE1NA"
+
 func main() {
+	start := time.Now()
 	setupLog()
 
 	port := os.Getenv("PORT")
@@ -31,13 +36,17 @@ func main() {
 
 	r := mux.NewRouter()
 
-	jwtMiddleware := jwt.Middleware()
+	jwtMiddleware, err := jwt.Middleware(kidToCache)
+	if err != nil {
+		log.Panic().Err(err).Msg("Could not initialize jwt middleware")
+	}
 
 	//TODO define middleware to validate scope: https://auth0.com/docs/quickstart/backend/golang/01-authorization#validate-scopes
 	// README: also a good source: https://auth0.com/blog/authentication-in-golang/#Authorization-with-Golang
 	// for middlewares https://drstearns.github.io/tutorials/gomiddleware/
 	r.Handle("/activity", jwtMiddleware.Handler(activity.Start(mongoClient))).Methods("POST", "OPTIONS")
 	r.Handle("/activity/stop", jwtMiddleware.Handler(activity.Stop(mongoClient))).Methods("POST", "OPTIONS")
+	r.Handle("/activity/running", jwtMiddleware.Handler(activity.Running(mongoClient))).Methods("GET", "OPTIONS")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{
@@ -66,6 +75,7 @@ func main() {
 
 	go func() {
 		log.Info().Msgf("server is listening at %s", port)
+		clock.Track(start, "startup")
 		if err := httpServer.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
 				log.Info().Err(err).Msgf("Server closed")

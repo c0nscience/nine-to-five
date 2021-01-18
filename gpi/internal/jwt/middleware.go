@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -41,19 +40,21 @@ type JsonWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
-func Middleware() *jwtmiddleware.JWTMiddleware {
+func Middleware(kid string) (*jwtmiddleware.JWTMiddleware, error) {
 	cache := sync.Map{}
+	_, err := getCachedPemCert(&cache)(kid)
+	if err != nil {
+		return nil, err
+	}
 	return jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: validationKeyGetter(&cache),
 		SigningMethod:       jwt.SigningMethodRS256,
-	})
+	}), nil
 }
 
 func validationKeyGetter(cache *sync.Map) func(token *jwt.Token) (interface{}, error) {
 	getPemCert := getCachedPemCert(cache)
 	return func(token *jwt.Token) (interface{}, error) {
-
-		defer clock.Track(time.Now(), "middleware.validationKeyGetter")
 		checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(audience, false)
 
 		if !checkAud {
@@ -84,7 +85,6 @@ func validationKeyGetter(cache *sync.Map) func(token *jwt.Token) (interface{}, e
 //TODO think about a retention policy
 func getCachedPemCert(cache *sync.Map) func(kid string) (string, error) {
 	return func(kid string) (string, error) {
-		defer clock.Track(time.Now(), "middleware.getCachedPemCert")
 		cert, ok := cache.Load(kid)
 
 		if ok {
@@ -103,7 +103,6 @@ func getCachedPemCert(cache *sync.Map) func(kid string) (string, error) {
 }
 
 func fetchPemCert(kid string) (string, error) {
-	defer clock.Track(time.Now(), "middleware.fetchPemCert")
 	cert := ""
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)

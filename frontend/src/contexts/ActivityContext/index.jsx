@@ -34,7 +34,7 @@ export const ActivityProvider = ({children}) => {
   const {get, post, put, del, request} = createApi(getAccessTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadRunning = () => {
-    request(get('activity/running')
+    request(get('activity/running', undefined, true)
       .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
       .catch(e => {
         if (e.status === 404) {
