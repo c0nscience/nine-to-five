@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -41,42 +42,68 @@ type JsonWebKeys struct {
 }
 
 func Middleware() *jwtmiddleware.JWTMiddleware {
+	cache := sync.Map{}
 	return jwtmiddleware.New(jwtmiddleware.Options{
-		ValidationKeyGetter: validationKeyGetter,
+		ValidationKeyGetter: validationKeyGetter(&cache),
 		SigningMethod:       jwt.SigningMethodRS256,
 	})
 }
 
-func validationKeyGetter(token *jwt.Token) (interface{}, error) {
-	defer clock.Track(time.Now(), "middleware.validationKeyGetter")
-	checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(audience, false)
+func validationKeyGetter(cache *sync.Map) func(token *jwt.Token) (interface{}, error) {
+	getPemCert := getCachedPemCert(cache)
+	return func(token *jwt.Token) (interface{}, error) {
 
-	if !checkAud {
-		err := errors.New("Invalid Audience")
-		log.Error().Err(err)
-		return token, err
+		defer clock.Track(time.Now(), "middleware.validationKeyGetter")
+		checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(audience, false)
+
+		if !checkAud {
+			err := errors.New("Invalid Audience")
+			log.Error().Err(err)
+			return token, err
+		}
+
+		checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(issuer, false)
+
+		if !checkIss {
+			err := errors.New("Invalid Issuer")
+			log.Error().Err(err)
+			return token, err
+		}
+		kid := token.Header["kid"].(string)
+		cert, err := getPemCert(kid)
+		if err != nil {
+			log.Error().Err(err)
+			return nil, err
+		}
+
+		res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+		return res, nil
 	}
-
-	checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(issuer, false)
-
-	if !checkIss {
-		err := errors.New("Invalid Issuer")
-		log.Error().Err(err)
-		return token, err
-	}
-
-	cert, err := getPemCert(token)
-	if err != nil {
-		log.Error().Err(err)
-		return nil, err
-	}
-
-	res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-	return res, nil
 }
 
-func getPemCert(token *jwt.Token) (string, error) {
-	defer clock.Track(time.Now(), "middleware.getPemCert")
+//TODO think about a retention policy
+func getCachedPemCert(cache *sync.Map) func(kid string) (string, error) {
+	return func(kid string) (string, error) {
+		defer clock.Track(time.Now(), "middleware.getCachedPemCert")
+		cert, ok := cache.Load(kid)
+
+		if ok {
+			return cert.(string), nil
+		}
+
+		cert, err := fetchPemCert(kid)
+		if err != nil {
+			return "", err
+		}
+
+		cache.Store(kid, cert)
+
+		return cert.(string), nil
+	}
+}
+
+func fetchPemCert(kid string) (string, error) {
+	defer clock.Track(time.Now(), "middleware.fetchPemCert")
 	cert := ""
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -98,7 +125,7 @@ func getPemCert(token *jwt.Token) (string, error) {
 	}
 
 	for k, _ := range jwks.Keys {
-		if token.Header["kid"] == jwks.Keys[k].Kid {
+		if kid == jwks.Keys[k].Kid {
 			cert = "-----BEGIN CERTIFICATE-----\n" +
 				jwks.Keys[k].X5c[0] +
 				"\n-----END CERTIFICATE-----"
