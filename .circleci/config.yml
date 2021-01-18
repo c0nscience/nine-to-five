@@ -199,6 +199,7 @@ workflows:
             - test legacy api
             - test frontend
           app-name: ntf-japi
+          force: true
 
       - heroku/deploy-via-git:
           name: deploy gpi
