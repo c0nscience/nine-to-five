@@ -8,6 +8,13 @@ const url = (endpoint, url) => {
   return `${url}/${endpoint}`
 }
 
+const resolveUrl = (endpoint, gpi) => {
+  if (gpi) {
+    return url(endpoint, BASE_URL_GPI)
+  }
+  return url(endpoint)
+}
+
 const authorizationHeader = async (getToken) => {
   const token = await getToken()
   return {
@@ -71,10 +78,7 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
   }
 
   const post = (endpoint, body, gpi) => {
-    let u = url(endpoint)
-    if (gpi) {
-      u = url(endpoint, BASE_URL_GPI)
-    }
+    const u = resolveUrl(endpoint, gpi)
     return authorizationHeader(getToken)
       .then(token => fetch(u, {
         method: 'POST',
