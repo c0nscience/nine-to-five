@@ -59,7 +59,7 @@ export const ActivityItemCard = ({name, tags, duration, since, raised = false, s
       data-testid='name'
       title={name}
       subheader={<div className={classes.tagContainer}>
-        {tags.sort().map(t => <Chip key={t} data-testid={`tag-${t}`} label={t} size='small'/>)}
+        {tags && tags.sort().map(t => <Chip key={t} data-testid={`tag-${t}`} label={t} size='small'/>)}
       </div>}
       avatar={
         <>

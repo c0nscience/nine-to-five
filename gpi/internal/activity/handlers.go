@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func Start(store *store.Store) http.HandlerFunc {
+func Start(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, err := userId(r)
 		if err != nil {
@@ -93,7 +93,7 @@ type startActivity struct {
 	Tags  []string   `json:"tags"`
 }
 
-func Stop(store *store.Store) http.HandlerFunc {
+func Stop(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, err := userId(r)
 		if err != nil {
@@ -124,7 +124,7 @@ func Stop(store *store.Store) http.HandlerFunc {
 	}
 }
 
-func Running(store *store.Store) http.HandlerFunc {
+func Running(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, err := userId(r)
 		if err != nil {
@@ -147,7 +147,7 @@ func Running(store *store.Store) http.HandlerFunc {
 	}
 }
 
-func Get(store *store.Store) http.HandlerFunc {
+func Get(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, err := userId(r)
 		if err != nil {
