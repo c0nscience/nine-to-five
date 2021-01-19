@@ -93,9 +93,10 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       .then(asJson)
   }
 
-  const put = (endpoint, body) => {
+  const put = (endpoint, body, gpi) => {
+    const u = resolveUrl(endpoint, gpi)
     return authorizationHeader(getToken)
-      .then(token => fetch(url(endpoint), {
+      .then(token => fetch(u, {
         method: 'PUT',
         body: JSON.stringify(body),
         headers: {

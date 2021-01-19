@@ -45,6 +45,7 @@ func main() {
 	// README: also a good source: https://auth0.com/blog/authentication-in-golang/#Authorization-with-Golang
 	// for middlewares https://drstearns.github.io/tutorials/gomiddleware/
 	r.Handle("/activity", jwtMiddleware.Handler(activity.Start(mongoClient))).Methods("POST", "OPTIONS")
+	r.Handle("/activity/{id}", jwtMiddleware.Handler(activity.Update(mongoClient))).Methods("PUT", "OPTIONS")
 	r.Handle("/activity/stop", jwtMiddleware.Handler(activity.Stop(mongoClient))).Methods("POST", "OPTIONS")
 	r.Handle("/activity/running", jwtMiddleware.Handler(activity.Running(mongoClient))).Methods("GET", "OPTIONS")
 	r.Handle("/activities/{id}", jwtMiddleware.Handler(activity.Get(mongoClient))).Methods("GET", "OPTIONS")

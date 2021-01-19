@@ -82,7 +82,7 @@ export const ActivityProvider = ({children}) => {
   }
 
   const saveActivity = (changedActivity) => {
-    return request(put(`activity/${changedActivity.id}`, changedActivity))
+    return request(put(`activity/${changedActivity.id}`, changedActivity, true))
       .with(SAVE_ACTIVITY)
   }
 
