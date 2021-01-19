@@ -17,12 +17,23 @@ func SetCollectionName(s string) {
 	collectionName = s
 }
 
-type Store struct {
+type Store interface {
+	Disconnect(ctx context.Context) error
+	Create(ctx context.Context, userId string, d interface{}) (interface{}, error)
+	Save(ctx context.Context, userId string, d HasObjectId) (interface{}, error)
+	Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error
+	DeleteAll(ctx context.Context, userId string) (int64, error)
+	DropCollection(ctx context.Context) error
+}
+
+var _ Store = &mongoDbStore{}
+
+type mongoDbStore struct {
 	client *mongo.Client
 	db     *mongo.Database
 }
 
-func New(uri, db string) *Store {
+func New(uri, db string) Store {
 	ctx, cncl := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cncl()
 	cl, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
@@ -37,17 +48,17 @@ func New(uri, db string) *Store {
 			Msg("cloud not ping database")
 	}
 
-	return &Store{
+	return &mongoDbStore{
 		client: cl,
 		db:     cl.Database(db),
 	}
 }
 
-func (me *Store) Disconnect(ctx context.Context) error {
+func (me *mongoDbStore) Disconnect(ctx context.Context) error {
 	return me.client.Disconnect(ctx)
 }
 
-func (me *Store) Create(ctx context.Context, userId string, d interface{}) (interface{}, error) {
+func (me *mongoDbStore) Create(ctx context.Context, userId string, d interface{}) (interface{}, error) {
 	collection := me.db.Collection(collectionName)
 
 	result, err := collection.InsertOne(ctx, d)
@@ -58,7 +69,7 @@ func (me *Store) Create(ctx context.Context, userId string, d interface{}) (inte
 	return result.InsertedID, nil
 }
 
-func (me *Store) Save(ctx context.Context, userId string, d HasObjectId) (interface{}, error) {
+func (me *mongoDbStore) Save(ctx context.Context, userId string, d HasObjectId) (interface{}, error) {
 	col := me.db.Collection(collectionName)
 
 	opts := options.
@@ -84,7 +95,7 @@ func (me *Store) Save(ctx context.Context, userId string, d HasObjectId) (interf
 	return s.Map()["_id"], nil
 }
 
-func (me *Store) Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
+func (me *mongoDbStore) Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
 	col := me.db.Collection(collectionName)
 
 	res := col.FindOne(ctx, filter)
@@ -96,7 +107,7 @@ func (me *Store) Find(ctx context.Context, userId string, filter interface{}, re
 	return res.Err()
 }
 
-func (me *Store) DeleteAll(ctx context.Context, userId string) (int64, error) {
+func (me *mongoDbStore) DeleteAll(ctx context.Context, userId string) (int64, error) {
 	col := me.db.Collection(collectionName)
 	result, err := col.DeleteMany(ctx, bson.M{"userId": bson.M{"$eq": userId}})
 	if err != nil {
@@ -106,7 +117,7 @@ func (me *Store) DeleteAll(ctx context.Context, userId string) (int64, error) {
 	return result.DeletedCount, nil
 }
 
-func (me *Store) DropCollection(ctx context.Context) error {
+func (me *mongoDbStore) DropCollection(ctx context.Context) error {
 	return me.db.Collection(collectionName).Drop(ctx)
 }
 

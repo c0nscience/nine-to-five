@@ -32,7 +32,7 @@ func main() {
 
 	dbUri := os.Getenv("DB_URI")
 	dbName := os.Getenv("DB_NAME")
-	mongoClient := store.New(dbUri, dbName)
+	mongoClient := store.NewLogged(store.New(dbUri, dbName))
 
 	r := mux.NewRouter()
 
