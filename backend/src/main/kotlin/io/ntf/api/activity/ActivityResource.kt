@@ -47,7 +47,7 @@ class ActivityResource(private val activityService: ActivityService) {
       .flatMap { activityService.stop(it) }
   }
 
-  @GetMapping("/activities/{id}")//TODO
+  @GetMapping("/activities/{id}")//✅
   fun getActivity(principal: Mono<Principal>, @PathVariable id: String): Mono<ActivityDetail> {
     return principal.name()
       .flatMap { userId -> activityService.findByUserIdAndId(userId, id) }
@@ -62,7 +62,7 @@ class ActivityResource(private val activityService: ActivityService) {
       }
   }
 
-  @PutMapping("/activity/{id}")//TODO
+  @PutMapping("/activity/{id}")//✅
   fun update(
     @PathVariable("id") id: String,
     @RequestBody updateActivity: Mono<UpdateActivity>,

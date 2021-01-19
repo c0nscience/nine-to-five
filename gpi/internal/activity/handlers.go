@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const pathVariableId = "id"
+
 func Start(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, err := userId(r)
@@ -158,7 +160,7 @@ func Get(store store.Store) http.HandlerFunc {
 		vars := mux.Vars(r)
 
 		var activity Activity
-		err = store.Find(r.Context(), userId, byId(userId, vars["id"]), &activity)
+		err = store.Find(r.Context(), userId, byId(userId, vars[pathVariableId]), &activity)
 		if err != nil {
 			http.Error(w, "Activity not found", http.StatusNotFound)
 			return
@@ -170,6 +172,63 @@ func Get(store store.Store) http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func Update(store store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		vars := mux.Vars(r)
+
+		b, err := ioutil.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		uptAct := updateActivity{}
+		err = json.Unmarshal(b, &uptAct)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		svdAct := Activity{}
+		err = store.Find(r.Context(), userId, byId(userId, vars[pathVariableId]), &svdAct)
+		if err != nil {
+			http.Error(w, "Activity not found", http.StatusNotFound)
+			return
+		}
+
+		svdAct.Name = uptAct.Name
+		svdAct.Start = uptAct.Start
+		svdAct.End = uptAct.End
+		svdAct.Tags = uptAct.Tags
+
+		_, err = store.Save(r.Context(), userId, &svdAct)
+		if err != nil {
+			http.Error(w, "Could not update activity", http.StatusInternalServerError)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, &svdAct)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type updateActivity struct {
+	Name  string     `json:"name"`
+	Start time.Time  `json:"start"`
+	End   *time.Time `json:"end"`
+	Tags  []string   `json:"tags"`
 }
 
 func runningBy(userId string) bson.M {
