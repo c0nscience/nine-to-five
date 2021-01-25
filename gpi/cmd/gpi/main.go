@@ -46,8 +46,10 @@ func main() {
 	// for middlewares https://drstearns.github.io/tutorials/gomiddleware/
 	r.Handle("/activity", jwtMiddleware.Handler(activity.Start(mongoClient))).Methods("POST", "OPTIONS")
 	r.Handle("/activity/{id}", jwtMiddleware.Handler(activity.Update(mongoClient))).Methods("PUT", "OPTIONS")
+	r.Handle("/activity/{id}", jwtMiddleware.Handler(activity.Delete(mongoClient))).Methods("DELETE", "OPTIONS")
 	r.Handle("/activity/stop", jwtMiddleware.Handler(activity.Stop(mongoClient))).Methods("POST", "OPTIONS")
 	r.Handle("/activity/running", jwtMiddleware.Handler(activity.Running(mongoClient))).Methods("GET", "OPTIONS")
+	r.Handle("/activities/tags", jwtMiddleware.Handler(activity.Tags(mongoClient))).Methods("GET", "OPTIONS")
 	r.Handle("/activities/{id}", jwtMiddleware.Handler(activity.Get(mongoClient))).Methods("GET", "OPTIONS")
 
 	corsOpts := cors.New(cors.Options{

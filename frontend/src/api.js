@@ -108,9 +108,10 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       .then(asJson)
   }
 
-  const del = (endpoint, body) => {
+  const del = (endpoint, body, gpi) => {
+    const u = resolveUrl(endpoint, gpi)
     return authorizationHeader(getToken)
-      .then(token => fetch(url(endpoint), {
+      .then(token => fetch(u, {
         method: 'DELETE',
         body: (body && JSON.stringify(body)) || {},
         headers: {

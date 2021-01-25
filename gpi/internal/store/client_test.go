@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"os"
 	"testing"
 	"time"
@@ -35,8 +36,10 @@ func TestStore_Disconnect(t *testing.T) {
 }
 
 type A struct {
-	Id primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	S  string
+	Id     primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserId string             `json:"userId,omitempty" bson:"userId,omitempty"`
+	S      string             `json:"s,omitempty" bson:"s,omitempty"`
+	Arr    []string           `json:"arr,omitempty" bson:"arr,omitempty"`
 }
 
 func (me *A) SetObjectId(id primitive.ObjectID) {
@@ -79,4 +82,52 @@ func TestStore_Find(t *testing.T) {
 	err = subj.Find(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
 
 	assert.NoError(t, err)
+}
+
+func TestStore_Delete(t *testing.T) {
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	store.SetCollectionName("a")
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	t.Cleanup(func() {
+		subj.DropCollection(ctx)
+	})
+
+	a := A{
+		S: "value",
+	}
+	id, err := subj.Create(ctx, "userId", a)
+
+	assert.NoError(t, err)
+
+	var res A
+	err = subj.Delete(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
+	assert.NoError(t, err)
+
+	err = subj.Find(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
+	assert.Error(t, err)
+	assert.Equal(t, mongo.ErrNoDocuments, err)
+}
+
+func TestStore_Distinct(t *testing.T) {
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	store.SetCollectionName("a")
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	t.Cleanup(func() {
+		subj.DropCollection(ctx)
+	})
+
+	userId := "userId"
+	subj.Save(ctx, userId, &A{
+		UserId: userId,
+		Arr:    []string{"val1"},
+	})
+
+	subj.Save(ctx, userId, &A{
+		UserId: userId,
+		Arr:    []string{"val2"},
+	})
+
+	res, err := subj.Distinct(ctx, userId, "arr")
+	assert.NoError(t, err)
+	assert.Equal(t, []interface{}{"val1", "val2"}, res)
 }

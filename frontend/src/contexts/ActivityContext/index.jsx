@@ -48,7 +48,7 @@ export const ActivityProvider = ({children}) => {
 
   //TODO this should move into an own TagsContext, which then also can take care of providing methods to maintain tags like changing color and such
   const loadUsedTags = () => {
-    request(get('activities/tags')
+    request(get('activities/tags', undefined, true)
       .then(tags => dispatch(usedTagsLoaded(tags))))
       .with(LOAD_USED_TAGS)
   }
@@ -87,7 +87,7 @@ export const ActivityProvider = ({children}) => {
   }
 
   const deleteActivity = id => {
-    return request(del(`activity/${id}`)
+    return request(del(`activity/${id}`, undefined, true)
       .then(deletedActivity => dispatch(activityDeleted(deletedActivity)))
     ).with(DELETE_ACTIVITY)
   }

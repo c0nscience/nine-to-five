@@ -74,7 +74,7 @@ class ActivityResource(private val activityService: ActivityService) {
       .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
   }
 
-  @DeleteMapping("/activity/{id}")//TODO
+  @DeleteMapping("/activity/{id}")//✅
   fun delete(@PathVariable("id") id: String, principal: Mono<Principal>): Mono<DeletedActivity> {
     return principal.map { it.name }
       .flatMap { userId -> activityService.delete(userId, id) }
@@ -82,7 +82,7 @@ class ActivityResource(private val activityService: ActivityService) {
       .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND)))
   }
 
-  @GetMapping("/activities/tags")//TODO
+  @GetMapping("/activities/tags")//✅
   fun getAllTags(principal: Mono<Principal>): Mono<List<String>> {
     return principal.map { it.name }
       .flatMap { activityService.findAllUsedTags(it).collectList() }

@@ -224,6 +224,65 @@ func Update(store store.Store) http.HandlerFunc {
 	}
 }
 
+func Delete(store store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		vars := mux.Vars(r)
+
+		var deletedAct Activity
+		err = store.Delete(r.Context(), userId, byId(userId, vars[pathVariableId]), &deletedAct)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				http.NotFound(w, r)
+				return
+			}
+			http.Error(w, "Could not delete activity", http.StatusInternalServerError)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, &deletedActivity{
+			Id:    deletedAct.Id.Hex(),
+			Start: deletedAct.Start,
+		})
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func Tags(store store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		tags, err := store.Distinct(r.Context(), userId, "tags")
+		if err != nil {
+			http.Error(w, "Could not find tags", http.StatusInternalServerError)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, &tags)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type deletedActivity struct {
+	Id    string    `json:"id"`
+	Start time.Time `json:"start"`
+}
+
 type updateActivity struct {
 	Name  string     `json:"name"`
 	Start time.Time  `json:"start"`

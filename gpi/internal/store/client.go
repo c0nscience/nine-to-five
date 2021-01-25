@@ -24,6 +24,8 @@ type Store interface {
 	Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error
 	DeleteAll(ctx context.Context, userId string) (int64, error)
 	DropCollection(ctx context.Context) error
+	Delete(ctx context.Context, userId string, filter interface{}, rec interface{}) error
+	Distinct(ctx context.Context, userId string, field string) ([]interface{}, error)
 }
 
 var _ Store = &mongoDbStore{}
@@ -119,6 +121,24 @@ func (me *mongoDbStore) DeleteAll(ctx context.Context, userId string) (int64, er
 
 func (me *mongoDbStore) DropCollection(ctx context.Context) error {
 	return me.db.Collection(collectionName).Drop(ctx)
+}
+
+func (me *mongoDbStore) Delete(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
+	col := me.db.Collection(collectionName)
+
+	res := col.FindOneAndDelete(ctx, filter)
+
+	if rec != nil {
+		return res.Decode(rec)
+	}
+
+	return res.Err()
+}
+
+func (me *mongoDbStore) Distinct(ctx context.Context, userId string, field string) ([]interface{}, error) {
+	col := me.db.Collection(collectionName)
+
+	return col.Distinct(ctx, field, bson.D{{"userId", bson.D{{"$eq", userId}}}})
 }
 
 type HasObjectId interface {
