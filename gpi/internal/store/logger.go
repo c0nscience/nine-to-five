@@ -47,3 +47,13 @@ func (me *loggedStore) DropCollection(ctx context.Context) error {
 	defer clock.Track(time.Now(), "Store.DropCollection")
 	return me.s.DropCollection(ctx)
 }
+
+func (me *loggedStore) Delete(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
+	defer clock.Track(time.Now(), "Store.Delete")
+	return me.s.Delete(ctx, userId, filter, rec)
+}
+
+func (me *loggedStore) Distinct(ctx context.Context, userId string, field string) ([]interface{}, error) {
+	defer clock.Track(time.Now(), "Store.Distinct")
+	return me.s.Distinct(ctx, userId, field)
+}

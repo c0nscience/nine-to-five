@@ -40,6 +40,16 @@ func (me *testStore) DropCollection(context.Context) error {
 	return nil
 }
 
+func (me *testStore) Delete(context.Context, string, interface{}, interface{}) error {
+	me.Invoked = true
+	return nil
+}
+
+func (me *testStore) Distinct(context.Context, string, string) ([]interface{}, error) {
+	me.Invoked = true
+	return nil, nil
+}
+
 var _ Store = &testStore{}
 
 func TestLogger(t *testing.T) {
@@ -89,6 +99,22 @@ func TestLogger(t *testing.T) {
 		}
 		subj := NewLogged(store)
 		subj.DropCollection(context.TODO())
+		assert.True(t, store.Invoked)
+	})
+	t.Run("Delete", func(t *testing.T) {
+		store := &testStore{
+			Invoked: false,
+		}
+		subj := NewLogged(store)
+		subj.Delete(context.TODO(), "", nil, nil)
+		assert.True(t, store.Invoked)
+	})
+	t.Run("Distinct", func(t *testing.T) {
+		store := &testStore{
+			Invoked: false,
+		}
+		subj := NewLogged(store)
+		subj.Distinct(context.TODO(), "", "")
 		assert.True(t, store.Invoked)
 	})
 }

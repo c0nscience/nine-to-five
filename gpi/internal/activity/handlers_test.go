@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -355,6 +356,102 @@ func Test_Update(t *testing.T) {
 
 			assert.Equal(t, http.StatusNotFound, resp.Code)
 		})
+	})
+}
+
+func Test_Delete(t *testing.T) {
+	var err error
+	privateKey, err = readPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+
+	t.Run("should remove activity by id", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		t.Cleanup(func() {
+			mongoDbCli.DeleteAll(ctx, userId)
+		})
+		clock.SetTime(300)
+
+		bdy := `{"name":"activity to delete","tags":["tag1","tag2"]}`
+		resp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+
+		act := activity.Activity{}
+		json.Unmarshal(resp.Body.Bytes(), &act)
+
+		resp = makeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/"+act.Id.Hex(), "")
+
+		delAct := activity.Activity{}
+		json.Unmarshal(resp.Body.Bytes(), &delAct)
+
+		assert.NotEqual(t, primitive.NilObjectID, delAct.Id)
+		assert.Equal(t, act.Id, delAct.Id)
+		assert.Equal(t, clock.Now().Unix(), act.Start.Unix())
+
+		resp = makeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/"+act.Id.Hex(), "")
+
+		assert.Equal(t, http.StatusNotFound, resp.Code)
+	})
+
+	t.Run("should return not found if activity to be deleted does not exist", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		t.Cleanup(func() {
+			mongoDbCli.DeleteAll(ctx, userId)
+		})
+		clock.SetTime(300)
+
+		resp := makeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/doesnotexist", "")
+		assert.Equal(t, http.StatusNotFound, resp.Code)
+	})
+}
+
+func Test_Tags(t *testing.T) {
+	var err error
+	privateKey, err = readPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+
+	t.Run("should return used tags", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		t.Cleanup(func() {
+			mongoDbCli.DeleteAll(ctx, userId)
+		})
+		clock.SetTime(300)
+
+		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new act 1","tags":["tag1"]}`)
+		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new act 2","tags":["another-tag"]}`)
+		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+
+		resp := makeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
+
+		var tags []string
+		json.Unmarshal(resp.Body.Bytes(), &tags)
+		assert.Equal(t, []string{"another-tag", "tag1"}, tags)
+	})
+
+	t.Run("should return empty array if no tags where found", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		t.Cleanup(func() {
+			mongoDbCli.DeleteAll(ctx, userId)
+		})
+		clock.SetTime(300)
+
+		resp := makeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
+
+		var tags []string
+		json.Unmarshal(resp.Body.Bytes(), &tags)
+		assert.Empty(t, tags)
+		assert.Equal(t, http.StatusOK, resp.Code)
 	})
 }
 
