@@ -94,15 +94,11 @@ class ActivityResource(private val activityService: ActivityService) {
     @PathVariable from: String,
     @PathVariable to: String
   ): Mono<Map<String, Any>> {
-    return principal.map { it.name }
-      .zipWith(principal.flatMap { activityService.countBefore(it.name, LocalDate.parse(from)) })
-      .flatMap { (name, remainingEntries) ->
+    return principal.name()
+      .flatMap { name ->
         activityService.allInRange(name, LocalDate.parse(from), LocalDate.parse(to)).collectList()
           .map {
-            mapOf(
-              "entries" to it,
-              "remainingEntries" to remainingEntries
-            )
+            mapOf("entries" to it)
           }
       }
   }

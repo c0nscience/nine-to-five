@@ -79,10 +79,6 @@ class ActivityService(
     return activityRepository.findByUserIdAndStartBetweenOrderByStartDesc(userId, from.atStartOfDay(), to.plusDays(1).atTime(LocalTime.MIDNIGHT))
   }
 
-  fun countBefore(userId: String, until: LocalDate): Mono<Long> {
-    return activityRepository.countByUserIdAndStartBefore(userId, until.atStartOfDay())
-  }
-
   fun findAllUsedTags(userId: String): Flux<String> = mongoTemplate
     .query(Activity::class.java)
     .distinct(Activity::tags.name)
