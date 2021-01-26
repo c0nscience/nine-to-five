@@ -88,7 +88,7 @@ class ActivityResource(private val activityService: ActivityService) {
       .flatMap { activityService.findAllUsedTags(it).collectList() }
   }
 
-  @GetMapping("/activities/{from}/{to}")//TODO
+  @GetMapping("/activities/{from}/{to}")//✅
   fun allInRange(
     principal: Mono<Principal>,
     @PathVariable from: String,

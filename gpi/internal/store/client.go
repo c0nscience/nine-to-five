@@ -21,7 +21,8 @@ type Store interface {
 	Disconnect(ctx context.Context) error
 	Create(ctx context.Context, userId string, d interface{}) (interface{}, error)
 	Save(ctx context.Context, userId string, d HasObjectId) (interface{}, error)
-	Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error
+	FindOne(ctx context.Context, userId string, filter interface{}, rec interface{}) error
+	Find(ctx context.Context, userId string, filter interface{}, sort interface{}, rec interface{}) error
 	DeleteAll(ctx context.Context, userId string) (int64, error)
 	DropCollection(ctx context.Context) error
 	Delete(ctx context.Context, userId string, filter interface{}, rec interface{}) error
@@ -97,7 +98,7 @@ func (me *mongoDbStore) Save(ctx context.Context, userId string, d HasObjectId) 
 	return s.Map()["_id"], nil
 }
 
-func (me *mongoDbStore) Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
+func (me *mongoDbStore) FindOne(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
 	col := me.db.Collection(collectionName)
 
 	res := col.FindOne(ctx, filter)
@@ -107,6 +108,21 @@ func (me *mongoDbStore) Find(ctx context.Context, userId string, filter interfac
 	}
 
 	return res.Err()
+}
+
+func (me *mongoDbStore) Find(ctx context.Context, userId string, filter interface{}, sort interface{}, rec interface{}) error {
+	col := me.db.Collection(collectionName)
+
+	opts := options.Find()
+	if sort != nil {
+		opts.SetSort(sort)
+	}
+	cur, err := col.Find(ctx, filter, opts)
+	if err != nil {
+		return err
+	}
+
+	return cur.All(ctx, rec)
 }
 
 func (me *mongoDbStore) DeleteAll(ctx context.Context, userId string) (int64, error) {

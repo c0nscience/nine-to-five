@@ -15,6 +15,8 @@ import (
 )
 
 const pathVariableId = "id"
+const pathFromDate = "from"
+const pathToDate = "to"
 
 func Start(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +26,7 @@ func Start(store store.Store) http.HandlerFunc {
 			return
 		}
 
-		if err := store.Find(r.Context(), userId, runningBy(userId), nil); err != mongo.ErrNoDocuments {
+		if err := store.FindOne(r.Context(), userId, runningBy(userId), nil); err != mongo.ErrNoDocuments {
 			http.Error(w, "Activity already running", http.StatusBadRequest)
 			return
 		}
@@ -104,7 +106,7 @@ func Stop(store store.Store) http.HandlerFunc {
 		}
 
 		var running Activity
-		err = store.Find(r.Context(), userId, runningBy(userId), &running)
+		err = store.FindOne(r.Context(), userId, runningBy(userId), &running)
 		if err != nil {
 			http.Error(w, "No activity stopped", http.StatusOK)
 			return
@@ -135,7 +137,7 @@ func Running(store store.Store) http.HandlerFunc {
 		}
 
 		var running Activity
-		err = store.Find(r.Context(), userId, runningBy(userId), &running)
+		err = store.FindOne(r.Context(), userId, runningBy(userId), &running)
 		if err != nil {
 			http.Error(w, "No running activity found", http.StatusNotFound)
 			return
@@ -160,7 +162,7 @@ func Get(store store.Store) http.HandlerFunc {
 		vars := mux.Vars(r)
 
 		var activity Activity
-		err = store.Find(r.Context(), userId, byId(userId, vars[pathVariableId]), &activity)
+		err = store.FindOne(r.Context(), userId, byId(userId, vars[pathVariableId]), &activity)
 		if err != nil {
 			http.Error(w, "Activity not found", http.StatusNotFound)
 			return
@@ -199,7 +201,7 @@ func Update(store store.Store) http.HandlerFunc {
 		}
 
 		svdAct := Activity{}
-		err = store.Find(r.Context(), userId, byId(userId, vars[pathVariableId]), &svdAct)
+		err = store.FindOne(r.Context(), userId, byId(userId, vars[pathVariableId]), &svdAct)
 		if err != nil {
 			http.Error(w, "Activity not found", http.StatusNotFound)
 			return
@@ -278,6 +280,52 @@ func Tags(store store.Store) http.HandlerFunc {
 	}
 }
 
+const pathDateLayout = "2006-01-02"
+
+func InRange(store store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, err := userId(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		vars := mux.Vars(r)
+
+		fromDate, err := time.Parse(pathDateLayout, vars[pathFromDate])
+		if err != nil {
+			http.Error(w, "Could not read from date.", http.StatusBadRequest)
+			return
+		}
+		toDate, err := time.Parse(pathDateLayout, vars[pathToDate])
+		if err != nil {
+			http.Error(w, "Could not read to date.", http.StatusBadRequest)
+			return
+		}
+
+		res := []Activity{}
+		err = store.Find(r.Context(), userId, byStartBetween(userId, fromDate, toDate), by("start", 1), &res)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				http.Error(w, "Could not find any data in range", http.StatusNotFound)
+				return
+			}
+			http.Error(w, "An error occurred during searching activities in the range", http.StatusInternalServerError)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, &inRangeActivities{Entries: res})
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type inRangeActivities struct {
+	Entries []Activity `json:"entries"`
+}
+
 type deletedActivity struct {
 	Id    string    `json:"id"`
 	Start time.Time `json:"start"`
@@ -297,4 +345,17 @@ func runningBy(userId string) bson.M {
 func byId(userId, id string) bson.M {
 	objectID, _ := primitive.ObjectIDFromHex(id)
 	return bson.M{"userId": userId, "_id": objectID}
+}
+
+func by(field string, order int) bson.D {
+	return bson.D{{field, order}}
+}
+
+func byStartBetween(userId string, from, to time.Time) bson.D {
+	from = from.Truncate(24 * time.Hour)
+	to = to.Add(24 * time.Hour).Truncate(24 * time.Hour)
+	return bson.D{
+		{"userId", userId},
+		{"start", bson.M{"$gt": from, "$lt": to}},
+	}
 }

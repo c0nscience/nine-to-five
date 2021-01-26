@@ -31,7 +31,7 @@ func init() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 }
 
-const timeout = 100 * time.Millisecond
+const timeout = 200 * time.Millisecond
 
 func Test_Start(t *testing.T) {
 	var err error
@@ -64,7 +64,7 @@ func Test_Start(t *testing.T) {
 		assert.Equal(t, []string{"tag1", "tag2"}, subj.Tags)
 
 		var stored activity.Activity
-		err := mongoDbCli.Find(ctx, userId, bson.M{"_id": subj.Id}, &stored)
+		err := mongoDbCli.FindOne(ctx, userId, bson.M{"_id": subj.Id}, &stored)
 		assert.NoError(t, err)
 		assert.NotNil(t, stored)
 		assert.Equal(t, userId, stored.UserId)
@@ -90,7 +90,7 @@ func Test_Start(t *testing.T) {
 		assert.Equal(t, []string{"tag1", "tag2"}, subj.Tags)
 
 		var stored activity.Activity
-		err := mongoDbCli.Find(ctx, userId, bson.M{"_id": subj.Id}, &stored)
+		err := mongoDbCli.FindOne(ctx, userId, bson.M{"_id": subj.Id}, &stored)
 		assert.NoError(t, err)
 		assert.NotNil(t, stored)
 		assert.Equal(t, time.Date(2021, 1, 9, 10, 0, 0, 0, time.UTC).Unix(), stored.Start.Unix())
@@ -452,6 +452,103 @@ func Test_Tags(t *testing.T) {
 		json.Unmarshal(resp.Body.Bytes(), &tags)
 		assert.Empty(t, tags)
 		assert.Equal(t, http.StatusOK, resp.Code)
+	})
+}
+
+func Test_InRange(t *testing.T) {
+	var err error
+	privateKey, err = readPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+
+	t.Run("should return only activities in date range", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		t.Cleanup(func() {
+			mongoDbCli.DeleteAll(ctx, userId)
+		})
+
+		clock.SetTime(time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 1","tags":["tag1","tag2"]}`)
+		clock.SetTime(time.Date(2021, 1, 1, 11, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+
+		clock.SetTime(time.Date(2021, 1, 1, 11, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 2","tags":["tag1","tag2"]}`)
+		clock.SetTime(time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+
+		clock.SetTime(time.Date(2021, 1, 2, 10, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 3","tags":["tag1","tag2"]}`)
+		clock.SetTime(time.Date(2021, 1, 2, 11, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+
+		path := fmt.Sprintf("/activities/%s/%s", "2021-01-01", "2021-01-01")
+		resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+		assert.Equal(t, http.StatusOK, resp.Code)
+
+		res := struct {
+			Entries []activity.Activity `json:"entries"`
+		}{}
+		json.Unmarshal(resp.Body.Bytes(), &res)
+
+		assert.Len(t, res.Entries, 2)
+		assert.Equal(t, "activity 1", res.Entries[0].Name)
+		assert.Equal(t, "activity 2", res.Entries[1].Name)
+	})
+
+	t.Run("should return activities sorted ascending", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		t.Cleanup(func() {
+			mongoDbCli.DeleteAll(ctx, userId)
+		})
+
+		clock.SetTime(time.Date(2021, 1, 1, 13, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity afternoon","tags":["tag1","tag2"]}`)
+		clock.SetTime(time.Date(2021, 1, 1, 14, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+
+		clock.SetTime(time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity morning","tags":["tag1","tag2"]}`)
+		clock.SetTime(time.Date(2021, 1, 1, 11, 0, 0, 0, time.UTC).Unix())
+		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+
+		path := fmt.Sprintf("/activities/%s/%s", "2021-01-01", "2021-01-01")
+		resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+		assert.Equal(t, http.StatusOK, resp.Code)
+
+		res := struct {
+			Entries []activity.Activity `json:"entries"`
+		}{}
+		json.Unmarshal(resp.Body.Bytes(), &res)
+
+		assert.Len(t, res.Entries, 2)
+		assert.Equal(t, "activity morning", res.Entries[0].Name)
+		assert.Equal(t, "activity afternoon", res.Entries[1].Name)
+	})
+
+	t.Run("should return bad request with malformed", func(t *testing.T) {
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
+		t.Cleanup(func() {
+			mongoDbCli.DeleteAll(ctx, userId)
+		})
+
+		t.Run("from date", func(t *testing.T) {
+			path := fmt.Sprintf("/activities/%s/%s", "wrong-from", "2021-01-01")
+			resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+			assert.Equal(t, http.StatusBadRequest, resp.Code)
+		})
+
+		t.Run("to date", func(t *testing.T) {
+			path := fmt.Sprintf("/activities/%s/%s", "2021-01-01", "wrong-from")
+			resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+			assert.Equal(t, http.StatusBadRequest, resp.Code)
+		})
 	})
 }
 

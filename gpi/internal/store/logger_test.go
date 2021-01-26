@@ -25,7 +25,12 @@ func (me *testStore) Save(context.Context, string, HasObjectId) (interface{}, er
 	return nil, nil
 }
 
-func (me *testStore) Find(context.Context, string, interface{}, interface{}) error {
+func (me *testStore) FindOne(context.Context, string, interface{}, interface{}) error {
+	me.Invoked = true
+	return nil
+}
+
+func (me *testStore) Find(context.Context, string, interface{}, interface{}, interface{}) error {
 	me.Invoked = true
 	return nil
 }
@@ -77,12 +82,20 @@ func TestLogger(t *testing.T) {
 		subj.Save(context.TODO(), "", nil)
 		assert.True(t, store.Invoked)
 	})
+	t.Run("FindOne", func(t *testing.T) {
+		store := &testStore{
+			Invoked: false,
+		}
+		subj := NewLogged(store)
+		subj.FindOne(context.TODO(), "", nil, nil)
+		assert.True(t, store.Invoked)
+	})
 	t.Run("Find", func(t *testing.T) {
 		store := &testStore{
 			Invoked: false,
 		}
 		subj := NewLogged(store)
-		subj.Find(context.TODO(), "", nil, nil)
+		subj.Find(context.TODO(), "", nil, nil, nil)
 		assert.True(t, store.Invoked)
 	})
 	t.Run("DeleteAll", func(t *testing.T) {
