@@ -51,6 +51,7 @@ func main() {
 	r.Handle("/activity/running", jwtMiddleware.Handler(activity.Running(mongoClient))).Methods("GET", "OPTIONS")
 	r.Handle("/activities/tags", jwtMiddleware.Handler(activity.Tags(mongoClient))).Methods("GET", "OPTIONS")
 	r.Handle("/activities/{id}", jwtMiddleware.Handler(activity.Get(mongoClient))).Methods("GET", "OPTIONS")
+	r.Handle("/activities/{from}/{to}", jwtMiddleware.Handler(activity.InRange(mongoClient))).Methods("GET", "OPTIONS")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{

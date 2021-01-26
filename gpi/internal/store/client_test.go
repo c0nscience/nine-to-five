@@ -65,7 +65,7 @@ func TestStore_Save(t *testing.T) {
 	assert.NotEqual(t, primitive.NilObjectID, id)
 }
 
-func TestStore_Find(t *testing.T) {
+func TestStore_FindOne(t *testing.T) {
 	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
 	store.SetCollectionName("a")
 	ctx, _ := context.WithTimeout(context.Background(), timeout)
@@ -79,7 +79,7 @@ func TestStore_Find(t *testing.T) {
 	assert.NoError(t, err)
 
 	var res A
-	err = subj.Find(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
+	err = subj.FindOne(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
 
 	assert.NoError(t, err)
 }
@@ -103,7 +103,7 @@ func TestStore_Delete(t *testing.T) {
 	err = subj.Delete(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
 	assert.NoError(t, err)
 
-	err = subj.Find(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
+	err = subj.FindOne(ctx, "userId", bson.M{"_id": id.(primitive.ObjectID)}, &res)
 	assert.Error(t, err)
 	assert.Equal(t, mongo.ErrNoDocuments, err)
 }
@@ -130,4 +130,29 @@ func TestStore_Distinct(t *testing.T) {
 	res, err := subj.Distinct(ctx, userId, "arr")
 	assert.NoError(t, err)
 	assert.Equal(t, []interface{}{"val1", "val2"}, res)
+}
+
+func TestStore_Find(t *testing.T) {
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	store.SetCollectionName("a")
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	defer subj.DropCollection(ctx)
+
+	subj.Save(ctx, "userId", &A{
+		UserId: "userId",
+		S:      "value2",
+	})
+
+	subj.Save(ctx, "userId", &A{
+		UserId: "userId",
+		S:      "value1",
+	})
+
+	var res []A
+	err := subj.Find(context.TODO(), "userId", bson.D{{"userId", "userId"}}, nil, &res)
+
+	assert.NoError(t, err)
+	assert.Len(t, res, 2)
+	assert.Equal(t, "value2", res[0].S)
+	assert.Equal(t, "value1", res[1].S)
 }

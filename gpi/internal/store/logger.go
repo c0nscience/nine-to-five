@@ -33,9 +33,14 @@ func (me *loggedStore) Save(ctx context.Context, userId string, d HasObjectId) (
 	return me.s.Save(ctx, userId, d)
 }
 
-func (me *loggedStore) Find(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
+func (me *loggedStore) FindOne(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
+	defer clock.Track(time.Now(), "Store.FindOne")
+	return me.s.FindOne(ctx, userId, filter, rec)
+}
+
+func (me *loggedStore) Find(ctx context.Context, userId string, filter interface{}, sort interface{}, rec interface{}) error {
 	defer clock.Track(time.Now(), "Store.Find")
-	return me.s.Find(ctx, userId, filter, rec)
+	return me.s.Find(ctx, userId, filter, sort, rec)
 }
 
 func (me *loggedStore) DeleteAll(ctx context.Context, userId string) (int64, error) {

@@ -54,7 +54,7 @@ export const ActivityProvider = ({children}) => {
   }
 
   const loadActivitiesInRange = (from, to, signal) => {
-    return request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
+    return request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal, true)
       .then(activities => dispatch(activitiesInRangeLoaded(activities)))
     ).with(LOAD_ACTIVITIES_IN_RANGE)
   }
