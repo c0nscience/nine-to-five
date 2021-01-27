@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,15 +13,19 @@ import (
 	"time"
 )
 
-const pathVariableId = "id"
-const pathFromDate = "from"
-const pathToDate = "to"
+const (
+	pathVariableId = "id"
+	pathFromDate   = "from"
+	pathToDate     = "to"
+
+	contextUserIdKey = "userId"
+)
 
 func Start(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
@@ -33,7 +36,7 @@ func Start(store store.Store) http.HandlerFunc {
 
 		bdy := startActivity{}
 		b, _ := ioutil.ReadAll(r.Body)
-		err = json.Unmarshal(b, &bdy)
+		err := json.Unmarshal(b, &bdy)
 		defer r.Body.Close()
 		if err != nil {
 			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
@@ -64,21 +67,6 @@ func Start(store store.Store) http.HandlerFunc {
 	}
 }
 
-func userId(r *http.Request) (string, error) {
-	token, ok := r.Context().Value("user").(*jwt.Token)
-
-	if !ok {
-		return "", errors.New("Token not found")
-	}
-
-	userId, ok := token.Claims.(jwt.MapClaims)["sub"].(string)
-
-	if !ok {
-		return "", errors.New("User Id not found")
-	}
-	return userId, nil
-}
-
 func jsonResponse(w http.ResponseWriter, status int, a interface{}) error {
 	b, err := json.Marshal(a)
 	if err != nil {
@@ -99,14 +87,14 @@ type startActivity struct {
 
 func Stop(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		var running Activity
-		err = store.FindOne(r.Context(), userId, runningBy(userId), &running)
+		err := store.FindOne(r.Context(), userId, runningBy(userId), &running)
 		if err != nil {
 			http.Error(w, "No activity stopped", http.StatusOK)
 			return
@@ -130,14 +118,14 @@ func Stop(store store.Store) http.HandlerFunc {
 
 func Running(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		var running Activity
-		err = store.FindOne(r.Context(), userId, runningBy(userId), &running)
+		err := store.FindOne(r.Context(), userId, runningBy(userId), &running)
 		if err != nil {
 			http.Error(w, "No running activity found", http.StatusNotFound)
 			return
@@ -153,16 +141,16 @@ func Running(store store.Store) http.HandlerFunc {
 
 func Get(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		vars := mux.Vars(r)
 
 		var activity Activity
-		err = store.FindOne(r.Context(), userId, byId(userId, vars[pathVariableId]), &activity)
+		err := store.FindOne(r.Context(), userId, byId(userId, vars[pathVariableId]), &activity)
 		if err != nil {
 			http.Error(w, "Activity not found", http.StatusNotFound)
 			return
@@ -178,9 +166,9 @@ func Get(store store.Store) http.HandlerFunc {
 
 func Update(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
@@ -228,16 +216,16 @@ func Update(store store.Store) http.HandlerFunc {
 
 func Delete(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		vars := mux.Vars(r)
 
 		var deletedAct Activity
-		err = store.Delete(r.Context(), userId, byId(userId, vars[pathVariableId]), &deletedAct)
+		err := store.Delete(r.Context(), userId, byId(userId, vars[pathVariableId]), &deletedAct)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				http.NotFound(w, r)
@@ -260,9 +248,9 @@ func Delete(store store.Store) http.HandlerFunc {
 
 func Tags(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
@@ -284,9 +272,9 @@ const pathDateLayout = "2006-01-02"
 
 func InRange(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, err := userId(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
