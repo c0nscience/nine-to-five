@@ -8,8 +8,9 @@ import (
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
 	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
+	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
-	"github.com/dgrijalva/jwt-go"
+	gjwt "github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
@@ -562,8 +563,8 @@ func makeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 	}
 	req, _ := http.NewRequest(method, path, buf)
 
-	token := jwt.New(jwt.SigningMethodHS256)
-	token.Claims = jwt.MapClaims{"sub": userId}
+	token := gjwt.New(gjwt.SigningMethodHS256)
+	token.Claims = gjwt.MapClaims{"sub": userId}
 	s, e := token.SignedString(privateKey)
 	if e != nil {
 		panic(e)
@@ -572,11 +573,12 @@ func makeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 
 	resp := httptest.NewRecorder()
 
+	handler := JWT().Handler(jwt.UserIdMiddleware().Middleware(h))
 	if pattern == "" {
-		JWT().Handler(h).ServeHTTP(resp, req)
+		handler.ServeHTTP(resp, req)
 	} else {
 		r := mux.NewRouter()
-		r.Handle(pattern, JWT().Handler(h)).Methods(method)
+		r.Handle(pattern, handler).Methods(method)
 		r.ServeHTTP(resp, req)
 	}
 
@@ -589,7 +591,7 @@ func JWT() *jwtmiddleware.JWTMiddleware {
 	return jwtmiddleware.New(jwtmiddleware.Options{
 		Debug:               false,
 		CredentialsOptional: false,
-		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+		ValidationKeyGetter: func(token *gjwt.Token) (interface{}, error) {
 			if privateKey == nil {
 				var err error
 				privateKey, err = readPrivateKey()
@@ -599,7 +601,7 @@ func JWT() *jwtmiddleware.JWTMiddleware {
 			}
 			return privateKey, nil
 		},
-		SigningMethod: jwt.SigningMethodHS256,
+		SigningMethod: gjwt.SigningMethodHS256,
 	})
 }
 

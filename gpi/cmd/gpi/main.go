@@ -40,18 +40,18 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Could not initialize jwt middleware")
 	}
-
+	userIdMiddleware := jwt.UserIdMiddleware()
 	//TODO define middleware to validate scope: https://auth0.com/docs/quickstart/backend/golang/01-authorization#validate-scopes
 	// README: also a good source: https://auth0.com/blog/authentication-in-golang/#Authorization-with-Golang
 	// for middlewares https://drstearns.github.io/tutorials/gomiddleware/
-	r.Handle("/activity", jwtMiddleware.Handler(activity.Start(mongoClient))).Methods("POST", "OPTIONS")
-	r.Handle("/activity/{id}", jwtMiddleware.Handler(activity.Update(mongoClient))).Methods("PUT", "OPTIONS")
-	r.Handle("/activity/{id}", jwtMiddleware.Handler(activity.Delete(mongoClient))).Methods("DELETE", "OPTIONS")
-	r.Handle("/activity/stop", jwtMiddleware.Handler(activity.Stop(mongoClient))).Methods("POST", "OPTIONS")
-	r.Handle("/activity/running", jwtMiddleware.Handler(activity.Running(mongoClient))).Methods("GET", "OPTIONS")
-	r.Handle("/activities/tags", jwtMiddleware.Handler(activity.Tags(mongoClient))).Methods("GET", "OPTIONS")
-	r.Handle("/activities/{id}", jwtMiddleware.Handler(activity.Get(mongoClient))).Methods("GET", "OPTIONS")
-	r.Handle("/activities/{from}/{to}", jwtMiddleware.Handler(activity.InRange(mongoClient))).Methods("GET", "OPTIONS")
+	r.Handle("/activity", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Start(mongoClient)))).Methods("POST", "OPTIONS")
+	r.Handle("/activity/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Update(mongoClient)))).Methods("PUT", "OPTIONS")
+	r.Handle("/activity/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Delete(mongoClient)))).Methods("DELETE", "OPTIONS")
+	r.Handle("/activity/stop", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Stop(mongoClient)))).Methods("POST", "OPTIONS")
+	r.Handle("/activity/running", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Running(mongoClient)))).Methods("GET", "OPTIONS")
+	r.Handle("/activities/tags", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Tags(mongoClient)))).Methods("GET", "OPTIONS")
+	r.Handle("/activities/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Get(mongoClient)))).Methods("GET", "OPTIONS")
+	r.Handle("/activities/{from}/{to}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.InRange(mongoClient)))).Methods("GET", "OPTIONS")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{

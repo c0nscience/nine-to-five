@@ -6,15 +6,19 @@ import (
 	"errors"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 	"net/http"
 	"sync"
 	"time"
 )
 
-const audience = "https://api.ntf.io"
-const issuer = "https://ninetofive.eu.auth0.com/"
-const keyPath = "/.well-known/jwks.json"
+const (
+	audience         = "https://api.ntf.io"
+	issuer           = "https://ninetofive.eu.auth0.com/"
+	keyPath          = "/.well-known/jwks.json"
+	contextUserIdKey = "userId"
+)
 
 var keyHost = "https://ninetofive.eu.auth0.com"
 var timeout = 500 * time.Millisecond
@@ -50,6 +54,31 @@ func Middleware(kid string) (*jwtmiddleware.JWTMiddleware, error) {
 		ValidationKeyGetter: validationKeyGetter(&cache),
 		SigningMethod:       jwt.SigningMethodRS256,
 	}), nil
+}
+
+func UserIdMiddleware() mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			token, ok := r.Context().Value("user").(*jwt.Token)
+
+			if !ok {
+				http.Error(w, "Token not found", http.StatusBadRequest)
+				return
+			}
+
+			userId, ok := token.Claims.(jwt.MapClaims)["sub"].(string)
+
+			if !ok {
+				http.Error(w, "User Id not found", http.StatusBadRequest)
+				return
+			}
+
+			newRequest := r.WithContext(context.WithValue(r.Context(), contextUserIdKey, userId))
+			*r = *newRequest
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func validationKeyGetter(cache *sync.Map) func(token *jwt.Token) (interface{}, error) {

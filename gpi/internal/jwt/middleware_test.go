@@ -1,6 +1,7 @@
 package jwt_test
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	gjwt "github.com/dgrijalva/jwt-go"
@@ -143,5 +144,57 @@ func Test_JWT_Middleware(t *testing.T) {
 		_, err := jwt.ValidationKeyGetter(cache)(token)
 
 		assert.Error(t, err)
+	})
+}
+
+func TestUserIdMiddleware(t *testing.T) {
+	middleware := jwt.UserIdMiddleware()
+	var recordedUserId = ""
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		recordedUserId = r.Context().Value("userId").(string)
+	})
+
+	t.Run("should put user id into context", func(t *testing.T) {
+		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
+			"sub": "user-id",
+		})
+
+		r := httptest.NewRequest("GET", "/", nil)
+		req := r.
+			WithContext(context.WithValue(r.Context(), "user", token))
+		resp := httptest.NewRecorder()
+		middleware.
+			Middleware(handler).
+			ServeHTTP(resp, req)
+
+		assert.Equal(t, http.StatusOK, resp.Code)
+		assert.Equal(t, "user-id", recordedUserId)
+		recordedUserId = ""
+	})
+
+	t.Run("should return bad request if user id could not be found", func(t *testing.T) {
+		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{})
+
+		r := httptest.NewRequest("GET", "/", nil)
+		req := r.
+			WithContext(context.WithValue(r.Context(), "user", token))
+		resp := httptest.NewRecorder()
+		middleware.
+			Middleware(handler).
+			ServeHTTP(resp, req)
+
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		assert.Empty(t, recordedUserId)
+		recordedUserId = ""
+	})
+
+	t.Run("should return bad request if token is not present", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/", nil)
+		resp := httptest.NewRecorder()
+		middleware.
+			Middleware(handler).
+			ServeHTTP(resp, req)
+
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 }
