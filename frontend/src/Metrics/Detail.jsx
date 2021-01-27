@@ -36,9 +36,13 @@ const DeleteConfirmationDialog = ({open, onCancel, onDelete}) => <Dialog
 </Dialog>
 
 export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
-  const {name, totalExceedingDuration = 0, values = [], threshold = 0} = metric
+  const {name, totalExceedingDuration = 0, threshold = 0} = metric
+  let {values = []} = metric
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
-  const data = values.slice(values.length - 6).map(v => ({
+  if (values.length > 6) {
+    values = values.slice(values.length - 6)
+  }
+  const data = values.map(v => ({
     id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
     value: Duration.fromISO(v.duration).as('hours'),
     duration: Duration.fromISO(v.duration)
