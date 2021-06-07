@@ -17,6 +17,9 @@ export const formatDuration = (duration, opts = {multiline: false}) => {
     return ''
   }
 
+  if (typeof duration === 'number') {
+    duration = Duration.fromMillis(duration / 1e6)
+  }
   if (typeof duration === 'string') {
     duration = Duration.fromISO(duration)
   }
@@ -28,7 +31,7 @@ export const formatDuration = (duration, opts = {multiline: false}) => {
         {duration.toFormat('h\'h\'')}
         <br/>
         {duration.minus({hours}).toFormat('mm\'m\'')}
-        </>
+      </>
     } else {
       return duration.toFormat('m\'m\'')
     }
@@ -44,6 +47,7 @@ export const callValueWith = f => event => {
     f(target.checked)
   } else {
     f(target.value)
-  }}
+  }
+}
 
 export const toHyphenCase = e => e.replace(/\s+/g, '-').toLowerCase()

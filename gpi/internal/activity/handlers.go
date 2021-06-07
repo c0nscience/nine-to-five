@@ -70,7 +70,7 @@ func Start(store store.Store) http.HandlerFunc {
 func jsonResponse(w http.ResponseWriter, status int, a interface{}) error {
 	b, err := json.Marshal(a)
 	if err != nil {
-		return errors.New("Wrong data format")
+		return errors.New("wrong data format")
 	}
 
 	w.Header().Set("Content-Type", "application/json")
