@@ -22,13 +22,13 @@ func init() {
 }
 
 func TestStore_New(t *testing.T) {
-	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 
 	assert.NotNil(t, subj)
 }
 
 func TestStore_Disconnect(t *testing.T) {
-	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 
 	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	err := subj.Disconnect(ctx)
@@ -51,8 +51,7 @@ func (me *A) ObjectId() primitive.ObjectID {
 }
 
 func TestStore_Save(t *testing.T) {
-	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
-	store.SetCollectionName("a")
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	defer subj.DropCollection(ctx)
 
@@ -66,8 +65,7 @@ func TestStore_Save(t *testing.T) {
 }
 
 func TestStore_FindOne(t *testing.T) {
-	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
-	store.SetCollectionName("a")
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	defer subj.DropCollection(ctx)
 
@@ -85,8 +83,7 @@ func TestStore_FindOne(t *testing.T) {
 }
 
 func TestStore_Delete(t *testing.T) {
-	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
-	store.SetCollectionName("a")
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(func() {
 		subj.DropCollection(ctx)
@@ -109,8 +106,7 @@ func TestStore_Delete(t *testing.T) {
 }
 
 func TestStore_Distinct(t *testing.T) {
-	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
-	store.SetCollectionName("a")
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(func() {
 		subj.DropCollection(ctx)
@@ -133,8 +129,7 @@ func TestStore_Distinct(t *testing.T) {
 }
 
 func TestStore_Find(t *testing.T) {
-	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
-	store.SetCollectionName("a")
+	subj := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	defer subj.DropCollection(ctx)
 

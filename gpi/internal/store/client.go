@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-var collectionName = "activities"
-
-func SetCollectionName(s string) {
-	collectionName = s
-}
-
 type Store interface {
 	Disconnect(ctx context.Context) error
 	Create(ctx context.Context, userId string, d interface{}) (interface{}, error)
@@ -31,12 +25,14 @@ type Store interface {
 
 var _ Store = &mongoDbStore{}
 
+type CollectionName string
+
 type mongoDbStore struct {
 	client *mongo.Client
-	db     *mongo.Database
+	coll   *mongo.Collection
 }
 
-func New(uri, db string) Store {
+func New(uri, db string, collection CollectionName) Store {
 	ctx, cncl := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cncl()
 	cl, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
@@ -51,9 +47,10 @@ func New(uri, db string) Store {
 			Msg("cloud not ping database")
 	}
 
+	database := cl.Database(db)
 	return &mongoDbStore{
 		client: cl,
-		db:     cl.Database(db),
+		coll:   database.Collection(string(collection)),
 	}
 }
 
@@ -62,9 +59,7 @@ func (me *mongoDbStore) Disconnect(ctx context.Context) error {
 }
 
 func (me *mongoDbStore) Create(ctx context.Context, userId string, d interface{}) (interface{}, error) {
-	collection := me.db.Collection(collectionName)
-
-	result, err := collection.InsertOne(ctx, d)
+	result, err := me.coll.InsertOne(ctx, d)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +68,6 @@ func (me *mongoDbStore) Create(ctx context.Context, userId string, d interface{}
 }
 
 func (me *mongoDbStore) Save(ctx context.Context, userId string, d HasObjectId) (interface{}, error) {
-	col := me.db.Collection(collectionName)
-
 	opts := options.
 		FindOneAndUpdate().
 		SetUpsert(true).
@@ -84,7 +77,7 @@ func (me *mongoDbStore) Save(ctx context.Context, userId string, d HasObjectId) 
 		objectId = primitive.NewObjectID()
 		d.SetObjectId(objectId)
 	}
-	res := col.FindOneAndUpdate(ctx, bson.M{"_id": objectId}, bson.D{{"$set", d}}, opts)
+	res := me.coll.FindOneAndUpdate(ctx, bson.M{"_id": objectId}, bson.D{{"$set", d}}, opts)
 
 	if res.Err() != nil {
 		return nil, res.Err()
@@ -99,9 +92,7 @@ func (me *mongoDbStore) Save(ctx context.Context, userId string, d HasObjectId) 
 }
 
 func (me *mongoDbStore) FindOne(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
-	col := me.db.Collection(collectionName)
-
-	res := col.FindOne(ctx, filter)
+	res := me.coll.FindOne(ctx, filter)
 
 	if rec != nil {
 		return res.Decode(rec)
@@ -111,13 +102,11 @@ func (me *mongoDbStore) FindOne(ctx context.Context, userId string, filter inter
 }
 
 func (me *mongoDbStore) Find(ctx context.Context, userId string, filter interface{}, sort interface{}, rec interface{}) error {
-	col := me.db.Collection(collectionName)
-
 	opts := options.Find()
 	if sort != nil {
 		opts.SetSort(sort)
 	}
-	cur, err := col.Find(ctx, filter, opts)
+	cur, err := me.coll.Find(ctx, filter, opts)
 	if err != nil {
 		return err
 	}
@@ -126,8 +115,7 @@ func (me *mongoDbStore) Find(ctx context.Context, userId string, filter interfac
 }
 
 func (me *mongoDbStore) DeleteAll(ctx context.Context, userId string) (int64, error) {
-	col := me.db.Collection(collectionName)
-	result, err := col.DeleteMany(ctx, bson.M{"userId": bson.M{"$eq": userId}})
+	result, err := me.coll.DeleteMany(ctx, bson.M{"userId": bson.M{"$eq": userId}})
 	if err != nil {
 		return 0, err
 	}
@@ -136,13 +124,11 @@ func (me *mongoDbStore) DeleteAll(ctx context.Context, userId string) (int64, er
 }
 
 func (me *mongoDbStore) DropCollection(ctx context.Context) error {
-	return me.db.Collection(collectionName).Drop(ctx)
+	return me.coll.Drop(ctx)
 }
 
 func (me *mongoDbStore) Delete(ctx context.Context, userId string, filter interface{}, rec interface{}) error {
-	col := me.db.Collection(collectionName)
-
-	res := col.FindOneAndDelete(ctx, filter)
+	res := me.coll.FindOneAndDelete(ctx, filter)
 
 	if rec != nil {
 		return res.Decode(rec)
@@ -152,9 +138,7 @@ func (me *mongoDbStore) Delete(ctx context.Context, userId string, filter interf
 }
 
 func (me *mongoDbStore) Distinct(ctx context.Context, userId string, field string) ([]interface{}, error) {
-	col := me.db.Collection(collectionName)
-
-	return col.Distinct(ctx, field, bson.D{{"userId", bson.D{{"$eq", userId}}}})
+	return me.coll.Distinct(ctx, field, bson.D{{"userId", bson.D{{"$eq", userId}}}})
 }
 
 type HasObjectId interface {

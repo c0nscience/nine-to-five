@@ -42,11 +42,21 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
   if (values.length > 6) {
     values = values.slice(values.length - 6)
   }
-  const data = values.map(v => ({
-    id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
-    value: Duration.fromISO(v.duration).as('hours'),
-    duration: Duration.fromISO(v.duration)
-  }))
+
+  const data = values.map(v => {
+    let dur
+    if (typeof v.duration === 'number') {
+      dur = Duration.fromMillis(v.duration / 1e6)
+    }
+    if (typeof v.duration === 'string') {
+      dur = Duration.fromISO(v.duration)
+    }
+    return {
+      id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
+      value: dur.as('hours'),
+      duration: dur
+    }
+  })
 
   return <>
     <DeleteConfirmationDialog open={confirmDialogOpen}
@@ -57,12 +67,12 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
                    onEdit={editMetric}
                    onDelete={() => setConfirmDialogOpen(true)}/>
 
-    <Grid container alignContent='flex-start'>
+    <Grid container alignContent="flex-start">
 
       <Grid item xs={12}>
-        <Typography variant='h5'
-                    data-testid='heading'
-                    align='center'
+        <Typography variant="h5"
+                    data-testid="heading"
+                    align="center"
                     style={{textDecoration: 'underline'}}>{name}</Typography>
       </Grid>
 
@@ -89,13 +99,13 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
       </Grid>
 
       <Grid item xs={12}>
-        <Typography variant='subtitle2'
-                    align='center'
-                    data-testid='total-heading'>{`Exceeding ${name}`}</Typography>
+        <Typography variant="subtitle2"
+                    align="center"
+                    data-testid="total-heading">{`Exceeding ${name}`}</Typography>
       </Grid>
       <Grid item xs={12}>
-        <Typography align='center'
-                    data-testid='total-value'>{formatDuration(totalExceedingDuration)}</Typography>
+        <Typography align="center"
+                    data-testid="total-value">{formatDuration(totalExceedingDuration)}</Typography>
       </Grid>
     </Grid>
   </>

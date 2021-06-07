@@ -29,7 +29,7 @@ export const MetricsProvider = ({children}) => {
   }
 
   const loadMetricDetail = id => {
-    request(get(`metrics/${id}`)
+    request(get(`metrics/${id}`, undefined, true)
       .then(metricDetail => dispatch(metricDetailLoaded(metricDetail)))
     ).with(LOAD_METRIC_DETAIL)
   }

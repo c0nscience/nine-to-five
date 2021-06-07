@@ -68,6 +68,42 @@ func Test_Activity(t *testing.T) {
 				assert.Equal(t, time.UTC, a.End.Location())
 			})
 		})
+	})
 
+	t.Run("Duration", func(t *testing.T) {
+		t.Run("should return duration with start and end", func(t *testing.T) {
+			// given
+			clock.SetTime(4200)
+			start := clock.Now()
+
+			a := activity.New("userid", "new activity", []string{"tag1", "tag2"})
+
+			clock.SetTime(8400)
+			end := clock.Now()
+			a.Stop()
+
+			// when
+			subj := a.Duration()
+
+			// then
+			assert.Equal(t, end.Sub(start), subj)
+		})
+
+		t.Run("should return duration for unstopped activity", func(t *testing.T) {
+			// given
+			clock.SetTime(4200)
+			start := clock.Now()
+
+			a := activity.New("userid", "new activity", []string{"tag1", "tag2"})
+
+			clock.SetTime(8400)
+			end := clock.Now()
+
+			// when
+			subj := a.Duration()
+
+			// then
+			assert.Equal(t, end.Sub(start), subj)
+		})
 	})
 }

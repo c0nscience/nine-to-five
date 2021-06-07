@@ -1,27 +1,20 @@
 package activity_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
 	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
-	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
+	"github.com/c0nscience/nine-to-five/gpi/internal/jwttest"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
-	gjwt "github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"io"
-	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -35,13 +28,7 @@ func init() {
 const timeout = 200 * time.Millisecond
 
 func Test_Start(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 
 	userId := "userid"
 	t.Run("should return started activity", func(t *testing.T) {
@@ -53,7 +40,7 @@ func Test_Start(t *testing.T) {
 		now := clock.Now()
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
-		resp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		subj := activity.Activity{}
 		json.Unmarshal(resp.Body.Bytes(), &subj)
@@ -79,7 +66,7 @@ func Test_Start(t *testing.T) {
 		})
 
 		bdy := `{"name":"new activity","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`
-		resp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		subj := activity.Activity{}
 		json.Unmarshal(resp.Body.Bytes(), &subj)
@@ -103,21 +90,15 @@ func Test_Start(t *testing.T) {
 			mongoDbCli.DeleteAll(ctx, userId)
 		})
 
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new activity","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`)
-		resp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new activity2","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new activity","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`)
+		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new activity2","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`)
 
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 }
 
 func Test_Stop(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 
 	t.Run("should set the end date to the current date of the current running activity", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -129,11 +110,11 @@ func Test_Stop(t *testing.T) {
 		clock.SetTime(300)
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		clock.SetTime(600)
 		now := clock.Now()
-		resp := makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		resp := jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
@@ -150,19 +131,13 @@ func Test_Stop(t *testing.T) {
 			mongoDbCli.DeleteAll(ctx, userId)
 		})
 
-		resp := makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		resp := jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 		assert.Equal(t, http.StatusOK, resp.Code)
 	})
 }
 
 func Test_Running(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 
 	t.Run("should return currently running activity", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -172,12 +147,12 @@ func Test_Running(t *testing.T) {
 		})
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
-		startResp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		startResp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		startAct := activity.Activity{}
 		json.Unmarshal(startResp.Body.Bytes(), &startAct)
 
-		resp := makeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
+		resp := jwttest.MakeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
@@ -194,20 +169,14 @@ func Test_Running(t *testing.T) {
 			mongoDbCli.DeleteAll(ctx, userId)
 		})
 
-		resp := makeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
+		resp := jwttest.MakeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
 
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 }
 
 func Test_Get(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 
 	t.Run("should return activity by id", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -218,12 +187,12 @@ func Test_Get(t *testing.T) {
 		clock.SetTime(300)
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
-		startResp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		startResp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		startAct := activity.Activity{}
 		json.Unmarshal(startResp.Body.Bytes(), &startAct)
 
-		resp := makeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/"+startAct.Id.Hex(), "")
+		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/"+startAct.Id.Hex(), "")
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
@@ -240,20 +209,14 @@ func Test_Get(t *testing.T) {
 			mongoDbCli.DeleteAll(ctx, userId)
 		})
 
-		resp := makeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/notexisting", "")
+		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/notexisting", "")
 
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 }
 
 func Test_Update(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	const dateFmt = "2006-01-02T15:04:05Z"
 
 	t.Run("should update", func(t *testing.T) {
@@ -265,15 +228,15 @@ func Test_Update(t *testing.T) {
 		clock.SetTime(300)
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
-		actResp := makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		actResp := jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 		act := activity.Activity{}
 		json.Unmarshal(actResp.Body.Bytes(), &act)
 
 		t.Run("name", func(t *testing.T) {
 			tags, _ := json.Marshal(act.Tags)
 			updateBdy := fmt.Sprintf(`{"name":"%s","start":"%s","end":"%s","tags":%s}`, "updated name", act.Start.Format(dateFmt), act.End.Format(dateFmt), string(tags))
-			resp := makeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
 
 			assert.Equal(t, http.StatusOK, resp.Code)
 
@@ -287,7 +250,7 @@ func Test_Update(t *testing.T) {
 			tags, _ := json.Marshal(act.Tags)
 			now := time.Now().UTC()
 			updateBdy := fmt.Sprintf(`{"name":"%s","start":"%s","end":"%s","tags":%s}`, "updated name", now.Format(dateFmt), act.End.Format(dateFmt), string(tags))
-			resp := makeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
 
 			assert.Equal(t, http.StatusOK, resp.Code)
 
@@ -302,7 +265,7 @@ func Test_Update(t *testing.T) {
 			now := time.Now().UTC()
 			end := now.Add(1 * time.Hour)
 			updateBdy := fmt.Sprintf(`{"name":"%s","start":"%s","end":"%s","tags":%s}`, "updated name", now.Format(dateFmt), end.Format(dateFmt), string(tags))
-			resp := makeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
 
 			assert.Equal(t, http.StatusOK, resp.Code)
 
@@ -318,7 +281,7 @@ func Test_Update(t *testing.T) {
 			now := time.Now().UTC()
 			end := now.Add(1 * time.Hour)
 			updateBdy := fmt.Sprintf(`{"name":"%s","start":"%s","end":"%s","tags":%s}`, "updated name", now.Format(dateFmt), end.Format(dateFmt), string(tagsJson))
-			resp := makeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
 
 			assert.Equal(t, http.StatusOK, resp.Code)
 
@@ -339,21 +302,21 @@ func Test_Update(t *testing.T) {
 		clock.SetTime(300)
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
-		actResp := makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		actResp := jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 		act := activity.Activity{}
 		json.Unmarshal(actResp.Body.Bytes(), &act)
 
 		t.Run("with malformed json", func(t *testing.T) {
 			updateBdy := "[malformedjson"
-			resp := makeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/"+act.Id.Hex(), updateBdy)
 
 			assert.Equal(t, http.StatusBadRequest, resp.Code)
 		})
 
 		t.Run("for wrong id", func(t *testing.T) {
 			updateBdy := fmt.Sprintf(`{"name":"%s"}`, "updated name")
-			resp := makeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/not-existing-id", updateBdy)
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Update(mongoDbCli), "/activity/{id}", userId, "POST", "/activity/not-existing-id", updateBdy)
 
 			assert.Equal(t, http.StatusNotFound, resp.Code)
 		})
@@ -361,13 +324,7 @@ func Test_Update(t *testing.T) {
 }
 
 func Test_Delete(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 
 	t.Run("should remove activity by id", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -378,12 +335,12 @@ func Test_Delete(t *testing.T) {
 		clock.SetTime(300)
 
 		bdy := `{"name":"activity to delete","tags":["tag1","tag2"]}`
-		resp := makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
+		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		act := activity.Activity{}
 		json.Unmarshal(resp.Body.Bytes(), &act)
 
-		resp = makeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/"+act.Id.Hex(), "")
+		resp = jwttest.MakeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/"+act.Id.Hex(), "")
 
 		delAct := activity.Activity{}
 		json.Unmarshal(resp.Body.Bytes(), &delAct)
@@ -392,7 +349,7 @@ func Test_Delete(t *testing.T) {
 		assert.Equal(t, act.Id, delAct.Id)
 		assert.Equal(t, clock.Now().Unix(), act.Start.Unix())
 
-		resp = makeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/"+act.Id.Hex(), "")
+		resp = jwttest.MakeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/"+act.Id.Hex(), "")
 
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
@@ -405,19 +362,13 @@ func Test_Delete(t *testing.T) {
 		})
 		clock.SetTime(300)
 
-		resp := makeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/doesnotexist", "")
+		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/doesnotexist", "")
 		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 }
 
 func Test_Tags(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 
 	t.Run("should return used tags", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -427,12 +378,12 @@ func Test_Tags(t *testing.T) {
 		})
 		clock.SetTime(300)
 
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new act 1","tags":["tag1"]}`)
-		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new act 2","tags":["another-tag"]}`)
-		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new act 1","tags":["tag1"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new act 2","tags":["another-tag"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 
-		resp := makeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
+		resp := jwttest.MakeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
 
 		var tags []string
 		json.Unmarshal(resp.Body.Bytes(), &tags)
@@ -447,7 +398,7 @@ func Test_Tags(t *testing.T) {
 		})
 		clock.SetTime(300)
 
-		resp := makeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
+		resp := jwttest.MakeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
 
 		var tags []string
 		json.Unmarshal(resp.Body.Bytes(), &tags)
@@ -457,13 +408,7 @@ func Test_Tags(t *testing.T) {
 }
 
 func Test_InRange(t *testing.T) {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"))
+	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 
 	t.Run("should return only activities in date range", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -473,22 +418,22 @@ func Test_InRange(t *testing.T) {
 		})
 
 		clock.SetTime(time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 1","tags":["tag1","tag2"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 1","tags":["tag1","tag2"]}`)
 		clock.SetTime(time.Date(2021, 1, 1, 11, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 
 		clock.SetTime(time.Date(2021, 1, 1, 11, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 2","tags":["tag1","tag2"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 2","tags":["tag1","tag2"]}`)
 		clock.SetTime(time.Date(2021, 1, 1, 12, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 
 		clock.SetTime(time.Date(2021, 1, 2, 10, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 3","tags":["tag1","tag2"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 3","tags":["tag1","tag2"]}`)
 		clock.SetTime(time.Date(2021, 1, 2, 11, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 
 		path := fmt.Sprintf("/activities/%s/%s", "2021-01-01", "2021-01-01")
-		resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
 		assert.Equal(t, http.StatusOK, resp.Code)
 
 		res := struct {
@@ -509,17 +454,17 @@ func Test_InRange(t *testing.T) {
 		})
 
 		clock.SetTime(time.Date(2021, 1, 1, 13, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity afternoon","tags":["tag1","tag2"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity afternoon","tags":["tag1","tag2"]}`)
 		clock.SetTime(time.Date(2021, 1, 1, 14, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 
 		clock.SetTime(time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity morning","tags":["tag1","tag2"]}`)
+		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity morning","tags":["tag1","tag2"]}`)
 		clock.SetTime(time.Date(2021, 1, 1, 11, 0, 0, 0, time.UTC).Unix())
-		makeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
+		jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 
 		path := fmt.Sprintf("/activities/%s/%s", "2021-01-01", "2021-01-01")
-		resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
 		assert.Equal(t, http.StatusOK, resp.Code)
 
 		res := struct {
@@ -541,71 +486,14 @@ func Test_InRange(t *testing.T) {
 
 		t.Run("from date", func(t *testing.T) {
 			path := fmt.Sprintf("/activities/%s/%s", "wrong-from", "2021-01-01")
-			resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
 			assert.Equal(t, http.StatusBadRequest, resp.Code)
 		})
 
 		t.Run("to date", func(t *testing.T) {
 			path := fmt.Sprintf("/activities/%s/%s", "2021-01-01", "wrong-from")
-			resp := makeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.InRange(mongoDbCli), "/activities/{from}/{to}", userId, "GET", path, "")
 			assert.Equal(t, http.StatusBadRequest, resp.Code)
 		})
 	})
-}
-
-func makeAuthenticatedRequest(h http.HandlerFunc, userId, method, path, body string) *httptest.ResponseRecorder {
-	return makeAuthenticatedRequestWithPattern(h, "", userId, method, path, body)
-}
-func makeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, method, path, body string) *httptest.ResponseRecorder {
-	var buf io.Reader
-	if body != "" {
-		buf = bytes.NewBufferString(body)
-	}
-	req, _ := http.NewRequest(method, path, buf)
-
-	token := gjwt.New(gjwt.SigningMethodHS256)
-	token.Claims = gjwt.MapClaims{"sub": userId}
-	s, e := token.SignedString(privateKey)
-	if e != nil {
-		panic(e)
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("bearer %v", s))
-
-	resp := httptest.NewRecorder()
-
-	handler := JWT().Handler(jwt.UserIdMiddleware().Middleware(h))
-	if pattern == "" {
-		handler.ServeHTTP(resp, req)
-	} else {
-		r := mux.NewRouter()
-		r.Handle(pattern, handler).Methods(method)
-		r.ServeHTTP(resp, req)
-	}
-
-	return resp
-}
-
-var privateKey []byte
-
-func JWT() *jwtmiddleware.JWTMiddleware {
-	return jwtmiddleware.New(jwtmiddleware.Options{
-		Debug:               false,
-		CredentialsOptional: false,
-		ValidationKeyGetter: func(token *gjwt.Token) (interface{}, error) {
-			if privateKey == nil {
-				var err error
-				privateKey, err = readPrivateKey()
-				if err != nil {
-					panic(err)
-				}
-			}
-			return privateKey, nil
-		},
-		SigningMethod: gjwt.SigningMethodHS256,
-	})
-}
-
-func readPrivateKey() ([]byte, error) {
-	privateKey, e := ioutil.ReadFile("keys/test-key")
-	return privateKey, e
 }

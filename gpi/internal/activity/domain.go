@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var Collection store.CollectionName = "activities"
+
 type Activity struct {
 	Id     primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	UserId string             `json:"userId,omitempty" bson:"userId,omitempty"`
@@ -43,4 +45,13 @@ func NewWithStart(userId, name string, start time.Time, tags []string) *Activity
 func (a *Activity) Stop() {
 	now := clock.Adjust(clock.Now().UTC())
 	a.End = &now
+}
+
+func (me *Activity) Duration() time.Duration {
+	end := me.End
+	if end == nil {
+		now := clock.Now()
+		end = &now
+	}
+	return end.Sub(me.Start)
 }

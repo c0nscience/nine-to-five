@@ -13,7 +13,7 @@ import kotlin.time.ExperimentalTime
 @RestController
 class MetricsResource(private val metricsService: MetricsService) {
 
-  @GetMapping("/metrics")
+  @GetMapping("/metrics")//TODO
   fun getAllMetrics(principal: Mono<Principal>): Mono<List<ListMetric>> {
     return principal.name()
       .flatMapMany { metricsService.findAllByUserId(it) }
@@ -21,9 +21,11 @@ class MetricsResource(private val metricsService: MetricsService) {
       .collectList()
   }
 
-  @PostMapping("/metrics")
-  fun createMetricConfiguration(principal: Mono<Principal>,
-                                @RequestBody createMetric: Mono<CreateMetric>): Mono<ResponseEntity<Void>> {
+  @PostMapping("/metrics")//TODO
+  fun createMetricConfiguration(
+    principal: Mono<Principal>,
+    @RequestBody createMetric: Mono<CreateMetric>
+  ): Mono<ResponseEntity<Void>> {
     return principal.name()
       .zipWith(createMetric)
       .flatMap { (name, metricToCreate) -> metricsService.createMetricConfiguration(name, metricToCreate) }
@@ -32,32 +34,40 @@ class MetricsResource(private val metricsService: MetricsService) {
 
   @ExperimentalTime
   @GetMapping("metrics/{id}")
-  fun getCalculatedMetric(principal: Mono<Principal>,
-                          @PathVariable("id") id: String): Mono<MetricDetail> {
+  fun getCalculatedMetric(
+    principal: Mono<Principal>,
+    @PathVariable("id") id: String
+  ): Mono<MetricDetail> {
     return principal.name()
       .flatMap { userId -> metricsService.calculateMetricFor(userId, id) }
   }
 
-  @DeleteMapping("metrics/{id}")
-  fun deleteMetricConfiguration(principal: Mono<Principal>,
-                                @PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
+  @DeleteMapping("metrics/{id}")//TODO
+  fun deleteMetricConfiguration(
+    principal: Mono<Principal>,
+    @PathVariable("id") id: String
+  ): Mono<ResponseEntity<Void>> {
     return principal.name()
       .flatMap { userId -> metricsService.deleteById(userId, id) }
       .map { ResponseEntity.status(HttpStatus.OK).build<Void>() }
   }
 
-  @PostMapping("metrics/{id}")
-  fun updateMetricConfiguration(principal: Mono<Principal>,
-                                @PathVariable("id") id: String,
-                                @RequestBody editMetric: EditMetric): Mono<ResponseEntity<Void>> {
+  @PostMapping("metrics/{id}")//TODO
+  fun updateMetricConfiguration(
+    principal: Mono<Principal>,
+    @PathVariable("id") id: String,
+    @RequestBody editMetric: EditMetric
+  ): Mono<ResponseEntity<Void>> {
     return principal.name()
       .flatMap { userId -> metricsService.updateByUserIdAndId(userId, id, editMetric) }
       .map { ResponseEntity.status(HttpStatus.OK).build<Void>() }
   }
 
-  @GetMapping("metrics/{id}/config")
-  fun loadMetricConfiguration(principal: Mono<Principal>,
-                              @PathVariable("id") id: String): Mono<MetricConfigurationEdit> {
+  @GetMapping("metrics/{id}/config")//TODO
+  fun loadMetricConfiguration(
+    principal: Mono<Principal>,
+    @PathVariable("id") id: String
+  ): Mono<MetricConfigurationEdit> {
     return principal.name()
       .flatMap { userId -> metricsService.findByUserIdAndId(userId, id) }
   }
