@@ -105,7 +105,12 @@ func by(field string, order int) bson.D {
 }
 
 func adjustToStartOfWeek(t time.Time) time.Time {
-	return t.AddDate(0, 0, int(time.Monday)-int(t.Weekday()))
+	weekday := t.Weekday()
+	offset := int(time.Monday) - int(weekday)
+	if weekday == time.Sunday {
+		offset = -6
+	}
+	return t.AddDate(0, 0, offset)
 }
 
 func date(t time.Time) time.Time {
