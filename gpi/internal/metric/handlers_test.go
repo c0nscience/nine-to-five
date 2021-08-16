@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
+	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwttest"
 	"github.com/c0nscience/nine-to-five/gpi/internal/metric"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
@@ -29,6 +30,11 @@ func TestCalculate(t *testing.T) {
 	activityStore := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	userId := "userid"
 
+	ctx, clc := context.WithTimeout(context.Background(), timeout)
+	metricStore.DeleteAll(ctx, userId)
+	activityStore.DeleteAll(ctx, userId)
+	clc()
+
 	t.Run("should return exceeding duration for limited sum formula", func(t *testing.T) {
 		ctx, clc := context.WithTimeout(context.Background(), timeout)
 		t.Cleanup(func() {
@@ -41,14 +47,14 @@ func TestCalculate(t *testing.T) {
 		mId, _ := metricStore.Save(ctx, userId, metric.Configuration{
 			UserId: userId,
 			Name:   "40h week",
-			Tags:   []string{"tag1", "tag2"},
+			Tags:   []string{"tag3", "tag4"},
 			//TimeUnit:  duration,
 			Formula:   "limited-sum",
 			Threshold: 40,
 		})
 		metricId := mId.(primitive.ObjectID)
 
-		activity.CreateAll(ctx, userId, 4, 30, time.Minute, []string{"tag1", "tag2"},
+		activity.CreateAll(ctx, userId, 4, 30, time.Minute, []string{"tag3", "tag4"},
 			func() time.Time {
 				return day(1)
 			},
@@ -56,14 +62,17 @@ func TestCalculate(t *testing.T) {
 				_, _ = activityStore.Save(ctx, userId, &act)
 			})
 
+		clock.SetTime(day(22).Unix())
 		resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.Calculate(metricStore, activityStore), "/metrics/{id}", userId, "GET", "/metrics/"+metricId.Hex(), "")
 
 		subj := metric.Result{}
-		_ = json.Unmarshal(resp.Body.Bytes(), &subj)
+		err := json.Unmarshal(resp.Body.Bytes(), &subj)
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 		assert.Equal(t, "40h week", subj.Name)
 		assert.Equal(t, 10*time.Hour, subj.TotalExceedingDuration)
+		assert.Equal(t, 7*time.Hour+30*time.Minute, subj.CurrentExceedingDuration)
 		assert.Equal(t, "limited-sum", subj.Formula)
 		assert.Equal(t, float64(40), subj.Threshold)
 		assert.Equal(t, metric.Value{Duration: 42*time.Hour + 30*time.Minute, Date: day(1)}, subj.Values[0])
@@ -79,29 +88,33 @@ func TestCalculate(t *testing.T) {
 			activityStore.DeleteAll(ctx, userId)
 			clc()
 		})
-		mId, _ := metricStore.Save(ctx, userId, metric.Configuration{
+		mId, err := metricStore.Save(ctx, userId, metric.Configuration{
 			UserId:    userId,
 			Name:      "40h week",
 			Tags:      []string{"tag1", "tag2"},
 			Formula:   "limited-sum",
 			Threshold: 40,
 		})
+		assert.NoError(t, err)
+
 		end1 := dateTime(time.July, 4, 16, 0)
-		_, _ = activityStore.Save(ctx, userId, &activity.Activity{
+		_, err = activityStore.Save(ctx, userId, &activity.Activity{
 			UserId: userId,
 			Name:   "sun",
 			Start:  dateTime(time.July, 4, 8, 0),
 			End:    &end1,
 			Tags:   []string{"tag1", "tag2"},
 		})
+		assert.NoError(t, err)
 		end2 := dateTime(time.July, 5, 16, 0)
-		_, _ = activityStore.Save(ctx, userId, &activity.Activity{
+		_, err = activityStore.Save(ctx, userId, &activity.Activity{
 			UserId: userId,
 			Name:   "sun",
 			Start:  dateTime(time.July, 5, 8, 0),
 			End:    &end2,
 			Tags:   []string{"tag1", "tag2"},
 		})
+		assert.NoError(t, err)
 
 		metricId := mId.(primitive.ObjectID)
 

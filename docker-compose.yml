@@ -10,7 +10,7 @@ services:
   mongo-express:
     image: mongo-express:latest
     ports:
-      - 8081:8081
+      - "8081:8081"
 
   test-mongodb:
     image: library/mongo:4.2.11

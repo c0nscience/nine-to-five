@@ -36,7 +36,7 @@ const DeleteConfirmationDialog = ({open, onCancel, onDelete}) => <Dialog
 </Dialog>
 
 export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
-  const {name, totalExceedingDuration = 0, threshold = 0} = metric
+  const {name, totalExceedingDuration = 0, threshold = 0, currentExceedingDuration = 0} = metric
   let {values = []} = metric
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   if (values.length > 6) {
@@ -106,6 +106,16 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
       <Grid item xs={12}>
         <Typography align="center"
                     data-testid="total-value">{formatDuration(totalExceedingDuration)}</Typography>
+      </Grid>
+
+      <Grid item xs={12}>
+        <Typography variant="subtitle2"
+                    align="center"
+                    data-testid="current-heading">{`Current Exceeding ${name}`}</Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography align="center"
+                    data-testid="current-value">{formatDuration(currentExceedingDuration)}</Typography>
       </Grid>
     </Grid>
   </>
