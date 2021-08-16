@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
+	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -59,6 +60,8 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 
 		values := []Value{}
 		totalExceedingDuration := time.Duration(0)
+		currentExceedingDuration := time.Duration(0)
+		currentWeek := adjustToStartOfWeek(date(clock.Now()))
 		for week, activities := range activitiesByWeek {
 			dur := time.Duration(0)
 			for _, act := range activities {
@@ -70,17 +73,21 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 			})
 			exceedingDuration := dur - time.Duration(config.Threshold)*time.Hour
 			totalExceedingDuration += exceedingDuration
+			if week != currentWeek {
+				currentExceedingDuration += exceedingDuration
+			}
 		}
 
 		sort.Sort(ByDate(values))
 
 		result := &Result{
-			Id:                     config.Id.Hex(),
-			Name:                   config.Name,
-			TotalExceedingDuration: totalExceedingDuration,
-			Formula:                config.Formula,
-			Threshold:              config.Threshold,
-			Values:                 values,
+			Id:                       config.Id.Hex(),
+			Name:                     config.Name,
+			TotalExceedingDuration:   totalExceedingDuration,
+			CurrentExceedingDuration: currentExceedingDuration,
+			Formula:                  config.Formula,
+			Threshold:                config.Threshold,
+			Values:                   values,
 		}
 
 		err = jsonResponse(w, http.StatusOK, result)

@@ -27,6 +27,18 @@ describe('Metric Detail', () => {
     expect(getByTestId('total-value')).toHaveTextContent('4h 30m')
   })
 
+  it('should display the current exceeding headline and value', () => {
+    const metric = {
+      name: 'Overtime',
+      currentExceedingDuration: 'PT4H30M'
+    }
+
+    const {getByTestId} = render(<Detail metric={metric}/>)
+
+    expect(getByTestId('current-heading')).toHaveTextContent('Current Exceeding Overtime')
+    expect(getByTestId('current-value')).toHaveTextContent('4h 30m')
+  })
+
   it('should display the total amount headline with the Name', () => {
     const metric = {
       name: 'Meetings'
