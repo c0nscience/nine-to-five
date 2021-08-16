@@ -38,11 +38,13 @@ func Test_JWT_Middleware(t *testing.T) {
 		w.Write(b)
 		wasCalled = true
 	}))
-	defer ts.Close()
+	t.Cleanup(func() {
+		ts.Close()
+	})
 	cache := &sync.Map{}
 
 	t.Run("should return public key", func(t *testing.T) {
-
+		jwt.SetTimeout(500 * time.Millisecond)
 		jwt.SetKeyHost(ts.URL)
 
 		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
@@ -58,7 +60,7 @@ func Test_JWT_Middleware(t *testing.T) {
 	})
 
 	t.Run("should return public key from cache", func(t *testing.T) {
-
+		jwt.SetTimeout(500 * time.Millisecond)
 		jwt.SetKeyHost(ts.URL)
 
 		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
@@ -75,7 +77,7 @@ func Test_JWT_Middleware(t *testing.T) {
 	})
 
 	t.Run("should fail for invalid audience", func(t *testing.T) {
-
+		jwt.SetTimeout(500 * time.Millisecond)
 		jwt.SetKeyHost(ts.URL)
 
 		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
@@ -89,7 +91,7 @@ func Test_JWT_Middleware(t *testing.T) {
 	})
 
 	t.Run("should fail for invalid issuer", func(t *testing.T) {
-
+		jwt.SetTimeout(500 * time.Millisecond)
 		jwt.SetKeyHost(ts.URL)
 
 		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
@@ -103,6 +105,7 @@ func Test_JWT_Middleware(t *testing.T) {
 	})
 
 	t.Run("should fail for missing key", func(t *testing.T) {
+		jwt.SetTimeout(500 * time.Millisecond)
 		jwt.SetKeyHost(ts.URL)
 
 		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
@@ -134,6 +137,7 @@ func Test_JWT_Middleware(t *testing.T) {
 			w.Write([]byte(`[{"wrong":"json"]}`))
 		}))
 		defer ts.Close()
+		jwt.SetTimeout(500 * time.Millisecond)
 		jwt.SetKeyHost(ts.URL)
 
 		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{
@@ -153,6 +157,7 @@ func TestUserIdMiddleware(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		recordedUserId = r.Context().Value("userId").(string)
 	})
+	jwt.SetTimeout(500 * time.Millisecond)
 
 	t.Run("should put user id into context", func(t *testing.T) {
 		token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.MapClaims{

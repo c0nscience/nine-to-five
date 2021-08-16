@@ -33,8 +33,16 @@ func main() {
 
 	dbUri := os.Getenv("DB_URI")
 	dbName := os.Getenv("DB_NAME")
-	activityClient := store.NewLogged(store.New(dbUri, dbName, activity.Collection))
-	metricClient := store.NewLogged(store.New(dbUri, dbName, metric.Collection))
+	ac, err := store.New(dbUri, dbName, activity.Collection)
+	if err != nil {
+		log.Panic().Err(err).Msg("Could not create activity store")
+	}
+	activityClient := store.NewLogged(ac)
+	mc, err := store.New(dbUri, dbName, metric.Collection)
+	if err != nil {
+		log.Panic().Err(err).Msg("Could not create metric store")
+	}
+	metricClient := store.NewLogged(mc)
 
 	r := mux.NewRouter()
 

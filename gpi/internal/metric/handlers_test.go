@@ -8,6 +8,7 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwttest"
 	"github.com/c0nscience/nine-to-five/gpi/internal/metric"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -26,21 +27,17 @@ func init() {
 const timeout = 200 * time.Millisecond
 
 func TestCalculate(t *testing.T) {
-	metricStore := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
-	activityStore := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
-	userId := "userid"
-
-	ctx, clc := context.WithTimeout(context.Background(), timeout)
-	metricStore.DeleteAll(ctx, userId)
-	activityStore.DeleteAll(ctx, userId)
-	clc()
+	metricStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
+	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	assert.NoError(t, err)
 
 	t.Run("should return exceeding duration for limited sum formula", func(t *testing.T) {
-		ctx, clc := context.WithTimeout(context.Background(), timeout)
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
 		t.Cleanup(func() {
 			metricStore.DeleteAll(ctx, userId)
 			activityStore.DeleteAll(ctx, userId)
-			clc()
 		})
 
 		//duration, _ := time.ParseDuration("40h")
@@ -54,21 +51,27 @@ func TestCalculate(t *testing.T) {
 		})
 		metricId := mId.(primitive.ObjectID)
 
-		activity.CreateAll(ctx, userId, 4, 30, time.Minute, []string{"tag3", "tag4"},
+		err := activity.CreateAll(ctx, userId, 4, 30, time.Minute, []string{"tag3", "tag4"},
 			func() time.Time {
 				return day(1)
 			},
-			func(ctx context.Context, userId string, act activity.Activity) {
-				_, _ = activityStore.Save(ctx, userId, &act)
+			func(ctx context.Context, userId string, act activity.Activity) error {
+				_, err := activityStore.Save(ctx, userId, &act)
+				if err != nil {
+					return err
+				}
+				return nil
 			})
+		assert.NoError(t, err)
 
 		clock.SetTime(day(22).Unix())
 		resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.Calculate(metricStore, activityStore), "/metrics/{id}", userId, "GET", "/metrics/"+metricId.Hex(), "")
 
 		subj := metric.Result{}
-		err := json.Unmarshal(resp.Body.Bytes(), &subj)
+		err = json.Unmarshal(resp.Body.Bytes(), &subj)
 		assert.NoError(t, err)
 
+		assert.Len(t, subj.Values, 4)
 		assert.Equal(t, http.StatusOK, resp.Code)
 		assert.Equal(t, "40h week", subj.Name)
 		assert.Equal(t, 10*time.Hour, subj.TotalExceedingDuration)
@@ -82,11 +85,11 @@ func TestCalculate(t *testing.T) {
 	})
 
 	t.Run("should return different week number for tasks on sunday and monday", func(t *testing.T) {
-		ctx, clc := context.WithTimeout(context.Background(), timeout)
+		userId := uuid.New().String()
+		ctx, _ := context.WithTimeout(context.Background(), timeout)
 		t.Cleanup(func() {
 			metricStore.DeleteAll(ctx, userId)
 			activityStore.DeleteAll(ctx, userId)
-			clc()
 		})
 		mId, err := metricStore.Save(ctx, userId, metric.Configuration{
 			UserId:    userId,

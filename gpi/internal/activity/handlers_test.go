@@ -7,6 +7,7 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
 	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwttest"
+	"github.com/c0nscience/nine-to-five/gpi/internal/metric"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
@@ -28,7 +29,8 @@ func init() {
 const timeout = 200 * time.Millisecond
 
 func Test_Start(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 
 	userId := "userid"
 	t.Run("should return started activity", func(t *testing.T) {
@@ -98,7 +100,8 @@ func Test_Start(t *testing.T) {
 }
 
 func Test_Stop(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 
 	t.Run("should set the end date to the current date of the current running activity", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -137,7 +140,8 @@ func Test_Stop(t *testing.T) {
 }
 
 func Test_Running(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 
 	t.Run("should return currently running activity", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -176,7 +180,8 @@ func Test_Running(t *testing.T) {
 }
 
 func Test_Get(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 
 	t.Run("should return activity by id", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -216,7 +221,8 @@ func Test_Get(t *testing.T) {
 }
 
 func Test_Update(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 	const dateFmt = "2006-01-02T15:04:05Z"
 
 	t.Run("should update", func(t *testing.T) {
@@ -324,7 +330,8 @@ func Test_Update(t *testing.T) {
 }
 
 func Test_Delete(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 
 	t.Run("should remove activity by id", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -368,7 +375,8 @@ func Test_Delete(t *testing.T) {
 }
 
 func Test_Tags(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 
 	t.Run("should return used tags", func(t *testing.T) {
 		userId := uuid.New().String()
@@ -408,7 +416,8 @@ func Test_Tags(t *testing.T) {
 }
 
 func Test_InRange(t *testing.T) {
-	mongoDbCli := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	mongoDbCli, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	assert.NoError(t, err)
 
 	t.Run("should return only activities in date range", func(t *testing.T) {
 		userId := uuid.New().String()

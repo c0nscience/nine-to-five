@@ -32,26 +32,28 @@ type mongoDbStore struct {
 	coll   *mongo.Collection
 }
 
-func New(uri, db string, collection CollectionName) Store {
+func New(uri, db string, collection CollectionName) (Store, error) {
 	ctx, cncl := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cncl()
 	cl, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatal().Err(err).
 			Msg("could not create mongodb client")
+		return nil, err
 	}
 
 	err = cl.Ping(ctx, readpref.Primary())
 	if err != nil {
 		log.Fatal().Err(err).
 			Msg("cloud not ping database")
+		return nil, err
 	}
 
 	database := cl.Database(db)
 	return &mongoDbStore{
 		client: cl,
 		coll:   database.Collection(string(collection)),
-	}
+	}, err
 }
 
 func (me *mongoDbStore) Disconnect(ctx context.Context) error {
