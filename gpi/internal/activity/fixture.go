@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func CreateAll(ctx context.Context, userId string, weeks int, dailyOvertime int, unit time.Duration, tags []string, nowFn func() time.Time, processFn func(ctx context.Context, userId string, act Activity)) {
+func CreateAll(ctx context.Context, userId string, weeks int, dailyOvertime int, unit time.Duration, tags []string, nowFn func() time.Time, processFn func(ctx context.Context, userId string, act Activity) error) error {
 	now := nowFn()
 	days := 5
 	hours := 6
@@ -28,8 +28,13 @@ func CreateAll(ctx context.Context, userId string, weeks int, dailyOvertime int,
 					End:    &end,
 					Tags:   tags,
 				}
-				processFn(ctx, userId, act)
+				err := processFn(ctx, userId, act)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
+
+	return nil
 }

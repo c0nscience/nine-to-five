@@ -1,6 +1,7 @@
 package metric
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
@@ -31,15 +32,16 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 
 		vars := mux.Vars(r)
 
+		ctx, _ := context.WithTimeout(r.Context(), 200*time.Millisecond)
 		var config Configuration
-		err := metricStore.FindOne(r.Context(), userId, byId(userId, vars[pathVariableId]), &config)
+		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), &config)
 		if err != nil {
 			log.Err(err).Msg("Could not find metric configuration")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 		var activities []activity.Activity
-		err = activityStore.Find(r.Context(), userId, byTags(userId, config.Tags), by("start", 1), &activities)
+		err = activityStore.Find(ctx, userId, byTags(userId, config.Tags), by("start", 1), &activities)
 		if err != nil {
 			log.Err(err).Msg("Could not find activities")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

@@ -18,7 +18,7 @@ jobs:
   test_server:
     docker:
       - image: cimg/openjdk:15.0
-      - image: mongo:4.2.11
+      - image: mongo:4.4.8
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
 
@@ -119,7 +119,7 @@ jobs:
   test_gpi:
     docker:
       - image: cimg/go:1.15
-      - image: mongo:4.2.11
+      - image: mongo:4.4.8
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
 
