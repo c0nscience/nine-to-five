@@ -31,8 +31,8 @@ func (c Configuration) SetObjectId(id primitive.ObjectID) {
 type Result struct {
 	Id                       string        `json:"id,omitempty" bson:"_id,omitempty"`
 	Name                     string        `json:"name,omitempty" bson:"_id,omitempty"`
-	TotalExceedingDuration   time.Duration `json:"totalExceedingDuration,omitempty" bson:"totalExceedingDuration,omitempty"`
-	CurrentExceedingDuration time.Duration `json:"currentExceedingDuration,omitempty" bson:"currentExceedingDuration,omitempty"`
+	TotalExceedingDuration   time.Duration `json:"totalExceedingDuration" bson:"totalExceedingDuration"`
+	CurrentExceedingDuration time.Duration `json:"currentExceedingDuration" bson:"currentExceedingDuration"`
 	Formula                  string        `json:"formula,omitempty" bson:"formula,omitempty"`
 	Threshold                float64       `json:"threshold,omitempty" bson:"threshold,omitempty"`
 	Values                   []Value       `json:"values,omitempty" bson:"values,omitempty"`
