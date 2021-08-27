@@ -63,7 +63,12 @@ func main() {
 	r.Handle("/activities/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Get(activityClient)))).Methods("GET", "OPTIONS")
 	r.Handle("/activities/{from}/{to}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.InRange(activityClient)))).Methods("GET", "OPTIONS")
 
+	r.Handle("/metrics", jwtMiddleware.Handler(userIdMiddleware.Middleware(metric.List(metricClient)))).Methods("GET", "OPTIONS")
+	r.Handle("/metrics", jwtMiddleware.Handler(userIdMiddleware.Middleware(metric.Create(metricClient)))).Methods("POST", "OPTIONS")
 	r.Handle("/metrics/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(metric.Calculate(metricClient, activityClient)))).Methods("GET", "OPTIONS")
+	r.Handle("/metrics/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(metric.Update(metricClient)))).Methods("POST", "OPTIONS")
+	r.Handle("/metrics/{id}/config", jwtMiddleware.Handler(userIdMiddleware.Middleware(metric.Load(metricClient)))).Methods("GET", "OPTIONS")
+	r.Handle("/metrics/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(metric.Delete(metricClient)))).Methods("DELETE", "OPTIONS")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{

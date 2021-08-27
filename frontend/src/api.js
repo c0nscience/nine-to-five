@@ -1,18 +1,11 @@
-const BASE_URL = process.env.REACT_APP_API_HOST
 const BASE_URL_GPI = process.env.REACT_APP_GPI_HOST
 
 const url = (endpoint, url) => {
-  if (!url) {
-    url = BASE_URL
-  }
   return `${url}/${endpoint}`
 }
 
-const resolveUrl = (endpoint, gpi) => {
-  if (gpi) {
-    return url(endpoint, BASE_URL_GPI)
-  }
-  return url(endpoint)
+const resolveUrl = (endpoint) => {
+  return url(endpoint, BASE_URL_GPI)
 }
 
 const authorizationHeader = async (getToken) => {
@@ -57,8 +50,8 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
     }
   }
 
-  const get = (endpoint, signal, gpi) => {
-    const u = resolveUrl(endpoint, gpi)
+  const get = (endpoint, signal) => {
+    const u = resolveUrl(endpoint)
     return authorizationHeader(getToken)
       .then(token => fetch(u, {
         method: 'GET',
@@ -78,8 +71,8 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       }))
   }
 
-  const post = (endpoint, body, gpi) => {
-    const u = resolveUrl(endpoint, gpi)
+  const post = (endpoint, body) => {
+    const u = resolveUrl(endpoint)
     return authorizationHeader(getToken)
       .then(token => fetch(u, {
         method: 'POST',
@@ -93,8 +86,8 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       .then(asJson)
   }
 
-  const put = (endpoint, body, gpi) => {
-    const u = resolveUrl(endpoint, gpi)
+  const put = (endpoint, body) => {
+    const u = resolveUrl(endpoint)
     return authorizationHeader(getToken)
       .then(token => fetch(u, {
         method: 'PUT',
@@ -108,8 +101,8 @@ export const createApi = (getToken, addNetworkActivity, removeNetworkActivity) =
       .then(asJson)
   }
 
-  const del = (endpoint, body, gpi) => {
-    const u = resolveUrl(endpoint, gpi)
+  const del = (endpoint, body) => {
+    const u = resolveUrl(endpoint)
     return authorizationHeader(getToken)
       .then(token => fetch(u, {
         method: 'DELETE',

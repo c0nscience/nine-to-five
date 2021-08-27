@@ -1,9 +1,5 @@
 import React, {useEffect, useState} from 'react'
 import {TextField} from '@material-ui/core'
-import InputLabel from '@material-ui/core/InputLabel'
-import Select from '@material-ui/core/Select'
-import MenuItem from '@material-ui/core/MenuItem'
-import FormControl from '@material-ui/core/FormControl'
 import Button from '@material-ui/core/Button'
 import {useHistory} from 'react-router'
 import Grid from '@material-ui/core/Grid'
@@ -37,8 +33,6 @@ export const CreatePage = ({saveNewConfiguration, usedTags}) => {
   const history = useHistory()
   const [name, setName] = useState('')
   const [tags, setTags] = useState([])
-  const [formula, setFormula] = useState('')
-  const [timeUnit, setTimeUnit] = useState('')
   const [threshold, setThreshold] = useState(0)
 
   return <form noValidate>
@@ -58,29 +52,6 @@ export const CreatePage = ({saveNewConfiguration, usedTags}) => {
                     setTags={setTags}
                     usedTags={usedTags}
                     allowNewValues={true}/>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid container>
-            <Grid item xs={8}>
-              <TextField data-testid='formula'
-                         label='Formula'
-                         variant='filled'
-                         fullWidth
-                         value={formula}
-                         onChange={callValueWith(setFormula)}/>
-            </Grid>
-            <Grid item xs={4}>
-              <FormControl variant='filled' fullWidth>
-                <InputLabel id='time-unit-label'>per</InputLabel>
-                <Select data-testid='time-unit'
-                        labelId='time-unit-label'
-                        value={timeUnit}
-                        onChange={callValueWith(setTimeUnit)}>
-                  <MenuItem value='WEEKS'>Week</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
         </Grid>
         <Grid item xs={12}>
           <TextField data-testid='threshold'
@@ -106,7 +77,7 @@ export const CreatePage = ({saveNewConfiguration, usedTags}) => {
           <Button color='primary'
                   variant='contained'
                   data-testid='save-button'
-                  onClick={() => saveNewConfiguration({name, tags, formula, timeUnit, threshold})
+                  onClick={() => saveNewConfiguration({name, tags, threshold})
                     .then(() => history.replace('/metrics'))}>
             Save
           </Button>

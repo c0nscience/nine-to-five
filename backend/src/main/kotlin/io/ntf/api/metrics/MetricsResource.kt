@@ -13,7 +13,7 @@ import kotlin.time.ExperimentalTime
 @RestController
 class MetricsResource(private val metricsService: MetricsService) {
 
-  @GetMapping("/metrics")//TODO
+  @GetMapping("/metrics")
   fun getAllMetrics(principal: Mono<Principal>): Mono<List<ListMetric>> {
     return principal.name()
       .flatMapMany { metricsService.findAllByUserId(it) }
@@ -21,7 +21,7 @@ class MetricsResource(private val metricsService: MetricsService) {
       .collectList()
   }
 
-  @PostMapping("/metrics")//TODO
+  @PostMapping("/metrics")
   fun createMetricConfiguration(
     principal: Mono<Principal>,
     @RequestBody createMetric: Mono<CreateMetric>
@@ -42,7 +42,7 @@ class MetricsResource(private val metricsService: MetricsService) {
       .flatMap { userId -> metricsService.calculateMetricFor(userId, id) }
   }
 
-  @DeleteMapping("metrics/{id}")//TODO
+  @DeleteMapping("metrics/{id}")
   fun deleteMetricConfiguration(
     principal: Mono<Principal>,
     @PathVariable("id") id: String
@@ -52,7 +52,7 @@ class MetricsResource(private val metricsService: MetricsService) {
       .map { ResponseEntity.status(HttpStatus.OK).build<Void>() }
   }
 
-  @PostMapping("metrics/{id}")//TODO
+  @PostMapping("metrics/{id}")
   fun updateMetricConfiguration(
     principal: Mono<Principal>,
     @PathVariable("id") id: String,
@@ -63,7 +63,7 @@ class MetricsResource(private val metricsService: MetricsService) {
       .map { ResponseEntity.status(HttpStatus.OK).build<Void>() }
   }
 
-  @GetMapping("metrics/{id}/config")//TODO
+  @GetMapping("metrics/{id}/config")
   fun loadMetricConfiguration(
     principal: Mono<Principal>,
     @PathVariable("id") id: String

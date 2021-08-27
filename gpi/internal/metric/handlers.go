@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io/ioutil"
 	"net/http"
 	"sort"
 	"time"
@@ -22,6 +23,8 @@ const (
 	contextUserIdKey = "userId"
 )
 
+const timeout = 200 * time.Millisecond
+
 func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userId, ok := r.Context().Value(contextUserIdKey).(string)
@@ -32,7 +35,7 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 
 		vars := mux.Vars(r)
 
-		ctx, _ := context.WithTimeout(r.Context(), 200*time.Millisecond)
+		ctx, _ := context.WithTimeout(r.Context(), timeout)
 		var config Configuration
 		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), &config)
 		if err != nil {
@@ -41,7 +44,11 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 			return
 		}
 		var activities []activity.Activity
-		err = activityStore.Find(ctx, userId, byTags(userId, config.Tags), by("start", 1), &activities)
+		if len(config.Tags) == 0 {
+			err = activityStore.Find(ctx, userId, byUser(userId), by("start", 1), &activities)
+		} else {
+			err = activityStore.Find(ctx, userId, byTags(userId, config.Tags), by("start", 1), &activities)
+		}
 		if err != nil {
 			log.Err(err).Msg("Could not find activities")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -87,7 +94,6 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 			Name:                     config.Name,
 			TotalExceedingDuration:   totalExceedingDuration,
 			CurrentExceedingDuration: currentExceedingDuration,
-			Formula:                  config.Formula,
 			Threshold:                config.Threshold,
 			Values:                   values,
 		}
@@ -103,6 +109,10 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 func byId(userId, id string) bson.M {
 	objectID, _ := primitive.ObjectIDFromHex(id)
 	return bson.M{"userId": userId, "_id": objectID}
+}
+
+func byUser(userId string) bson.M {
+	return bson.M{"userId": userId}
 }
 
 func byTags(userId string, tags []string) bson.M {
@@ -136,4 +146,179 @@ func jsonResponse(w http.ResponseWriter, status int, a interface{}) error {
 	w.WriteHeader(status)
 	w.Write(b)
 	return nil
+}
+
+func List(metricStore store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		ctx, _ := context.WithTimeout(r.Context(), timeout)
+
+		cfgs := []Configuration{}
+		err := metricStore.Find(ctx, userId, byUser(userId), by("name", 1), &cfgs)
+		if err != nil {
+			log.Err(err).Msg("Could not find metric configurations")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		res := make([]map[string]string, len(cfgs))
+		for i, cfg := range cfgs {
+			res[i] = map[string]string{
+				"id":   cfg.Id.Hex(),
+				"name": cfg.Name,
+			}
+		}
+
+		err = jsonResponse(w, http.StatusOK, res)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type cfgForm struct {
+	Name      string   `json:"name"`
+	Threshold float64  `json:"threshold"`
+	Tags      []string `json:"tags"`
+}
+
+func Create(metricStore store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		ctx, _ := context.WithTimeout(r.Context(), timeout)
+
+		b, _ := ioutil.ReadAll(r.Body)
+
+		bdy := cfgForm{}
+		err := json.Unmarshal(b, &bdy)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
+			return
+		}
+
+		if len(bdy.Name) == 0 {
+			http.Error(w, "No name provided", http.StatusBadRequest)
+			return
+		}
+
+		cfg := &Configuration{
+			UserId:    userId,
+			Name:      bdy.Name,
+			Threshold: bdy.Threshold,
+			Tags:      bdy.Tags,
+		}
+		_, err = metricStore.Save(ctx, userId, cfg)
+		if err != nil {
+			log.Err(err).Msg("Could not save metric configuration")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+
+func Delete(metricStore store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		ctx, _ := context.WithTimeout(r.Context(), timeout)
+
+		vars := mux.Vars(r)
+		err := metricStore.Delete(ctx, userId, byId(userId, vars[pathVariableId]), nil)
+		if err != nil {
+			log.Err(err).Msg("Could not delete metric configuration")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func Update(metricStore store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		ctx, _ := context.WithTimeout(r.Context(), timeout)
+
+		vars := mux.Vars(r)
+		cfg := &Configuration{}
+		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), cfg)
+		if err != nil {
+			log.Err(err).Msg("Could not find metric configuration")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		b, _ := ioutil.ReadAll(r.Body)
+
+		bdy := cfgForm{}
+		err = json.Unmarshal(b, &bdy)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
+			return
+		}
+
+		cfg.Name = bdy.Name
+		cfg.Tags = bdy.Tags
+		cfg.Threshold = bdy.Threshold
+
+		_, err = metricStore.Save(ctx, userId, cfg)
+		if err != nil {
+			http.Error(w, "Configuration could not be updated", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+
+
+func Load(metricStore store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		ctx, _ := context.WithTimeout(r.Context(), timeout)
+
+		vars := mux.Vars(r)
+		cfg := &Configuration{}
+		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), cfg)
+		if err != nil {
+			log.Err(err).Msg("Could not find metric configuration")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		err = jsonResponse(w, http.StatusOK, cfg)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
 }

@@ -34,7 +34,7 @@ export const ActivityProvider = ({children}) => {
   const {get, post, put, del, request} = createApi(getAccessTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadRunning = () => {
-    request(get('activity/running', undefined, true)
+    request(get('activity/running', undefined)
       .then(runningActivity => dispatch(runningActivityLoaded(runningActivity)))
       .catch(e => {
         if (e.status === 404) {
@@ -48,13 +48,13 @@ export const ActivityProvider = ({children}) => {
 
   //TODO this should move into an own TagsContext, which then also can take care of providing methods to maintain tags like changing color and such
   const loadUsedTags = () => {
-    request(get('activities/tags', undefined, true)
+    request(get('activities/tags', undefined)
       .then(tags => dispatch(usedTagsLoaded(tags))))
       .with(LOAD_USED_TAGS)
   }
 
   const loadActivitiesInRange = (from, to, signal) => {
-    return request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal, true)
+    return request(get(`activities/${from.toISODate()}/${to.toISODate()}`, signal)
       .then(activities => dispatch(activitiesInRangeLoaded(activities)))
     ).with(LOAD_ACTIVITIES_IN_RANGE)
   }
@@ -62,7 +62,7 @@ export const ActivityProvider = ({children}) => {
   const isLoadingActivitiesInRange = () => isLoading(LOAD_ACTIVITIES_IN_RANGE)
 
   const startActivity = activity => {
-    return request(post('activity', activity, true)
+    return request(post('activity', activity)
       .then(activity => {
         dispatch(activityStarted(activity))
         return activity
@@ -76,18 +76,18 @@ export const ActivityProvider = ({children}) => {
   }
 
   const stopActivity = () => {
-    return request(post('activity/stop', undefined, true)
+    return request(post('activity/stop', undefined)
       .then(stoppedActivity => dispatch(activityStopped(stoppedActivity)))
     ).with(STOP_ACTIVITY)
   }
 
   const saveActivity = (changedActivity) => {
-    return request(put(`activity/${changedActivity.id}`, changedActivity, true))
+    return request(put(`activity/${changedActivity.id}`, changedActivity))
       .with(SAVE_ACTIVITY)
   }
 
   const deleteActivity = id => {
-    return request(del(`activity/${id}`, undefined, true)
+    return request(del(`activity/${id}`, undefined)
       .then(deletedActivity => dispatch(activityDeleted(deletedActivity)))
     ).with(DELETE_ACTIVITY)
   }
@@ -102,7 +102,7 @@ export const ActivityProvider = ({children}) => {
   }
 
   const loadActivity = id => {
-    request(get(`activities/${id}`, undefined, true)
+    request(get(`activities/${id}`, undefined)
       .then(activity => dispatch(activityLoaded(activity)))
     ).with(LOAD_ACTIVITY)
   }

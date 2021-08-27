@@ -6,67 +6,104 @@ import {useHistory, useParams} from 'react-router'
 import Button from '@material-ui/core/Button'
 import {callValueWith} from 'functions'
 import {useActivity} from 'contexts/ActivityContext'
+import Grid from "@material-ui/core/Grid";
+import makeStyles from "@material-ui/core/styles/makeStyles";
+
+const useStyles = makeStyles(theme => ({
+  root: {
+    position: 'absolute',
+    inset: '0px',
+    marginTop: theme.mixins.toolbar.minHeight,
+    padding: theme.spacing(2),
+    flexDirection: 'column'
+  },
+  center: {
+    textAlign: 'center'
+  },
+  flex: {
+    flex: '1 1 auto'
+  },
+  buttonContainer: {
+    flex: 0
+  }
+}))
 
 export const Edit = ({
                        metricConfiguration = {
                          name: '',
-                         formula: '',
                          tags: [],
-                         unit: '',
                          threshold: 0
                        }, save, usedTags
                      }) => {
+  const classes = useStyles()
+  const history = useHistory()
   const [name, setName] = useState('')
-  const [formula, setFormula] = useState('')
   const [tags, setTags] = useState([])
-  const [unit, setUnit] = useState('')
   const [threshold, setThreshold] = useState(0)
 
   useEffect(() => {
     setName(metricConfiguration.name)
-    setFormula(metricConfiguration.formula)
     setTags(metricConfiguration.tags)
-    setUnit(metricConfiguration.unit)
     setThreshold(metricConfiguration.threshold)
-  }, [metricConfiguration.name, metricConfiguration.formula, metricConfiguration.tags, metricConfiguration.unit, metricConfiguration.threshold])
+  }, [metricConfiguration.name, metricConfiguration.tags, metricConfiguration.threshold])
 
   return <form data-testid='form'>
-    <TextField label='Name'
-               name='name'
-               value={name}
-               onChange={callValueWith(setName)}/>
+    <Grid container className={classes.root} alignItems='flex-start'>
+      <Grid container item xs={12} className={classes.flex} alignContent='flex-start'>
+        <Grid item xs={12}>
+          <TextField data-testid='name'
+                     label='Name'
+                     variant='filled'
+                     value={name}
+                     fullWidth
+                     onChange={callValueWith(setName)}/>
+        </Grid>
+        <Grid item xs={12}>
+          <TagField data-testid='tags'
+                    tags={tags}
+                    setTags={setTags}
+                    usedTags={usedTags}
+                    allowNewValues={true}/>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField data-testid='threshold'
+                     label='Threshold'
+                     variant='filled'
+                     value={threshold}
+                     type='number'
+                     fullWidth
+                     onChange={callValueWith(setThreshold)}/>
+        </Grid>
+      </Grid>
 
-    <TextField label='Formula'
-               name='formula'
-               value={formula}
-               onChange={callValueWith(setFormula)}/>
+      <Grid container item xs={12} justify='flex-end' className={classes.buttonContainer}>
+        <Grid item xs={3} className={classes.center}>
+          <Button color='secondary'
+                  variant='contained'
+                  data-testid='cancel-button'
+                  onClick={() => history.replace('/metrics')}>
+            Cancel
+          </Button>
+        </Grid>
+        <Grid item xs={3} className={classes.center}>
+          <Button color='primary'
+                  variant='contained'
+                  data-testid='save-button'
+                  onClick={() => save({id: metricConfiguration.id, name, tags, threshold})
+                    .then(() => history.replace(`/metrics/${metricConfiguration.id}`))
+                  }>
+            Save
+          </Button>
 
-    <TagField tags={tags}
-              setTags={setTags}
-              usedTags={usedTags}
-              allowNewValues={true}/>
-
-    <TextField label='Unit'
-               name='unit'
-               value={unit}
-               onChange={callValueWith(setUnit)}/>
-
-    <TextField label='Threshold'
-               name='threshold'
-               type='number'
-               value={threshold}
-               onChange={callValueWith(setThreshold)}/>
-
-    <Button onClick={() => save({id: metricConfiguration.id, name, formula, tags, unit, threshold})}
-            variant='contained'
-            color='primary'>Save</Button>
+        </Grid>
+      </Grid>
+    </Grid>
   </form>
 }
 
 export default () => {
   const {configuration, loadMetricConfiguration, saveMetricConfiguration} = useMetrics()
   const {id} = useParams()
-  const history = useHistory()
   const {loadUsedTags, usedTags} = useActivity()
 
   useEffect(() => {
@@ -79,10 +116,7 @@ export default () => {
       configuration &&
       <Edit metricConfiguration={{id, ...configuration}}
             usedTags={usedTags}
-            save={config => {
-              saveMetricConfiguration(config)
-                .then(() => history.replace(`/metrics/${id}`))
-            }}/>
+            save={saveMetricConfiguration}/>
     }
   </>
 }

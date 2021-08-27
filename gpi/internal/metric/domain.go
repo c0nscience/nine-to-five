@@ -11,13 +11,11 @@ var Collection store.CollectionName = "metricConfigurations"
 var _ store.HasObjectId = &Configuration{}
 
 type Configuration struct {
-	Id     primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	UserId string             `json:"userId,omitempty" bson:"userId,omitempty"`
-	Name   string             `json:"name,omitempty" bson:"name,omitempty"`
-	Tags   []string           `json:"tags,omitempty" bson:"tags,omitempty"`
-	//TimeUnit  time.Duration      `json:"timeUnit,omitempty" bson:"timeUnit,omitempty"`
-	Formula   string  `json:"formula,omitempty" bson:"formula,omitempty"`
-	Threshold float64 `json:"threshold,omitempty" bson:"threshold,omitempty"`
+	Id        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserId    string             `json:"userId,omitempty" bson:"userId,omitempty"`
+	Name      string             `json:"name,omitempty" bson:"name,omitempty"`
+	Tags      []string           `json:"tags,omitempty" bson:"tags,omitempty"`
+	Threshold float64            `json:"threshold,omitempty" bson:"threshold,omitempty"`
 }
 
 func (c Configuration) ObjectId() primitive.ObjectID {
@@ -33,7 +31,6 @@ type Result struct {
 	Name                     string        `json:"name,omitempty" bson:"_id,omitempty"`
 	TotalExceedingDuration   time.Duration `json:"totalExceedingDuration" bson:"totalExceedingDuration"`
 	CurrentExceedingDuration time.Duration `json:"currentExceedingDuration" bson:"currentExceedingDuration"`
-	Formula                  string        `json:"formula,omitempty" bson:"formula,omitempty"`
 	Threshold                float64       `json:"threshold,omitempty" bson:"threshold,omitempty"`
 	Values                   []Value       `json:"values,omitempty" bson:"values,omitempty"`
 }
