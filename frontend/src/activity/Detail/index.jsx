@@ -18,6 +18,12 @@ const useStyles = makeStyles(theme => ({
   root: {
     marginTop: theme.spacing(3)
   },
+  buttonContainer: {
+    marginTop: theme.spacing(3)
+  },
+  tagContainer: {
+    marginTop: theme.spacing(1)
+  },
   spacer: {
     flexGrow: 1
   }
@@ -73,7 +79,7 @@ export const Detail = ({
       return
     }
     timeUpdater = setInterval(() => {
-      console.log("update time")
+      console.log('update time')
       setEndOrNow(DateTime.local())
     }, updateInterval)
     return () => {
@@ -92,38 +98,41 @@ export const Detail = ({
 
     <Grid container className={classes.root}>
       <Grid item xs={12}>
-        <Typography data-testid='duration' align='center' variant='h1'>
+        <Typography data-testid="duration" align="center" variant="h1">
           {formatDuration(duration, {multiline: true})}
         </Typography>
       </Grid>
       <Grid item xs={1}/>
       <Grid item xs={10}>
-        <Typography data-testid='name' variant='h5'>{name}</Typography>
+        <Typography data-testid="name" variant="h5">{name}</Typography>
       </Grid>
       <Grid item xs={1}/>
       <Grid item xs={1}/>
-      <Grid item xs={10}>
-        {tags && tags.sort().map(t => <Chip data-testid={`tag-${t}`} key={t} label={t} size='small'/>)}
+      <Grid item xs={10} className={classes.tagContainer}>
+        {tags && tags.sort().map(t => <Chip data-testid={`tag-${t}`} key={t} label={t} size="small"/>)}
       </Grid>
       <Grid item xs={1}/>
-      <Grid item xs={12}>
-        {
-          !isActivityInProgress &&
-          <Button data-testid='continue-btn'
-                  variant='contained'
-                  color='primary'
-                  onClick={() => onContinue({name, tags})}
-          >Continue</Button>
-        }
-        {
-          (isActivityInProgress && end) &&
-          <Button data-testid='switch-btn'
-                  variant='contained'
-                  color='primary'
-                  onClick={() => onSwitch({name, tags})}
-          >Switch</Button>
-        }
-        {!end && <Button onClick={() => stop()} color='secondary' variant='contained'>Stop</Button>}
+      <Grid item xs={1}/>
+      <Grid item container xs={11} className={classes.buttonContainer} justifyContent="flex-end">
+        <Grid item xs={3}>
+          {
+            !isActivityInProgress &&
+            <Button data-testid="continue-btn"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => onContinue({name, tags})}
+            >Continue</Button>
+          }
+          {
+            (isActivityInProgress && end) &&
+            <Button data-testid="switch-btn"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => onSwitch({name, tags})}
+            >Switch</Button>
+          }
+          {!end && <Button onClick={() => stop()} color="secondary" variant="contained">Stop</Button>}
+        </Grid>
       </Grid>
     </Grid>
   </>

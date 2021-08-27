@@ -106,6 +106,30 @@ func main() {
 		}
 	}()
 
+	go func() {
+		if os.Getenv("POPULATE") == "true" {
+			log.Info().Msg("Populate database")
+			ctx := context.Background()
+			userId := "auth0|59ac17508f649c3f85124ec1"
+			err := activity.CreateAll(ctx, userId, 3, 30, time.Minute, []string{"acme", "meeting"},
+				func() time.Time {
+					n := time.Now().UTC()
+					d := time.Date(n.Year(), n.Month(), n.Day(), 8, 30, 0, 0, n.Location())
+					return metric.AdjustToStartOfWeek(d).AddDate(0, 0, -7)
+				},
+				func(ctx context.Context, userId string, act activity.Activity) error {
+					_, err := activityClient.Save(ctx, userId, &act)
+					if err != nil {
+						return err
+					}
+					return nil
+				})
+			if err != nil {
+				log.Err(err).Msg("could not populate data")
+			}
+		}
+	}()
+
 	<-termChan
 
 	log.Info().Msg("SIGTERM received. Shutdown process initiated")

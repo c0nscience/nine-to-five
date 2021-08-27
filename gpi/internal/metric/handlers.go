@@ -57,7 +57,7 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 
 		activitiesByWeek := map[time.Time][]activity.Activity{}
 		for _, act := range activities {
-			week := adjustToStartOfWeek(date(act.Start))
+			week := AdjustToStartOfWeek(date(act.Start))
 			a, ok := activitiesByWeek[week]
 			if !ok {
 				activitiesByWeek[week] = []activity.Activity{act}
@@ -70,7 +70,7 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 		values := []Value{}
 		totalExceedingDuration := time.Duration(0)
 		currentExceedingDuration := time.Duration(0)
-		currentWeek := adjustToStartOfWeek(date(clock.Now()))
+		currentWeek := AdjustToStartOfWeek(date(clock.Now()))
 		for week, activities := range activitiesByWeek {
 			dur := time.Duration(0)
 			for _, act := range activities {
@@ -123,7 +123,7 @@ func by(field string, order int) bson.D {
 	return bson.D{{field, order}}
 }
 
-func adjustToStartOfWeek(t time.Time) time.Time {
+func AdjustToStartOfWeek(t time.Time) time.Time {
 	weekday := t.Weekday()
 	offset := int(time.Monday) - int(weekday)
 	if weekday == time.Sunday {
