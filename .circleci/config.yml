@@ -15,35 +15,6 @@ jobs:
           paths:
             - ~/project
 
-  test_server:
-    docker:
-      - image: cimg/openjdk:15.0
-      - image: mongo:4.4.8
-        environment:
-          MONGO_INITDB_DATABASE: ntf-db-test
-
-    steps:
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
-            - repo-
-      - restore_cache:
-          keys:
-            - m2-{{ checksum "backend/pom.xml" }}
-            - m2-
-      - run:
-          command: |
-            cd backend
-            ./mvnw verify
-          environment:
-            SPRING_PROFILES_ACTIVE: ci
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: m2-{{ checksum "backend/pom.xml" }}
-      - store_test_results:
-          path: backend/target/surefire-reports
-
   test_frontend:
     docker:
       - image: cimg/node:lts
@@ -176,14 +147,6 @@ workflows:
           filters:
             branches:
               only: master
-
-#      - test_cli:
-#          requires:
-#            - checkout_code
-      - test_server:
-          name: test legacy api
-          requires:
-            - checkout code
       - test_frontend:
           name: test frontend
           requires:
@@ -213,5 +176,4 @@ workflows:
           name: deploy frontend
           requires:
             - test golang api
-            - test legacy api
             - test frontend

@@ -18,34 +18,37 @@ export const MetricsProvider = ({children}) => {
   const {get, post, del, request} = createApi(getAccessTokenSilently, addNetworkActivity, removeNetworkActivity)
 
   const loadMetricConfigurations = () => {
-    request(get('metrics')
+    request(get('metrics', undefined)
       .then(configurations => dispatch(metricConfigurationsLoaded(configurations)))
     ).with(LOAD_METRIC_CONFIGURATIONS)
   }
 
   const saveNewMetricConfiguration = newConfiguration => {
+    console.log("newConfiguration", newConfiguration)
+
     return request(post('metrics', newConfiguration))
       .with(CREATE_NEW_METRIC_CONFIGURATION)
   }
 
   const loadMetricDetail = id => {
-    request(get(`metrics/${id}`, undefined, true)
+    request(get(`metrics/${id}`, undefined)
       .then(metricDetail => dispatch(metricDetailLoaded(metricDetail)))
     ).with(LOAD_METRIC_DETAIL)
   }
 
   const deleteMetricConfiguration = id => {
-    return request(del(`metrics/${id}`))
+    return request(del(`metrics/${id}`, undefined))
       .with(DELETE_METRIC_CONFIGURATION)
   }
 
   const loadMetricConfiguration = id => {
-    return request(get(`metrics/${id}/config`)
+    return request(get(`metrics/${id}/config`, undefined)
       .then(metricConfiguration => dispatch(metricConfigurationLoaded(metricConfiguration)))
     ).with(LOAD_METRIC_CONFIGURATION)
   }
 
   const saveMetricConfiguration = config => {
+    console.log("config", config)
     return request(post(`metrics/${config.id}`, config))
       .with(SAVE_METRIC_CONFIGURATION)
   }

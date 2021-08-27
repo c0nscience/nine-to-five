@@ -45,6 +45,8 @@ export const callValueWith = f => event => {
   const target = event.target
   if (target.type === 'checkbox') {
     f(target.checked)
+  } else if (target.type === 'number') {
+    f(Number.parseFloat(target.value))
   } else {
     f(target.value)
   }

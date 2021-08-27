@@ -27,32 +27,10 @@ describe('Create Metric Page', () => {
     expect(getByTestId('tags')).toBeVisible()
   })
 
-  it('should contain a formula field', () => {
-    const {getByTestId} = render(<CreatePage/>)
-
-    expect(getByTestId('formula')).toBeVisible()
-  })
-
   it('should contain a threshold field', () => {
     const {getByTestId} = render(<CreatePage/>)
 
     expect(getByTestId('threshold')).toBeVisible()
-  })
-
-  describe('has time unit select field', () => {
-    it('should exist', () => {
-      const {getByTestId} = render(<CreatePage/>)
-
-      expect(getByTestId('time-unit')).toBeVisible()
-    })
-
-    it('should contain \'week\' as time unit', () => {
-      const {getByRole, getAllByRole} = render(<CreatePage/>)
-
-      fireEvent.mouseDown(getAllByRole('button')[0])
-
-      expect(getByRole('option')).toHaveTextContent('Week')
-    })
   })
 
   it('should have a save button', () => {
