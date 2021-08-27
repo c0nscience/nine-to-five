@@ -36,8 +36,9 @@ func Test_Metrics(t *testing.T) {
 	t.Run("Calculate", func(t *testing.T) {
 		t.Run("should return exceeding duration for limited sum formula", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			mId, _ := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
@@ -81,8 +82,9 @@ func Test_Metrics(t *testing.T) {
 
 		t.Run("should return result over all saved activities", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			mId, _ := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
@@ -139,8 +141,9 @@ func Test_Metrics(t *testing.T) {
 
 		t.Run("should return different week number for tasks on sunday and monday", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 			mId, err := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
 				Name:      "40h week",
@@ -185,8 +188,9 @@ func Test_Metrics(t *testing.T) {
 	t.Run("List", func(t *testing.T) {
 		t.Run("should contain the saved metric configurations", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 			mId1, err := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
 				Name:      "metric config #1",
@@ -218,7 +222,7 @@ func Test_Metrics(t *testing.T) {
 
 		t.Run("should return empty list in case no metrics are saved", func(t *testing.T) {
 			userId := uuid.New().String()
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.List(metricStore), "/metrics", userId, "GET", "/metrics", "")
 
@@ -234,8 +238,9 @@ func Test_Metrics(t *testing.T) {
 	t.Run("Create", func(t *testing.T) {
 		t.Run("should create metric with name", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			createBody := "{\"name\":\"metric cfg #1\"}"
 			resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.Create(metricStore), "/metrics", userId, "POST", "/metrics", createBody)
@@ -252,8 +257,9 @@ func Test_Metrics(t *testing.T) {
 
 		t.Run("should create metric with name and threshold", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			createBody := "{\"name\":\"metric cfg #2\",\"threshold\":35.2}"
 			resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.Create(metricStore), "/metrics", userId, "POST", "/metrics", createBody)
@@ -271,8 +277,9 @@ func Test_Metrics(t *testing.T) {
 
 		t.Run("should create metric with name and tags", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			createBody := "{\"name\":\"metric cfg #3\",\"tags\":[\"tag-1\",\"tag-2\"]}"
 			resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.Create(metricStore), "/metrics", userId, "POST", "/metrics", createBody)
@@ -290,7 +297,7 @@ func Test_Metrics(t *testing.T) {
 
 		t.Run("should fail with no name", func(t *testing.T) {
 			userId := uuid.New().String()
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			createBody := "{\"name\":\"\"}"
 			resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.Create(metricStore), "/metrics", userId, "POST", "/metrics", createBody)
@@ -307,8 +314,9 @@ func Test_Metrics(t *testing.T) {
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("should delete metric", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			mId, err := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
@@ -340,8 +348,9 @@ func Test_Metrics(t *testing.T) {
 	t.Run("Update", func(t *testing.T) {
 		t.Run("should update metric", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			mId, err := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
@@ -368,8 +377,9 @@ func Test_Metrics(t *testing.T) {
 
 		t.Run("should update metric and set threshold to 0", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			mId, err := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
@@ -398,8 +408,9 @@ func Test_Metrics(t *testing.T) {
 	t.Run("Load", func(t *testing.T) {
 		t.Run("should load metric", func(t *testing.T) {
 			userId := uuid.New().String()
-			ctx, _ := context.WithTimeout(context.Background(), timeout)
-			t.Cleanup(stores(metricStore, activityStore, userId))
+			ctx, clc := context.WithTimeout(context.Background(), timeout)
+			defer clc()
+			t.Cleanup(store.Stores(userId, metricStore, activityStore))
 
 			mId, err := metricStore.Save(ctx, userId, metric.Configuration{
 				UserId:    userId,
@@ -420,14 +431,6 @@ func Test_Metrics(t *testing.T) {
 			assert.Equal(t, 40.0, subj.Threshold)
 		})
 	})
-}
-
-func stores(metricStore store.Store, activityStore store.Store, userId string) func() {
-	return func() {
-		ctx := context.Background()
-		metricStore.DeleteAll(ctx, userId)
-		activityStore.DeleteAll(ctx, userId)
-	}
 }
 
 func day(day int) time.Time {

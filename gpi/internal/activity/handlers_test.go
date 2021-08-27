@@ -34,10 +34,9 @@ func Test_Start(t *testing.T) {
 
 	userId := "userid"
 	t.Run("should return started activity", func(t *testing.T) {
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		ctx, clc := context.WithTimeout(context.Background(), timeout)
+		defer clc()
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 		now := clock.Now()
 
@@ -45,7 +44,7 @@ func Test_Start(t *testing.T) {
 		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		subj := activity.Activity{}
-		json.Unmarshal(resp.Body.Bytes(), &subj)
+		_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 		assert.Equal(t, http.StatusCreated, resp.Code)
 		assert.Equal(t, userId, subj.UserId)
@@ -62,16 +61,15 @@ func Test_Start(t *testing.T) {
 	})
 
 	t.Run("should return started activity with set start time", func(t *testing.T) {
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		ctx, clc := context.WithTimeout(context.Background(), timeout)
+		defer clc()
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		bdy := `{"name":"new activity","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`
 		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		subj := activity.Activity{}
-		json.Unmarshal(resp.Body.Bytes(), &subj)
+		_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 		assert.Equal(t, http.StatusCreated, resp.Code)
 		assert.Equal(t, userId, subj.UserId)
@@ -87,10 +85,7 @@ func Test_Start(t *testing.T) {
 	})
 
 	t.Run("should return bad request if another activity is already running", func(t *testing.T) {
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new activity","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`)
 		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new activity2","start":"2021-01-09T10:00:00Z","tags":["tag1","tag2"]}`)
@@ -105,10 +100,7 @@ func Test_Stop(t *testing.T) {
 
 	t.Run("should set the end date to the current date of the current running activity", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		clock.SetTime(300)
 
@@ -122,17 +114,14 @@ func Test_Stop(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.Code)
 
 		subj := activity.Activity{}
-		json.Unmarshal(resp.Body.Bytes(), &subj)
+		_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 		assert.Equal(t, now.Unix(), subj.End.Unix())
 	})
 
 	t.Run("should do nothing if no activity runs", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		resp := jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 		assert.Equal(t, http.StatusOK, resp.Code)
@@ -145,33 +134,27 @@ func Test_Running(t *testing.T) {
 
 	t.Run("should return currently running activity", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
 		startResp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		startAct := activity.Activity{}
-		json.Unmarshal(startResp.Body.Bytes(), &startAct)
+		_ = json.Unmarshal(startResp.Body.Bytes(), &startAct)
 
 		resp := jwttest.MakeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
 		subj := activity.Activity{}
-		json.Unmarshal(resp.Body.Bytes(), &subj)
+		_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 		assert.Equal(t, startAct.Id.Hex(), subj.Id.Hex())
 	})
 
 	t.Run("should return not found if no activity is running", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		resp := jwttest.MakeAuthenticatedRequest(activity.Running(mongoDbCli), userId, "GET", "/activity/running", "")
 
@@ -185,34 +168,28 @@ func Test_Get(t *testing.T) {
 
 	t.Run("should return activity by id", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
 		startResp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		startAct := activity.Activity{}
-		json.Unmarshal(startResp.Body.Bytes(), &startAct)
+		_ = json.Unmarshal(startResp.Body.Bytes(), &startAct)
 
 		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/"+startAct.Id.Hex(), "")
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
 		subj := activity.Activity{}
-		json.Unmarshal(resp.Body.Bytes(), &subj)
+		_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 		assert.Equal(t, startAct, subj)
 	})
 
 	t.Run("should return not found if activity does not exist", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Get(mongoDbCli), "/activities/{id}", userId, "GET", "/activities/notexisting", "")
 
@@ -227,17 +204,14 @@ func Test_Update(t *testing.T) {
 
 	t.Run("should update", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
 		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 		actResp := jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 		act := activity.Activity{}
-		json.Unmarshal(actResp.Body.Bytes(), &act)
+		_ = json.Unmarshal(actResp.Body.Bytes(), &act)
 
 		t.Run("name", func(t *testing.T) {
 			tags, _ := json.Marshal(act.Tags)
@@ -247,7 +221,7 @@ func Test_Update(t *testing.T) {
 			assert.Equal(t, http.StatusOK, resp.Code)
 
 			subj := activity.Activity{}
-			json.Unmarshal(resp.Body.Bytes(), &subj)
+			_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 			assert.Equal(t, "updated name", subj.Name)
 		})
@@ -261,7 +235,7 @@ func Test_Update(t *testing.T) {
 			assert.Equal(t, http.StatusOK, resp.Code)
 
 			subj := activity.Activity{}
-			json.Unmarshal(resp.Body.Bytes(), &subj)
+			_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 			assert.Equal(t, now.Unix(), subj.Start.Unix())
 		})
@@ -276,7 +250,7 @@ func Test_Update(t *testing.T) {
 			assert.Equal(t, http.StatusOK, resp.Code)
 
 			subj := activity.Activity{}
-			json.Unmarshal(resp.Body.Bytes(), &subj)
+			_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 			assert.Equal(t, end.Unix(), subj.End.Unix())
 		})
@@ -292,7 +266,7 @@ func Test_Update(t *testing.T) {
 			assert.Equal(t, http.StatusOK, resp.Code)
 
 			subj := activity.Activity{}
-			json.Unmarshal(resp.Body.Bytes(), &subj)
+			_ = json.Unmarshal(resp.Body.Bytes(), &subj)
 
 			assert.Equal(t, tags, subj.Tags)
 		})
@@ -301,17 +275,14 @@ func Test_Update(t *testing.T) {
 
 	t.Run("should not update", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 
 		bdy := `{"name":"new activity","tags":["tag1","tag2"]}`
 		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 		actResp := jwttest.MakeAuthenticatedRequest(activity.Stop(mongoDbCli), userId, "POST", "/activity/stop", "")
 		act := activity.Activity{}
-		json.Unmarshal(actResp.Body.Bytes(), &act)
+		_ = json.Unmarshal(actResp.Body.Bytes(), &act)
 
 		t.Run("with malformed json", func(t *testing.T) {
 			updateBdy := "[malformedjson"
@@ -335,22 +306,19 @@ func Test_Delete(t *testing.T) {
 
 	t.Run("should remove activity by id", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 
 		bdy := `{"name":"activity to delete","tags":["tag1","tag2"]}`
 		resp := jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", bdy)
 
 		act := activity.Activity{}
-		json.Unmarshal(resp.Body.Bytes(), &act)
+		_ = json.Unmarshal(resp.Body.Bytes(), &act)
 
 		resp = jwttest.MakeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/"+act.Id.Hex(), "")
 
 		delAct := activity.Activity{}
-		json.Unmarshal(resp.Body.Bytes(), &delAct)
+		_ = json.Unmarshal(resp.Body.Bytes(), &delAct)
 
 		assert.NotEqual(t, primitive.NilObjectID, delAct.Id)
 		assert.Equal(t, act.Id, delAct.Id)
@@ -363,10 +331,7 @@ func Test_Delete(t *testing.T) {
 
 	t.Run("should return not found if activity to be deleted does not exist", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 
 		resp := jwttest.MakeAuthenticatedRequestWithPattern(activity.Delete(mongoDbCli), "/activity/{id}", userId, "DELETE", "/activity/doesnotexist", "")
@@ -380,10 +345,7 @@ func Test_Tags(t *testing.T) {
 
 	t.Run("should return used tags", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 
 		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"new act 1","tags":["tag1"]}`)
@@ -394,22 +356,19 @@ func Test_Tags(t *testing.T) {
 		resp := jwttest.MakeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
 
 		var tags []string
-		json.Unmarshal(resp.Body.Bytes(), &tags)
+		_ = json.Unmarshal(resp.Body.Bytes(), &tags)
 		assert.Equal(t, []string{"another-tag", "tag1"}, tags)
 	})
 
 	t.Run("should return empty array if no tags where found", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 		clock.SetTime(300)
 
 		resp := jwttest.MakeAuthenticatedRequest(activity.Tags(mongoDbCli), userId, "GET", "/activities/tags", "")
 
 		var tags []string
-		json.Unmarshal(resp.Body.Bytes(), &tags)
+		_ = json.Unmarshal(resp.Body.Bytes(), &tags)
 		assert.Empty(t, tags)
 		assert.Equal(t, http.StatusOK, resp.Code)
 	})
@@ -421,10 +380,7 @@ func Test_InRange(t *testing.T) {
 
 	t.Run("should return only activities in date range", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		clock.SetTime(time.Date(2021, 1, 1, 10, 0, 0, 0, time.UTC).Unix())
 		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity 1","tags":["tag1","tag2"]}`)
@@ -448,7 +404,7 @@ func Test_InRange(t *testing.T) {
 		res := struct {
 			Entries []activity.Activity `json:"entries"`
 		}{}
-		json.Unmarshal(resp.Body.Bytes(), &res)
+		_ = json.Unmarshal(resp.Body.Bytes(), &res)
 
 		assert.Len(t, res.Entries, 2)
 		assert.Equal(t, "activity 1", res.Entries[0].Name)
@@ -457,10 +413,7 @@ func Test_InRange(t *testing.T) {
 
 	t.Run("should return activities sorted ascending", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		clock.SetTime(time.Date(2021, 1, 1, 13, 0, 0, 0, time.UTC).Unix())
 		jwttest.MakeAuthenticatedRequest(activity.Start(mongoDbCli), userId, "POST", "/activity", `{"name":"activity afternoon","tags":["tag1","tag2"]}`)
@@ -479,7 +432,7 @@ func Test_InRange(t *testing.T) {
 		res := struct {
 			Entries []activity.Activity `json:"entries"`
 		}{}
-		json.Unmarshal(resp.Body.Bytes(), &res)
+		_ = json.Unmarshal(resp.Body.Bytes(), &res)
 
 		assert.Len(t, res.Entries, 2)
 		assert.Equal(t, "activity morning", res.Entries[0].Name)
@@ -488,10 +441,7 @@ func Test_InRange(t *testing.T) {
 
 	t.Run("should return bad request with malformed", func(t *testing.T) {
 		userId := uuid.New().String()
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
-		t.Cleanup(func() {
-			mongoDbCli.DeleteAll(ctx, userId)
-		})
+		t.Cleanup(store.Stores(userId, mongoDbCli))
 
 		t.Run("from date", func(t *testing.T) {
 			path := fmt.Sprintf("/activities/%s/%s", "wrong-from", "2021-01-01")
