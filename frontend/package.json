@@ -28,7 +28,8 @@
     "react-dom": "^16.14.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^3.4.4"
+    "react-scripts": "^3.4.4",
+    "color-string": "^1.5.5"
   },
   "devDependencies": {
     "@testing-library/dom": "^7.29.0",
