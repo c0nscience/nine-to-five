@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 	"net/http"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
-	gjwt "github.com/dgrijalva/jwt-go"
+	gjwt "github.com/form3tech-oss/jwt-go"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"

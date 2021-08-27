@@ -5,7 +5,7 @@ import (
 	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
-	gjwt "github.com/dgrijalva/jwt-go"
+	gjwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
