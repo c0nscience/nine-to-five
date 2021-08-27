@@ -114,7 +114,7 @@ export const Detail = ({
       <Grid item xs={1}/>
       <Grid item xs={1}/>
       <Grid item container xs={11} className={classes.buttonContainer} justifyContent="flex-end">
-        <Grid item xs={3}>
+        <Grid item xs={4}>
           {
             !isActivityInProgress &&
             <Button data-testid="continue-btn"
