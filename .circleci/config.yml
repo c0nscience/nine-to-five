@@ -159,7 +159,6 @@ workflows:
       - heroku/deploy-via-git:
           name: deploy gpi
           requires:
-            - deploy legacy api
             - test golang api
             - test frontend
           app-name: ntf-gpi
