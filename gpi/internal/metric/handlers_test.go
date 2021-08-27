@@ -365,6 +365,34 @@ func Test_Metrics(t *testing.T) {
 			assert.Equal(t, 35.2, cfg.Threshold)
 			assert.Equal(t, []string{"tag3"}, cfg.Tags)
 		})
+
+		t.Run("should update metric and set threshold to 0", func(t *testing.T) {
+			userId := uuid.New().String()
+			ctx, _ := context.WithTimeout(context.Background(), timeout)
+			t.Cleanup(stores(metricStore, activityStore, userId))
+
+			mId, err := metricStore.Save(ctx, userId, metric.Configuration{
+				UserId:    userId,
+				Name:      "40h week",
+				Tags:      []string{"tag1", "tag2"},
+				Threshold: 40,
+			})
+			assert.NoError(t, err)
+
+			updateBody := "{\"name\":\"metric cfg #1\",\"threshold\":0,\"tags\":[\"tag3\"]}"
+			metricId := mId.(primitive.ObjectID)
+			resp := jwttest.MakeAuthenticatedRequestWithPattern(metric.Update(metricStore), "/metrics/{id}", userId, "POST", "/metrics/"+metricId.Hex(), updateBody)
+
+			assert.Equal(t, http.StatusOK, resp.Code)
+
+			cfg := metric.Configuration{}
+			err = metricStore.FindOne(ctx, userId, bson.M{"userId": userId, "_id": mId}, &cfg)
+			assert.NoError(t, err)
+
+			assert.Equal(t, "metric cfg #1", cfg.Name)
+			assert.Equal(t, float64(0), cfg.Threshold)
+			assert.Equal(t, []string{"tag3"}, cfg.Tags)
+		})
 	})
 
 	t.Run("Load", func(t *testing.T) {
