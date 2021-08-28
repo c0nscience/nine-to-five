@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   listRunning: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-    height: 'calc(100% - 204px)',
+    marginBottom: '150px'
   },
   startButton: {
     position: 'fixed',
@@ -30,10 +30,11 @@ const useStyles = makeStyles(theme => ({
     right: theme.spacing(2)
   },
   runningCard: {
+    position: 'fixed',
     width: '100%',
-    position: 'absolute',
-    bottom: theme.mixins.toolbar.minHeight + theme.spacing(1)
-  }
+    bottom: theme.mixins.toolbar.minHeight + theme.spacing(1) - 8,
+    left: 0,
+  },
 }))
 
 export const List = ({activities, running}) => {
@@ -106,19 +107,17 @@ export default () => {
       !running &&
       <Fab className={classes.startButton}
            onClick={() => setStartDialogOpen(true)}
-           color='primary'>
+           color="primary">
         <Add/>
       </Fab>
     }
 
     {
       running &&
-      <ButtonBase component='div'
+      <ButtonBase component="div"
                   className={classes.runningCard}
                   onClick={() => history.push(`/activities/${running.id}`)}>
-        <div style={{minWidth: '100%'}}>
-          <RunningBox activity={running}/>
-        </div>
+        <RunningBox activity={running}/>
       </ButtonBase>
     }
   </>
