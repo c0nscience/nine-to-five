@@ -2,8 +2,9 @@ import '@testing-library/jest-dom'
 
 import React from 'react'
 import {render} from '@testing-library/react'
-import ActivityItem from 'activity/List/ActivityItem'
+import {ActivityItem} from 'activity/List/ActivityItem'
 import {DateTime} from 'luxon'
+
 jest.mock('react-router')
 
 describe('Activity Item', () => {
