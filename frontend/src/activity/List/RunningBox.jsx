@@ -6,6 +6,15 @@ import makeStyles from '@material-ui/core/styles/makeStyles'
 
 const useStyles = makeStyles(theme => ({
   card: {
+    [theme.breakpoints.only('xs')]: {
+      width: '100%'
+    },
+    [theme.breakpoints.up('sm')]: {
+      width: '50%'
+    },
+    [theme.breakpoints.up('lg')]: {
+      width: '40%'
+    },
     backgroundColor: amber[50]
   },
 }))
