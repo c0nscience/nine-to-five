@@ -33,11 +33,11 @@ const useStyles = makeStyles(theme => ({
     position: 'fixed',
     width: '100%',
     bottom: theme.mixins.toolbar.minHeight + theme.spacing(1) - 8,
-    left: 0,
-  },
+    left: 0
+  }
 }))
 
-export const List = ({activities, running}) => {
+export const List = ({activities, running, reload}) => {
   const classes = useStyles()
 
   return <MuiList className={running ? classes.listRunning : classes.list}
@@ -59,8 +59,16 @@ export const List = ({activities, running}) => {
             hideEndTime = false
           }
 
+          let prevActivity = null
+          if (hideEndTime || index > 0) {
+            prevActivity = activities[index - 1]
+          }
+
+
           return <ActivityItem {...activity}
+                               prevActivity={prevActivity}
                                hideEndTime={hideEndTime}
+                               reload={reload}
                                key={`activity-${activity.id}`}/>
         })
     }
@@ -71,11 +79,11 @@ export default () => {
   const {loadActivitiesInRange, activities, loadRunning, running, isLoadingActivitiesInRange} = useActivity()
   const classes = useStyles()
   const [startDialogOpen, setStartDialogOpen] = useState(false)
+  const [currentDate, setCurrentDate] = useState(DateTime.local())
   const history = useHistory()
 
   const now = DateTime.local()
   useEffect(() => {
-    loadActivitiesInRange(now, now)
     loadRunning()
   }, [])
 
@@ -85,12 +93,18 @@ export default () => {
 
     <DayPicker date={now}
                onChanged={d => {
+                 setCurrentDate(d)
                  loadActivitiesInRange(d, d)
                }}/>
 
     {
       !isLoadingActivitiesInRange() &&
-      <List activities={activities} running={typeof running !== 'undefined'}/>
+      <List activities={activities}
+            running={typeof running !== 'undefined'}
+            reload={() => {
+              loadActivitiesInRange(currentDate, currentDate)
+              loadRunning()
+            }}/>
     }
 
     {
