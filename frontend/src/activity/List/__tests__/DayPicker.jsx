@@ -50,7 +50,7 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('next'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-05-22")
+    expect(onChanged.mock.calls[1][0].toISODate()).toEqual("2020-05-22")
   })
 
   it('should call onChanged function after the previous button is clicked with the new value', () => {
@@ -62,7 +62,7 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('previous'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-05-21")
+    expect(onChanged.mock.calls[1][0].toISODate()).toEqual("2020-05-21")
   })
 
   it.skip('should skip sunday for previous day', () => {
@@ -74,7 +74,7 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('previous'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-12")
+    expect(onChanged.mock.calls[1][0].toISODate()).toEqual("2020-06-12")
   })
 
   it.skip ('should skip saturday for previous day', () => {
@@ -86,7 +86,7 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('previous'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-12")
+    expect(onChanged.mock.calls[1][0].toISODate()).toEqual("2020-06-12")
   })
 
   it.skip('should sp saturday for next day', () => {
@@ -98,7 +98,7 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('next'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-15")
+    expect(onChanged.mock.calls[1][0].toISODate()).toEqual("2020-06-15")
   })
 
   it.skip('should skip sunday for next day', () => {
@@ -110,7 +110,7 @@ describe('Day Picker', () => {
     fireEvent.click(getByTestId('next'))
 
     expect(onChanged).toHaveBeenCalled()
-    expect(onChanged.mock.calls[0][0].toISODate()).toEqual("2020-06-15")
+    expect(onChanged.mock.calls[1][0].toISODate()).toEqual("2020-06-15")
   })
 
   it(`should display today as 'Today'`, () => {
