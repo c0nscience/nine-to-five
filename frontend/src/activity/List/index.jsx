@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   listRunning: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-    marginBottom: theme.mixins.toolbar.minHeight + theme.spacing(12)
+    height: 'calc(100% - 204px)',
   },
   startButton: {
     position: 'fixed',
@@ -30,8 +30,8 @@ const useStyles = makeStyles(theme => ({
     right: theme.spacing(2)
   },
   runningCard: {
-    position: 'fixed',
     width: '100%',
+    position: 'absolute',
     bottom: theme.mixins.toolbar.minHeight + theme.spacing(1)
   }
 }))
