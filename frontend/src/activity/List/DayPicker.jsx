@@ -27,13 +27,14 @@ export default ({date, onChanged = noOp}) => {
   const classes = useStyles()
   const {logout} = useAuth0()
   const [currentDate, setCurrentDate] = useState(DateTime.local())
-  const [anchorEl, setAnchorEl] = React.useState(null)
+  const [anchorEl, setAnchorEl] = useState(null)
 
   const isToday = currentDate.toISODate() === DateTime.local().toISODate()
 
   useEffect(() => {
     if (typeof date !== 'undefined') {
       setCurrentDate(date)
+      onChanged(date)
     }
   }, [])
 
@@ -68,7 +69,7 @@ export default ({date, onChanged = noOp}) => {
                   align='center'>{
         isToday
           ? 'Today'
-          : currentDate.toFormat('DD')
+          : currentDate.toFormat('EEE, DD')
       }</Typography>
       <Popover
         open={open}
