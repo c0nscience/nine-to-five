@@ -94,16 +94,18 @@ export const ActivityItemCard = ({name, tags, duration, since, raised = false, s
 //TODO dirty hack for the time being
 Settings.defaultZoneName = 'Europe/Berlin'
 
-const ActivityItem = forwardRef(({
+export const ActivityItem = forwardRef(({
                                    id,
                                    name,
                                    start: _start,
                                    end: _end,
                                    tags = [],
                                    prevActivity = null,
+                                   running = null,
                                    hideStartTime = false,
                                    hideEndTime = false,
                                    reload = () => {},
+                                   saveActivity = () => {},
                                    now = DateTime.local()
                                  }, ref) => {
   const history = useHistory()
@@ -113,7 +115,6 @@ const ActivityItem = forwardRef(({
   const endOrNow = end || now
   const duration = endOrNow.diff(start)
 
-  const {saveActivity, running} = useActivity()
   const [currentDate, setCurrentDate] = useState(null)
   const [editEnd, setEditEnd] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
@@ -243,4 +244,8 @@ const ActivityItem = forwardRef(({
     </Popover>
   </>
 })
-export default ActivityItem
+export default (props) => {
+  const {saveActivity, running} = useActivity()
+
+  return <ActivityItem {...props} saveActivity={saveActivity} running={running}/>
+}
