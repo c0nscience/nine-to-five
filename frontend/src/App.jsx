@@ -15,6 +15,7 @@ import Navigation from 'Navigation'
 import ActivityDetail from 'activity/Detail'
 import ActivityEdit from 'activity/Edit'
 import {createBrowserHistory} from 'history'
+import 'style.css'
 
 const history = createBrowserHistory()
 
