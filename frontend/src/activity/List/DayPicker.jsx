@@ -49,7 +49,7 @@ export default ({date, onChanged = noOp}) => {
   const open = Boolean(anchorEl)
 
   return <Grid container className={classes.root}>
-    <Grid item xs={4} style={{textAlign: 'end'}}>
+    <Grid item xs={3} style={{textAlign: 'end'}}>
       <IconButton data-testid='previous'
                   onClick={() => {
                     setCurrentDate(d => {
@@ -61,7 +61,7 @@ export default ({date, onChanged = noOp}) => {
         <ArrowBackIos/>
       </IconButton>
     </Grid>
-    <Grid item xs={4}>
+    <Grid item xs={5}>
       <Typography data-testid='label'
                   variant='h6'
                   className={classes.label}
