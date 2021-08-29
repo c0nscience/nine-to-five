@@ -1,7 +1,7 @@
 import React from 'react'
 import BottomNavigation from '@material-ui/core/BottomNavigation'
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction'
-import {Favorite, LocationOn, Restore} from '@material-ui/icons'
+import {Favorite, Restore} from '@material-ui/icons'
 import {makeStyles} from '@material-ui/core/styles'
 import Grid from '@material-ui/core/Grid'
 import {useHistory, useLocation} from 'react-router'
@@ -27,9 +27,8 @@ const Navigation = () => {
         }}
         showLabels
       >
-        <BottomNavigationAction label="Activities" value='/' icon={<Restore/>}/>
-        <BottomNavigationAction label="Metrics" value='/metrics' icon={<Favorite/>}/>
-        {/*<BottomNavigationAction label="Settings" value='/settings' icon={<LocationOn/>}/>*/}
+        <BottomNavigationAction label="Activities" value="/" icon={<Restore/>}/>
+        <BottomNavigationAction label="Metrics" value="/metrics" icon={<Favorite/>}/>
       </BottomNavigation>
     </Grid>
   </Grid>

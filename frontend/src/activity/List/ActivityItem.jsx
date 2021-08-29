@@ -216,7 +216,6 @@ export const ActivityItem = forwardRef(({
 
             let promises = [saveActivity(activity)]
             if (Boolean(prevActivity) && !editEnd) {
-              console.log("prev act set")
               promises.push(saveActivity({
                 id: prevActivity.id,
                 name: prevActivity.name,

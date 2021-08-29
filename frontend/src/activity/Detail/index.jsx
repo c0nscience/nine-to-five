@@ -79,7 +79,6 @@ export const Detail = ({
       return
     }
     timeUpdater = setInterval(() => {
-      console.log('update time')
       setEndOrNow(DateTime.local())
     }, updateInterval)
     return () => {

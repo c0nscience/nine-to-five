@@ -64,7 +64,7 @@ export const CreatePage = ({saveNewConfiguration, usedTags}) => {
         </Grid>
       </Grid>
 
-      <Grid container item xs={12} justify='flex-end' className={classes.buttonContainer}>
+      <Grid container item xs={12} justifyContent='flex-end' className={classes.buttonContainer}>
         <Grid item xs={3} className={classes.center}>
           <Button color='secondary'
                   variant='contained'

@@ -18,9 +18,9 @@
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
-    "@material-ui/pickers": "^3.2.10",
-    "@nivo/bar": "^0.67.0",
-    "@nivo/core": "^0.67.0",
+    "@material-ui/pickers": "^3.3.10",
+    "@nivo/bar": "^0.73.1",
+    "@nivo/core": "^0.73.0",
     "history": "^4.10.1",
     "luxon": "^1.25.0",
     "prop-types": "^15.7.2",
@@ -51,6 +51,12 @@
     ]
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "rules": {
+      "import/no-anonymous-default-export": ["warn", {
+        "allowArrowFunction": true
+      }],
+      "react-hooks/exhaustive-deps": "off"
+    }
   }
 }
