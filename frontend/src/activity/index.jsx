@@ -22,11 +22,11 @@ const Activity = () => {
   })
 
   return <Grid container className={classes.root}>
-    <Grid item sm={3} lg={4}/>
-    <Grid item xs={12} sm={6} lg={4} className={classes.content}>
+    <Grid item sm={2} lg={3}/>
+    <Grid item xs={12} sm={8} lg={6} className={classes.content}>
       <List/>
     </Grid>
-    <Grid item sm={3} lg={4}/>
+    <Grid item sm={2} lg={3}/>
   </Grid>
 }
 export default Activity
