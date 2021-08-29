@@ -1,5 +1,9 @@
 * text=auto eol=lf
 *.{cmd,[cC][mM][dD]} text eol=crlf
 *.{bat,[bB][aA][tT]} text eol=crlf
-frontend/** linguist-detectable
-gpi/** linguist-detectable
+frontend/** linguist-detectable=true
+gpi/** linguist-detectable=true
+cli/** linguist-detectable=false
+backend/** linguist-detectable=false
+.github/** linguist-detectable=false
+.circleci/** linguist-detectable=false
