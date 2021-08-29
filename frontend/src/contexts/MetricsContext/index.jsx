@@ -24,8 +24,6 @@ export const MetricsProvider = ({children}) => {
   }
 
   const saveNewMetricConfiguration = newConfiguration => {
-    console.log("newConfiguration", newConfiguration)
-
     return request(post('metrics', newConfiguration))
       .with(CREATE_NEW_METRIC_CONFIGURATION)
   }
@@ -48,7 +46,6 @@ export const MetricsProvider = ({children}) => {
   }
 
   const saveMetricConfiguration = config => {
-    console.log("config", config)
     return request(post(`metrics/${config.id}`, config))
       .with(SAVE_METRIC_CONFIGURATION)
   }

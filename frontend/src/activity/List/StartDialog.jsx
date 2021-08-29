@@ -62,39 +62,41 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
   return <Dialog open={open}
                  fullScreen={fullScreen}
-                 onExit={() => {
-                   setShowStartDateTimePicker(false)
-                   setRepeatActivity(false)
-                   setName("")
-                   setTags([])
-                 }}
-                 onEnter={() => {
-                   setStartDateTime(DateTime.local())
+                 TransitionProps={{
+                   'onEnter': () => {
+                     setStartDateTime(DateTime.local())
 
-                   setStartTime(DateTime.local())
-                   setEndTime(DateTime.local())
+                     setStartTime(DateTime.local())
+                     setEndTime(DateTime.local())
 
-                   setFromDate(DateTime.local())
-                   setToDate(DateTime.local())
+                     setFromDate(DateTime.local())
+                     setToDate(DateTime.local())
+                   },
+                   'onExit': () => {
+                     setShowStartDateTimePicker(false)
+                     setRepeatActivity(false)
+                     setName('')
+                     setTags([])
+                   },
                  }}>
     <DialogTitle>Start New Activity</DialogTitle>
     <DialogContent>
       <form>
-        <TextField data-testid='name'
-                   name='name'
-                   label='Name'
+        <TextField data-testid="name"
+                   name="name"
+                   label="Name"
                    value={name}
                    fullWidth
                    onChange={callValueWith(setName)}/>
 
         <TagField allowNewValues
-                  data-testid='tags'
+                  data-testid="tags"
                   tags={tags}
                   setTags={setTags}
                   usedTags={usedTags}/>
 
         <FormControlLabel
-          data-testid='change-start-date-time'
+          data-testid="change-start-date-time"
           control={<Checkbox checked={showStartDateTimePicker}
                              onChange={callValueWith(setShowStartDateTimePicker)}
                              name="showStartTimePicker"/>}
@@ -102,7 +104,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
         />
 
         <FormControlLabel
-          data-testid='repeat-activity'
+          data-testid="repeat-activity"
           control={<Checkbox checked={repeatActivity}
                              onChange={callValueWith(v => {
                                setShowStartDateTimePicker(false)
@@ -114,33 +116,33 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
         {
           showStartDateTimePicker &&
-          <div data-testid='start-date-time-picker'>
+          <div data-testid="start-date-time-picker">
             <MuiPickersUtilsProvider utils={LuxonUtils}>
-              <DateTimePicker label='Start'
+              <DateTimePicker label="Start"
                               ampm={false}
                               value={startDateTime}
                               minutesStep={5}
                               onChange={setStartDateTime}
                               fullWidth
-                              openTo='hours'/>
+                              openTo="hours"/>
             </MuiPickersUtilsProvider>
           </div>
         }
         {
           repeatActivity &&
           <>
-            <div data-testid='start-time'>
+            <div data-testid="start-time">
               <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <TimePicker label='Start'
+                <TimePicker label="Start"
                             ampm={false}
                             value={startTime}
                             minutesStep={5}
                             onChange={setStartTime}/>
               </MuiPickersUtilsProvider>
             </div>
-            <div data-testid='end-time'>
+            <div data-testid="end-time">
               <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <TimePicker label='End'
+                <TimePicker label="End"
                             ampm={false}
                             value={endTime}
                             minutesStep={5}
@@ -148,18 +150,18 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
               </MuiPickersUtilsProvider>
             </div>
 
-            <div data-testid='start-date'>
+            <div data-testid="start-date">
               <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <DatePicker label='Start Date'
+                <DatePicker label="Start Date"
                             value={fromDate}
                             onChange={setFromDate}
                             fullWidth/>
               </MuiPickersUtilsProvider>
             </div>
 
-            <div data-testid='end-date'>
+            <div data-testid="end-date">
               <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <DatePicker label='End Date'
+                <DatePicker label="End Date"
                             value={toDate}
                             onChange={setToDate}
                             fullWidth/>
@@ -168,7 +170,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
             <FormControlLabel
               className={classes.dense}
-              data-testid='monday'
+              data-testid="monday"
               control={<Checkbox checked={isWeekDaySelected(1, selectedWeekDay)}
                                  onChange={callValueWith(v => {
                                    setSelectedWeekDay(setWeekDay(1, v))
@@ -180,7 +182,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
             <FormControlLabel
               className={classes.dense}
-              data-testid='tuesday'
+              data-testid="tuesday"
               control={<Checkbox checked={isWeekDaySelected(2, selectedWeekDay)}
                                  onChange={callValueWith(v => {
                                    setSelectedWeekDay(setWeekDay(2, v))
@@ -192,7 +194,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
             <FormControlLabel
               className={classes.dense}
-              data-testid='wednesday'
+              data-testid="wednesday"
               control={<Checkbox checked={isWeekDaySelected(3, selectedWeekDay)}
                                  onChange={callValueWith(v => {
                                    setSelectedWeekDay(setWeekDay(3, v))
@@ -204,7 +206,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
             <FormControlLabel
               className={classes.dense}
-              data-testid='thursday'
+              data-testid="thursday"
               control={<Checkbox checked={isWeekDaySelected(4, selectedWeekDay)}
                                  onChange={callValueWith(v => {
                                    setSelectedWeekDay(setWeekDay(4, v))
@@ -216,7 +218,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
             <FormControlLabel
               className={classes.dense}
-              data-testid='friday'
+              data-testid="friday"
               control={<Checkbox checked={isWeekDaySelected(5, selectedWeekDay)}
                                  onChange={callValueWith(v => {
                                    setSelectedWeekDay(setWeekDay(5, v))
@@ -228,7 +230,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
             <FormControlLabel
               className={classes.dense}
-              data-testid='saturday'
+              data-testid="saturday"
               control={<Checkbox checked={isWeekDaySelected(6, selectedWeekDay)}
                                  onChange={callValueWith(v => {
                                    setSelectedWeekDay(setWeekDay(6, v))
@@ -240,7 +242,7 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
 
             <FormControlLabel
               className={classes.dense}
-              data-testid='sunday'
+              data-testid="sunday"
               control={<Checkbox checked={isWeekDaySelected(7, selectedWeekDay)}
                                  onChange={callValueWith(v => {
                                    setSelectedWeekDay(setWeekDay(7, v))
@@ -254,26 +256,26 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
       </form>
     </DialogContent>
     <DialogActions>
-      <Button data-testid='cancel-btn'
+      <Button data-testid="cancel-btn"
               onClick={() => closeDialog()}
-              variant='contained'
-              color='secondary'>
+              variant="contained"
+              color="secondary">
         Cancel
       </Button>
       {
         !repeatActivity &&
-        <Button data-testid='start-btn'
+        <Button data-testid="start-btn"
                 onClick={() => startActivity({
                   name,
                   tags,
-                  start: showStartDateTimePicker && startDateTime.toUTC().toISO() || undefined
+                  start: (showStartDateTimePicker && startDateTime.toUTC().toISO()) || undefined
                 })}
-                variant='contained'
-                color='primary'>Start</Button>
+                variant="contained"
+                color="primary">Start</Button>
       }
       {
         repeatActivity &&
-        <Button data-testid='apply-btn'
+        <Button data-testid="apply-btn"
                 onClick={() => {
                   repeatActivityHandler({
                     activity: {
@@ -290,8 +292,8 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
                   })
                     .then(() => reset())
                 }}
-                variant='contained'
-                color='primary'>Apply</Button>
+                variant="contained"
+                color="primary">Apply</Button>
       }
     </DialogActions>
   </Dialog>

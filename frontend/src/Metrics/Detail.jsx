@@ -5,7 +5,6 @@ import {useMetrics} from 'contexts/MetricsContext'
 import {useHistory, useParams} from 'react-router'
 import Grid from '@material-ui/core/Grid'
 import {ResponsiveBar} from '@nivo/bar'
-import {BasicTooltip} from '@nivo/tooltip'
 import {DateTime, Duration} from 'luxon'
 import {DetailToolBar} from 'component/DetailToolbar'
 import Dialog from '@material-ui/core/Dialog'
@@ -14,26 +13,25 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogActions from '@material-ui/core/DialogActions'
 import Button from '@material-ui/core/Button'
 
-const DeleteConfirmationDialog = ({open, onCancel, onDelete}) => <Dialog
-  disableBackdropClick
-  disableEscapeKeyDown
-  maxWidth="xs"
-  aria-labelledby="confirmation-dialog-title"
-  open={open}
->
-  <DialogTitle id="confirmation-dialog-title">Delete Activity</DialogTitle>
-  <DialogContent dividers>
-    <Typography>Do you really want to delete this activity?</Typography>
-  </DialogContent>
-  <DialogActions>
-    <Button autoFocus onClick={onCancel} color="primary">
-      No
-    </Button>
-    <Button onClick={onDelete} color="secondary">
-      Yes
-    </Button>
-  </DialogActions>
-</Dialog>
+const DeleteConfirmationDialog = ({open, onCancel, onDelete}) =>
+  <Dialog
+    disableEscapeKeyDown
+    maxWidth="xs"
+    aria-labelledby="confirmation-dialog-title"
+    open={open}>
+    <DialogTitle id="confirmation-dialog-title">Delete Activity</DialogTitle>
+    <DialogContent dividers>
+      <Typography>Do you really want to delete this activity?</Typography>
+    </DialogContent>
+    <DialogActions>
+      <Button autoFocus onClick={onCancel} color="primary">
+        No
+      </Button>
+      <Button onClick={onDelete} color="secondary">
+        Yes
+      </Button>
+    </DialogActions>
+  </Dialog>
 
 export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
   const {name, totalExceedingDuration = 0, threshold = 0, currentExceedingDuration = 0} = metric
@@ -51,6 +49,7 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
     if (typeof v.duration === 'string') {
       dur = Duration.fromISO(v.duration)
     }
+
     return {
       id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
       value: dur.as('hours'),
@@ -58,6 +57,14 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
     }
   })
 
+  const markers = []
+  if (threshold > 0) {
+    markers.push({
+        axis: 'y',
+        value: threshold,
+        lineStyle: {stroke: 'rgba(0, 0, 0, .35)', strokeWidth: 2}
+      })
+  }
   return <>
     <DeleteConfirmationDialog open={confirmDialogOpen}
                               onCancel={() => setConfirmDialogOpen(false)}
@@ -82,13 +89,7 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
           margin={{top: 30, right: 20, bottom: 40, left: 30}}
           colors={{scheme: 'nivo'}}
           borderColor={{from: 'color', modifiers: [['darker', 1.6]]}}
-          markers={[
-            {
-              axis: 'y',
-              value: threshold,
-              lineStyle: {stroke: 'rgba(0, 0, 0, .35)', strokeWidth: 2}
-            }
-          ]}
+          markers={markers}
           labelSkipWidth={12}
           labelSkipHeight={12}
           labelTextColor={{from: 'color', modifiers: [['darker', 1.6]]}}
