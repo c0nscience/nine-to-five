@@ -181,7 +181,7 @@ export const ActivityItem = forwardRef(({
         <MuiPickersUtilsProvider utils={LuxonUtils}>
           <TimePicker
             variant="static"
-            openTo="hours"
+            openTo="minutes"
             value={currentDate}
             minutesStep={5}
             ampm={false}
