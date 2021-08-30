@@ -135,7 +135,7 @@ export const ActivityItem = forwardRef(({
                                       disableSticky
                                       disableGutters>
       <Link component="button"
-            variant="subtitle1"
+            variant="subtitle2"
             onClick={event => {
               setCurrentDate(start)
               setEditEnd(false)
@@ -157,7 +157,7 @@ export const ActivityItem = forwardRef(({
                                     disableSticky
                                     disableGutters>
       <Link component="button"
-            variant="subtitle1"
+            variant="subtitle2"
             onClick={event => {
               setCurrentDate(endOrNow)
               setEditEnd(true)
