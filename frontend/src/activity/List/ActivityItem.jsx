@@ -95,19 +95,21 @@ export const ActivityItemCard = ({name, tags, duration, since, raised = false, s
 Settings.defaultZoneName = 'Europe/Berlin'
 
 export const ActivityItem = forwardRef(({
-                                   id,
-                                   name,
-                                   start: _start,
-                                   end: _end,
-                                   tags = [],
-                                   prevActivity = null,
-                                   running = null,
-                                   hideStartTime = false,
-                                   hideEndTime = false,
-                                   reload = () => {},
-                                   saveActivity = () => {},
-                                   now = DateTime.local()
-                                 }, ref) => {
+                                          id,
+                                          name,
+                                          start: _start,
+                                          end: _end,
+                                          tags = [],
+                                          prevActivity = null,
+                                          running = null,
+                                          hideStartTime = false,
+                                          hideEndTime = false,
+                                          reload = () => {
+                                          },
+                                          saveActivity = () => {
+                                          },
+                                          now = DateTime.local()
+                                        }, ref) => {
   const history = useHistory()
   const classes = useStyles()
   const end = _end && DateTime.fromISO(_end, {zone: 'utc'}).toLocal()
@@ -133,6 +135,7 @@ export const ActivityItem = forwardRef(({
                                       disableSticky
                                       disableGutters>
       <Link component="button"
+            variant="subtitle1"
             onClick={event => {
               setCurrentDate(start)
               setEditEnd(false)
@@ -153,11 +156,13 @@ export const ActivityItem = forwardRef(({
                                     className={classes.time}
                                     disableSticky
                                     disableGutters>
-      <Link component="button" onClick={event => {
-        setCurrentDate(endOrNow)
-        setEditEnd(true)
-        handlePopoverOpen(event)
-      }}>{endOrNow.toFormat('T')}</Link>
+      <Link component="button"
+            variant="subtitle1"
+            onClick={event => {
+              setCurrentDate(endOrNow)
+              setEditEnd(true)
+              handlePopoverOpen(event)
+            }}>{endOrNow.toFormat('T')}</Link>
     </ListSubheader>}
     <Popover
       open={open}
