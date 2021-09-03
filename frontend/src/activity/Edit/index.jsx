@@ -76,13 +76,13 @@ const Edit = ({activity, saveActivity, cancel, usedTags}) => {
 
       <MuiPickersUtilsProvider utils={LuxonUtils}>
         <Grid item container xs={12} justifyContent="space-between">
-          <Grid item xs={5}>
+          <Grid item xs={6}>
           <DateTimeField name="start"
                          date={state.start}
                          handleInputChange={handleDateTimeChange('start')}/>
 
           </Grid>
-          {state.end && <Grid item xs={5}><DateTimeField name="end"
+          {state.end && <Grid item xs={6}><DateTimeField name="end"
                                        date={state.end}
                                        handleInputChange={handleDateTimeChange('end')}/></Grid>}
         </Grid>
