@@ -243,9 +243,9 @@ export const StartDialog = ({open, closeDialog, startActivity, repeatActivityHan
             <FormControlLabel
               className={classes.dense}
               data-testid="sunday"
-              control={<Checkbox checked={isWeekDaySelected(7, selectedWeekDay)}
+              control={<Checkbox checked={isWeekDaySelected(0, selectedWeekDay)}
                                  onChange={callValueWith(v => {
-                                   setSelectedWeekDay(setWeekDay(7, v))
+                                   setSelectedWeekDay(setWeekDay(0, v))
                                  })}
                                  name="sunday"/>}
               labelPlacement="top"

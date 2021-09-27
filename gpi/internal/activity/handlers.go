@@ -347,3 +347,81 @@ func byStartBetween(userId string, from, to time.Time) bson.D {
 		{"start", bson.M{"$gt": from, "$lt": to}},
 	}
 }
+
+func Repeat(store store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userId, ok := r.Context().Value(contextUserIdKey).(string)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		bdy := repeatActivityWithConfig{}
+		b, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(b, &bdy)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
+			return
+		}
+
+		act := bdy.Activity
+		config := bdy.Config
+		start, err := time.Parse("15:04:05.000", act.Start)
+		if err != nil {
+			http.Error(w, "Payload does not have correct format. (Wrong date format for 'start')", http.StatusBadRequest)
+			return
+		}
+		end, err := time.Parse("15:04:05.000", act.End)
+		if err != nil {
+			http.Error(w, "Payload does not have correct format. (Wrong date format for 'end')", http.StatusBadRequest)
+			return
+		}
+
+		from, err := time.Parse("2006-01-02", config.From)
+		if err != nil {
+			http.Error(w, "Payload does not have correct format. (Wrong date format for 'from')", http.StatusBadRequest)
+			return
+		}
+
+		to, err := time.Parse("2006-01-02", config.To)
+		if err != nil {
+			http.Error(w, "Payload does not have correct format. (Wrong date format for 'to')", http.StatusBadRequest)
+			return
+		}
+
+		days := int(to.AddDate(0, 0, 1).Sub(from).Hours() / 24)
+
+		for i := 0; i < days; i++ {
+			d := from.AddDate(0, 0, i)
+			for _, selectedDay := range config.SelectedDays {
+				if d.Weekday() == selectedDay {
+					start := time.Date(d.Year(), d.Month(), d.Day(), start.Hour(), start.Minute(), 0, 0, time.UTC)
+					end := time.Date(d.Year(), d.Month(), d.Day(), end.Hour(), end.Minute(), 0, 0, time.UTC)
+					_, _ = store.Save(r.Context(), userId, NewWithStartAndEnd(userId, act.Name, start, end, act.Tags))
+					break
+				}
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+
+type repeatActivityWithConfig struct {
+	Activity repeatActivity `json:"activity"`
+	Config   repeatConfig   `json:"config"`
+}
+
+type repeatActivity struct {
+	Name  string   `json:"name"`
+	Tags  []string `json:"tags"`
+	Start string   `json:"start"`
+	End   string   `json:"end"`
+}
+
+type repeatConfig struct {
+	From         string         `json:"from"`
+	To           string         `json:"to"`
+	SelectedDays []time.Weekday `json:"selectedDays"`
+}
