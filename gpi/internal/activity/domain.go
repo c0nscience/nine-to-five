@@ -42,6 +42,18 @@ func NewWithStart(userId, name string, start time.Time, tags []string) *Activity
 	}
 }
 
+func NewWithStartAndEnd(userId, name string, start, end time.Time, tags []string) *Activity {
+	e := clock.Adjust(end)
+	return &Activity{
+		Id:     primitive.NilObjectID,
+		UserId: userId,
+		Name:   name,
+		Start:  clock.Adjust(start),
+		End:    &e,
+		Tags:   tags,
+	}
+}
+
 func (a *Activity) Stop() {
 	now := clock.Adjust(clock.Now().UTC())
 	a.End = &now

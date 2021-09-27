@@ -59,6 +59,7 @@ func main() {
 	r.Handle("/activity/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Delete(activityClient)))).Methods("DELETE", "OPTIONS")
 	r.Handle("/activity/stop", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Stop(activityClient)))).Methods("POST", "OPTIONS")
 	r.Handle("/activity/running", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Running(activityClient)))).Methods("GET", "OPTIONS")
+	r.Handle("/activity/repeat", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Repeat(activityClient)))).Methods("POST", "OPTIONS")
 	r.Handle("/activities/tags", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Tags(activityClient)))).Methods("GET", "OPTIONS")
 	r.Handle("/activities/{id}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.Get(activityClient)))).Methods("GET", "OPTIONS")
 	r.Handle("/activities/{from}/{to}", jwtMiddleware.Handler(userIdMiddleware.Middleware(activity.InRange(activityClient)))).Methods("GET", "OPTIONS")
