@@ -1,8 +1,8 @@
 <script>
-	import '../tailwind.css';
-	import '../app.css';
+  import '../tailwind.css'
+  import '../app.css'
 </script>
 
-<main>
-	<slot />
+<main class="main-container">
+  <slot/>
 </main>

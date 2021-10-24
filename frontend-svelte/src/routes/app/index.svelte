@@ -1,5 +1,6 @@
 <script>
   import auth from '$lib/services/auth'
+  import Header from '$lib/Header.svelte'
   import {onMount} from 'svelte'
 
   let auth0Client
@@ -13,6 +14,8 @@
   })
 </script>
 
-<div class="container mx-auto pt-12">
-    <h1 class="text-4xl tracking-tight font-extrabold text-gray-300 text-center">App starts here</h1>
+<Header/>
+
+<div class="container mx-auto">
+  <h1 class="text-4xl tracking-tight font-extrabold text-gray-200 text-center">App starts here</h1>
 </div>
