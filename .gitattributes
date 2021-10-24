@@ -7,3 +7,4 @@ cli/** linguist-detectable=false
 backend/** linguist-detectable=false
 .github/** linguist-detectable=false
 .circleci/** linguist-detectable=false
+archive/** linguist-detectable=false
