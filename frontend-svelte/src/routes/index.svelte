@@ -37,7 +37,7 @@
 </script>
 
 <svelte:head>
-  <title>Home</title>
+  <title>Nine to Five</title>
 </svelte:head>
 
 <div class="pt-6 px-4 sm:px-6 lg:px-8">
