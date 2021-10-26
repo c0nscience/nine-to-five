@@ -1,0 +1,29 @@
+/*.tooltip {*/
+/*  @apply bg-gray-600 rounded px-2 py-1;*/
+/*}*/
+
+.arrow,
+.arrow::before {
+  @apply absolute h-[8px] w-[8px] -z-1;
+}
+
+.arrow::before {
+  @apply bg-white transform rotate-45;
+  content: "";
+}
+
+.tooltip[data-popper-placement^="top"] > .arrow {
+  @apply bottom-[-4px];
+}
+
+.tooltip[data-popper-placement^="bottom"] > .arrow {
+  @apply top-[-4px];
+}
+
+.tooltip[data-popper-placement^="left"] > .arrow {
+  @apply right-[-4px];
+}
+
+.tooltip[data-popper-placement^="right"] > .arrow {
+  @apply left-[-4px];
+}

@@ -1,31 +1,6 @@
 <script>
-  import {onDestroy, onMount} from 'svelte'
-  import auth from '$lib/services/auth'
-  import {idToken, isAuthenticated, refreshToken, user} from '$lib/stores/auth'
-
-  let auth0Client
-
-  const refreshRate = 10 * 60 * 60 * 1000
-  let tokenRefreshIntervalId
-  onMount(async () => {
-    auth0Client = await auth.createClient()
-
-    const _isAuthenticated = await auth0Client.isAuthenticated()
-    isAuthenticated.set(_isAuthenticated)
-    console.log('onmount $isAuthenticated', $isAuthenticated)
-    if (_isAuthenticated) {
-      const _user = await auth0Client.getUser()
-      user.set(_user)
-      const idTokenClaims = await auth0Client.getIdTokenClaims()
-      idToken.set(idTokenClaims.__raw)
-      refreshToken(auth0Client)
-      tokenRefreshIntervalId = setInterval(refreshToken, refreshRate)
-    }
-  })
-
-  onDestroy(() => {
-    clearInterval(tokenRefreshIntervalId)
-  })
+  import auth, {auth0Client} from '$lib/services/auth'
+  import {isAuthenticated} from '$lib/stores/auth'
 
   function login() {
     auth.login(auth0Client, {appState: {targetUrl: '/app'}})
@@ -35,10 +10,6 @@
     auth.logout(auth0Client)
   }
 </script>
-
-<svelte:head>
-  <title>Nine to Five</title>
-</svelte:head>
 
 <div class="pt-6 px-4 sm:px-6 lg:px-8">
   <nav aria-label="Global" class="flex items-center justify-between sm:h-10 lg:justify-start">

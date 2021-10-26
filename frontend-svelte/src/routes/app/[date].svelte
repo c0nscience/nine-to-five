@@ -24,13 +24,13 @@
   import auth from '$lib/services/auth'
   import {onMount} from 'svelte'
   import DaySwitcher from "$lib/list/DaySwitcher.svelte";
+  import {page} from "$app/stores";
 
   export let date
   onMount(async () => {
     const auth0Client = await auth.createClient()
-    const _isAuthenticated = await auth0Client.isAuthenticated()
-    if (!_isAuthenticated) {
-      await auth.login(auth0Client, {appState: {targetUrl: '/app'}})
+    if (!await auth0Client.isAuthenticated()) {
+      await auth.login(auth0Client, {appState: {targetUrl: $page.params.path}})
     }
   })
 </script>
