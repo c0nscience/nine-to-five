@@ -18,7 +18,9 @@
     "@auth0/auth0-spa-js": "^1.19.2",
     "@fontsource/fira-mono": "^4.5.0",
     "@lukeed/uuid": "^2.0.0",
+    "@popperjs/svelte": "^0.1.1",
     "cookie": "^0.4.1",
+    "date-picker-svelte": "^1.1.0",
     "dayjs": "^1.10.7"
   }
 }

@@ -5,3 +5,7 @@
 .main-container {
   @apply container mx-auto z-10 lg:max-w-2xl;
 }
+
+.primary-interaction {
+  @apply text-blue-600 hover:text-blue-800;
+}
