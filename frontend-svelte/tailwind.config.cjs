@@ -15,7 +15,8 @@ module.exports = {
       black: colors.black,
       white: colors.white,
       gray: colors.warmGray,
-      blue: colors.sky
+      blue: colors.sky,
+      red: colors.red,// use a purple for secondary highlight maybe
     },
     extend: {
       zIndex: {

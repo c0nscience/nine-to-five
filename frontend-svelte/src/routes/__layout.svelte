@@ -10,10 +10,6 @@
   const refreshRate = 10 * minutes
   let tokenRefreshIntervalId
 
-  onDestroy(() => {
-    clearInterval(tokenRefreshIntervalId)
-  })
-
   onMount(async () => {
     await auth.createClient()
     isClientCreated = true
@@ -30,6 +26,10 @@
       tokenRefreshIntervalId = setInterval(refreshToken, refreshRate)
     }
   });
+
+  onDestroy(() => {
+    clearInterval(tokenRefreshIntervalId)
+  })
 </script>
 
 <svelte:head>

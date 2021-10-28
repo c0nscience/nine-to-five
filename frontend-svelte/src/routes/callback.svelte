@@ -1,13 +1,10 @@
 <script>
   import {onMount} from 'svelte';
-  import auth from '$lib/services/auth';
+  import {auth0Client} from '$lib/services/auth';
   import {error} from '$lib/stores/auth';
   import {goto} from "$app/navigation";
 
-  let auth0Client;
-
   onMount(async () => {
-    auth0Client = await auth.createClient();
 
     const params = new URLSearchParams(window.location.search);
     if (params.has('error')) {

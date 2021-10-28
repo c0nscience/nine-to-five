@@ -5,7 +5,7 @@
    * @type {import('@sveltejs/kit').Load}
    */
   export async function load({page}) {
-    if (!dayjs(page.params.date).isValid()){
+    if (!dayjs(page.params.date).isValid()) {
       return {
         redirect: '/app',
         status: 302,
@@ -21,18 +21,9 @@
 </script>
 
 <script>
-  import auth from '$lib/services/auth'
-  import {onMount} from 'svelte'
   import DaySwitcher from "$lib/list/DaySwitcher.svelte";
-  import {page} from "$app/stores";
 
   export let date
-  onMount(async () => {
-    const auth0Client = await auth.createClient()
-    if (!await auth0Client.isAuthenticated()) {
-      await auth.login(auth0Client, {appState: {targetUrl: $page.params.path}})
-    }
-  })
 </script>
 
 <DaySwitcher {date}/>
