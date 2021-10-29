@@ -1,22 +1,32 @@
 <script>
   import {onMount} from 'svelte';
-  import {auth0Client} from '$lib/services/auth';
-  import {error} from '$lib/stores/auth';
+  import {isAuthenticated} from '$lib/stores/auth';
   import {goto} from "$app/navigation";
+  import {page} from "$app/stores";
 
-  onMount(async () => {
+  onMount(() => {
+    console.log('routes/callback.svelte', 'onMount', 'path', $page.path)
+    setTimeout(async () => {
+      console.log('routes/callback.svelte', 'onMount', 'path', $page.path, 'setTimeout')
+      // const params = new URLSearchParams(window.location.search);
+      // if (params.has('error')) {
+      //   error.set(new Error(params.get('error_description')));
+      // }
+      //
+      // if (params.has('code')) {
+      //   const {appState} = await auth0Client.handleRedirectCallback();
+      //   console.log('routes/callback.svelte', 'onMount', 'setTimeout', 'appState', appState)
+      //   error.set(null);
+      // }
 
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('error')) {
-      error.set(new Error(params.get('error_description')));
-    }
-
-    if (params.has('code')) {
-      const {appState} = await auth0Client.handleRedirectCallback();
-      console.log('appState', appState)
-      error.set(null);
-      await goto('/app');
-    }
+      console.log('routes/callback.svelte', 'onMount', 'path', $page.path, 'setTimeout', '$isAuthenticated', $isAuthenticated)
+      // ah that make sense we are here already in the SPA ... so we need to fill the store here for it to properly work
+      if ($isAuthenticated) {
+        await goto('/app');
+      } else {
+        await goto('/');
+      }
+    }, 0)
   });
 </script>
 
