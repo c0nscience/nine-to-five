@@ -140,7 +140,6 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/go
 
 frontend-v2
-.vercel
 reports
 tmp
 dump
