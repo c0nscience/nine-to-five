@@ -7,7 +7,7 @@ async function createClient() {
     auth0Client = await createAuth0Client({
         domain: config.domain,
         client_id: config.clientId,
-        redirect_uri: `${process.env.SVELTE_APP_URL}/callback`,
+        redirect_uri: `${import.meta.env.VITE_APP_URL}/callback`,
         audience: 'https://api.ntf.io',
         scope: 'openid read:activities start:activity stop:activity update:activity delete:activity read:metrics create:metrics delete:metrics update:metric',
         cacheLocation: 'localstorage',
