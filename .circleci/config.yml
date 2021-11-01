@@ -128,7 +128,7 @@ jobs:
       - run:
           command: |
             cd frontend
-            ../linkvercel.sh "$VERCEL_ORG_ID" "$VERCEL_FRONTEND_SVELTE_PROJECT_ID"
+            export VERCEL_PROJECT_ID="$VERCEL_FRONTEND_SVELTE_PROJECT_ID"
             npx vercel --prod -c -t $VERCEL_TOKEN
 
   deploy_frontend_svelte:
@@ -147,7 +147,7 @@ jobs:
       - run:
           command: |
             cd frontend-svelte
-            ../linkvercel.sh "$VERCEL_ORG_ID" "$VERCEL_FRONTEND_SVELTE_PROJECT_ID"
+            export VERCEL_PROJECT_ID="$VERCEL_FRONTEND_SVELTE_PROJECT_ID"
             npx vercel --prod -c -t $VERCEL_TOKEN
 
 workflows:
