@@ -127,6 +127,17 @@ jobs:
             - node-
       - run:
           command: |
+            cd frontend
+            JSON=$(cat <<-EOF
+            {
+                "orgId": "$VERCEL_ORG_ID",
+                "projectId": "$VERCEL_FRONTEND_PROJECT_ID"
+            }
+            EOF
+            )
+
+            echo $JSON > .vercel/project.json
+
             npx vercel --prod -c -t $VERCEL_TOKEN
 
   deploy_frontend_svelte:
@@ -144,6 +155,18 @@ jobs:
             - node-
       - run:
           command: |
+            cd frontend-svelte
+
+            JSON=$(cat <<-EOF
+            {
+                "orgId": "$VERCEL_ORG_ID",
+                "projectId": "$VERCEL_FRONTEND_SVELTE_PROJECT_ID"
+            }
+            EOF
+            )
+
+            echo $JSON > .vercel/project.json
+
             npx vercel --prod -c -t $VERCEL_TOKEN
 
 workflows:
