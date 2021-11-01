@@ -4,9 +4,11 @@
   "scripts": {
     "dev": "svelte-kit dev",
     "build": "svelte-kit build",
-    "preview": "svelte-kit preview"
+    "preview": "svelte-kit preview",
+    "now-build": "svelte-kit build"
   },
   "devDependencies": {
+    "@sveltejs/adapter-static": "^1.0.0-next.21",
     "@sveltejs/kit": "next",
     "autoprefixer": "^10.3.7",
     "postcss": "^8.3.9",
