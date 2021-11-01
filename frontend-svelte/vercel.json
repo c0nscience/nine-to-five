@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "nine-to-five-svelte",
   "builds": [
     {"src": "frontend-svelte/package.json", "use": "@now/static-build", "config": {"distDir": "build"}}
   ],
