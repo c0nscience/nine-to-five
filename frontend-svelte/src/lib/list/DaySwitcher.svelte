@@ -3,8 +3,8 @@
   import ChevronLeft from '$lib/icons/ChevronLeft.svelte'
   import dayjs from 'dayjs'
   import Popper from '@popperjs/svelte'
-  import {DatePicker} from "date-picker-svelte";
-  import {goto} from "$app/navigation";
+  import {DatePicker} from 'date-picker-svelte'
+  import {goto} from '$app/navigation'
   import './popover.css'
 
   export let date
@@ -12,8 +12,8 @@
 
   const css = obj =>
     Object.entries(obj || {})
-      .map(x => x.join(":"))
-      .join(";");
+      .map(x => x.join(':'))
+      .join(';')
 
   let showPopover = false
 
@@ -64,7 +64,7 @@
       style={css(styles.popper)}
       {...attributes.popper}>
       <DatePicker bind:value={jsDate} />
-      <div bind:this={arrowElement} class="arrow" style={css(styles.arrow)}/>
+      <div bind:this={arrowElement} class="arrow" style={css(styles.arrow)}></div>
     </div>
   </Popper>
   <a class="flex-grow-0 primary-interaction"
