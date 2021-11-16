@@ -1,14 +1,12 @@
-import adapter from '@sveltejs/adapter-static';
+import vercel from '@sveltejs/adapter-vercel'
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		target: '#svelte',
-		ssr: false,
-    adapter: adapter({
-      fallback: 'index.html'
-    }),
-	}
+    target: '#svelte',
+    ssr: false,
+    adapter: vercel()
+  }
 };
 
 export default config;
