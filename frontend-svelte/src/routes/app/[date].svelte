@@ -22,16 +22,8 @@
 
 <script>
   import DaySwitcher from '$lib/list/DaySwitcher.svelte'
-  import {onMount} from 'svelte'
-  import {fetchActivities} from '$lib/services/activity'
-  import {authToken} from '$lib/stores/auth'
 
   export let date
-
-  onMount(async () => {
-    console.log('$authToken', $authToken)
-    await fetchActivities($authToken, date, date)
-  })
 </script>
 
 <DaySwitcher {date}/>
