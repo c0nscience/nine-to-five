@@ -12,7 +12,7 @@ require (
 	github.com/rs/cors v1.8.0
 	github.com/rs/zerolog v1.26.0
 	github.com/stretchr/testify v1.7.0
-	go.mongodb.org/mongo-driver v1.8.0
+	go.mongodb.org/mongo-driver v1.8.2
 )
 
 require (
