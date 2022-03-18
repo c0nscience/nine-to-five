@@ -1,6 +1,12 @@
 # create-svelte
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte);
+Everything you need to build a Svelte project, powered
+by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte);
+
+# TODO
+
+[ ] use a
+simple [authorisation code flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow)
 
 ## Creating a project
 
