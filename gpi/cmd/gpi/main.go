@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-const kidToCache = "NTJFQzgyMjFFMDZDQzJCNzdGNjNERTI0ODg2MzEyODY3OEM3NkE1NA"
+const kidToCache = "9lTfRv8QXd097454kAMMt"
 
 func main() {
 	start := time.Now()
