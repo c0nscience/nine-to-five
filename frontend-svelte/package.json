@@ -5,7 +5,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "now-build": "vite build"
+    "now-build": "vite build",
+    "prepare": "svelte-kit sync"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^1.0.0-next.34",
