@@ -1,9 +1,7 @@
 const colors = require('tailwindcss/colors')
 
 module.exports = {
-  purge: ['./src/**/*.svelte', './src/**/*.css'],
-  mode: 'jit',
-  darkMode: false,
+  content: ['./src/**/*.svelte', './src/**/*.css'],
   theme: {
     fontFamily: {
       display: ['Roboto Mono', 'Menlo', 'monospace'],
@@ -14,7 +12,7 @@ module.exports = {
       current: 'currentColor',
       black: colors.black,
       white: colors.white,
-      gray: colors.warmGray,
+      gray: colors.stone,
       blue: colors.sky,
       red: colors.red,// use a purple for secondary highlight maybe
     },
@@ -23,9 +21,6 @@ module.exports = {
         '-1': '-1',
       }
     }
-  },
-  variants: {
-    extend: {inset: ['active']}
   },
   plugins: []
 }

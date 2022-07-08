@@ -4,8 +4,8 @@
   /**
    * @type {import('@sveltejs/kit').Load}
    */
-  export async function load({page}) {
-    if (!dayjs(page.params.date).isValid()) {
+  export async function load({params}) {
+    if (!dayjs(params.date).isValid()) {
       return {
         redirect: '/app',
         status: 302
@@ -14,7 +14,7 @@
 
     return {
       props: {
-        date: page.params.date
+        date: params.date
       }
     }
   }
