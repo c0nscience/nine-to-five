@@ -50,9 +50,6 @@ export const Detail = ({metric = {}, deleteMetric, editMetric, back}) => {
       dur = Duration.fromISO(v.duration)
     }
 
-    console.log('duration', v.duration)
-    console.log('duration type', typeof v.duration)
-
     return {
       id: 'CW ' + DateTime.fromISO(v.date).toFormat('WW'),
       value: dur.as('hours'),
