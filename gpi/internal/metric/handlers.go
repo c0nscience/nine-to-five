@@ -57,7 +57,6 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 
 		activitiesByWeek := map[time.Time][]activity.Activity{}
 		for _, act := range activities {
-			log.Info().Msgf("activity: %v", act)
 			week := AdjustToStartOfWeek(date(act.Start))
 			a, ok := activitiesByWeek[week]
 			if !ok {
