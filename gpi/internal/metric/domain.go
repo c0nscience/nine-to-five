@@ -36,8 +36,8 @@ type Result struct {
 }
 
 type Value struct {
-	Duration time.Duration `json:"duration,omitempty" bson:"duration,omitempty"`
-	Date     time.Time     `json:"date,omitempty" bson:"date,omitempty"`
+	Duration time.Duration `json:"duration" bson:"duration"`
+	Date     time.Time     `json:"date" bson:"date"`
 }
 
 type ByDate []Value
