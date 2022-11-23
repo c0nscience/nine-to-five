@@ -143,7 +143,7 @@ func main() {
 		log.Info().Msg("Got telegram credentials. Start crawler ...")
 
 		go func() {
-			for range time.Tick(time.Second * 30) {
+			for range time.Tick(time.Hour * 1) {
 				cli := crawler.New(crawlerUrl)
 				log.Info().Msg("test if is in stock")
 				if cli.InStock(size) {
