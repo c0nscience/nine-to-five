@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
 	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
+	"github.com/c0nscience/nine-to-five/gpi/internal/crawler"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	"github.com/c0nscience/nine-to-five/gpi/internal/logger"
 	"github.com/c0nscience/nine-to-five/gpi/internal/metric"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/gorilla/mux"
+
 	_ "github.com/heroku/x/hmetrics/onload"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
@@ -130,6 +134,31 @@ func main() {
 			}
 		}
 	}()
+
+	crawlerUrl := os.Getenv("CRAWLER_URL")
+	size := os.Getenv("SIZE")
+	tgChannel := os.Getenv("TELEGRAM_CHANNEL")
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	if err == nil {
+		log.Info().Msg("Got telegram credentials. Start crawler ...")
+
+		go func() {
+			for range time.Tick(time.Second * 30) {
+				cli := crawler.New(crawlerUrl)
+				log.Info().Msg("test if is in stock")
+				if cli.InStock(size) {
+					log.Info().Msg("Yes it was in stock.")
+					msg := tgbotapi.NewMessageToChannel(tgChannel, fmt.Sprintf("Yay! %s is in stock. GO GO GO - %s", size, crawlerUrl))
+					_, err := bot.Send(msg)
+					if err != nil {
+						log.Error().Err(err)
+					}
+				} else {
+					log.Info().Msg("No it was not in stock.")
+				}
+			}
+		}()
+	}
 
 	<-termChan
 
