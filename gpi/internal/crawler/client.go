@@ -35,12 +35,4 @@ func (me *crawlerClient) InStock(size string) bool {
 
 	b := r.FindStringSubmatch(string(out))
 	return b != nil
-
-	//match, err := regexp.Match("<li.*?data-availability=\"available\".*?>.*?XXL.*?</li>", out)
-	//if err != nil {
-	//	log.Error().Err(err)
-	//	return false
-	//}
-	//
-	//return match
 }
