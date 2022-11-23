@@ -79,7 +79,7 @@ jobs:
 
   test_gpi:
     docker:
-      - image: cimg/go:1.15
+      - image: cimg/go:1.17
       - image: mongo:4.4.8
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
