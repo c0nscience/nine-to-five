@@ -140,19 +140,25 @@ func main() {
 	tgChannel := os.Getenv("TELEGRAM_CHANNEL")
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err == nil {
+		msgCooldown := time.Minute * 15
+		lastSend := time.UnixMilli(0)
 		log.Info().Msg("Got telegram credentials. Start crawler ...")
 
 		go func() {
 			for range time.Tick(time.Minute * 1) {
+				log.Info().Msg("Is in stock ...")
+
 				cli := crawler.New(crawlerUrl)
-				log.Info().Msg("test if is in stock")
-				if cli.InStock(size) {
+				inStock := cli.InStock(size)
+
+				if inStock && lastSend.Add(msgCooldown).Before(clock.Now()) {
 					log.Info().Msg("Yes it was in stock.")
 					msg := tgbotapi.NewMessageToChannel(tgChannel, fmt.Sprintf("Yay! %s is in stock. GO GO GO - %s", size, crawlerUrl))
 					_, err := bot.Send(msg)
 					if err != nil {
 						log.Error().Err(err)
 					}
+					lastSend = clock.Now()
 				} else {
 					log.Info().Msg("No it was not in stock.")
 				}
