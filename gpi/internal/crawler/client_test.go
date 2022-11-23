@@ -17,7 +17,7 @@ func TestCrawlerClient_InStock(t *testing.T) {
 		inStock bool
 	}{
 		{"S 36/38", true},
-		{"M 40/42", true},
+		{"M 40/42", false},
 		{"L 44/46", true},
 		{"XL 48/50", false},
 		{"XXL 52/54", false},
@@ -32,7 +32,7 @@ func TestCrawlerClient_InStock(t *testing.T) {
 		}
 		t.Run(fmt.Sprintf("%s should %s in stock", test.size, v), func(t *testing.T) {
 			svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				b, err := os.ReadFile("test.html")
+				b, err := os.ReadFile("test.txt")
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					return
