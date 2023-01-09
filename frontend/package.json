@@ -23,7 +23,7 @@
     "@nivo/core": "^0.73.0",
     "color-string": "^1.5.5",
     "history": "^4.10.1",
-    "luxon": "^1.25.0",
+    "luxon": "^2.5.2",
     "prop-types": "^15.7.2",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
