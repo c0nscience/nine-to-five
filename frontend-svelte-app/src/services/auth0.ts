@@ -1,10 +1,4 @@
-import type {
-  Auth0Client,
-  GetTokenSilentlyOptions,
-  LogoutOptions,
-  RedirectLoginOptions,
-  User
-} from '@auth0/auth0-spa-js'
+import type { Auth0Client, LogoutOptions, RedirectLoginOptions, User } from '@auth0/auth0-spa-js'
 import { createAuth0Client } from '@auth0/auth0-spa-js'
 import type { Writable } from 'svelte/store'
 import { get, writable } from 'svelte/store'
@@ -21,6 +15,8 @@ const _useAuth0 = () => {
       await createAuth0Client({
         domain: import.meta.env.VITE_AUTH0_DOMAIN,
         clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+        useRefreshTokens: true,
+        cacheLocation: 'localstorage',
         authorizationParams: {
           redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
           audience: import.meta.env.VITE_AUTH0_AUDIENCE,
@@ -57,16 +53,16 @@ const _useAuth0 = () => {
     }
   }
 
-  const login = async (options: RedirectLoginOptions) => {
+  const login = async (options: RedirectLoginOptions): Promise<void> => {
     await get(auth0Client).loginWithRedirect(options)
   }
 
-  const logout = async (options: LogoutOptions) => {
-    get(auth0Client).logout(options)
+  const logout = async (options: LogoutOptions): Promise<void> => {
+    await get(auth0Client).logout(options)
   }
 
-  const getAccessToken = async (options: GetTokenSilentlyOptions) => {
-    return await get(auth0Client).getTokenSilently(options)
+  const getAccessToken = async (): Promise<string> => {
+    return await get(auth0Client).getTokenSilently()
   }
 
 
