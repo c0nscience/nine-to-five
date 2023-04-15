@@ -38,4 +38,5 @@ jobs:
     - name: Test
       run: |
         cd gpi/internal
+        ls -al
         go test -v ./...
