@@ -16,13 +16,11 @@
       next()
     } else {
       const appState = { targetUrl: ctx.pathname }
-      console.log('appState', appState)
       login({ appState })
     }
   }
 
   const onRedirectCallback = (appState: any) => {
-    console.log('appState.targetUrl', appState.targetUrl)
     window.history.replaceState(
       {},
       document.title,

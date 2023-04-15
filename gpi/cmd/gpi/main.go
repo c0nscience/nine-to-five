@@ -75,6 +75,7 @@ func main() {
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{
 			"http://localhost:3000",
+			"http://localhost:5173",
 			"https://9to5.app",
 		},
 		AllowedMethods: []string{
