@@ -142,11 +142,11 @@ jobs:
             - repo-
       - restore_cache:
           keys:
-            - node-{{ checksum "frontend-svelte/package-lock.json" }}
+            - node-{{ checksum "frontend-svelte-app/package-lock.json" }}
             - node-
       - run:
           command: |
-            cd frontend-svelte
+            cd frontend-svelte-app
             export VERCEL_PROJECT_ID="$VERCEL_FRONTEND_SVELTE_PROJECT_ID"
             npx vercel --prod -c -t $VERCEL_TOKEN
 
