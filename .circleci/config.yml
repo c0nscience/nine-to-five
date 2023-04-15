@@ -80,9 +80,9 @@ jobs:
   test_gpi:
     docker:
       - image: cimg/go:1.20
-    #      - image: circleci/mongo:5.0.6
-    #        environment:
-    #          MONGO_INITDB_DATABASE: ntf-db-test
+      - image: circleci/mongo:5.0.6
+        environment:
+          MONGO_INITDB_DATABASE: ntf-db-test
 
     environment:
       TEST_RESULTS: /tmp/test-results
@@ -99,21 +99,11 @@ jobs:
             - go-mod-{{ checksum "gpi/go.sum" }}
 
       - run:
-          name: Start docker
-          command: |
-            docker compose up -d
-
-      - run:
           name: Run unit tests
           command: |
             cd gpi/internal
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
-
-      - run:
-          name: Stop docker
-          command: |
-            docker compose down
 
       - store_artifacts:
           path: /tmp/test-results
