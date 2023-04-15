@@ -30,6 +30,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd gpi
+        ls -al
         go vet ./...
     
     - name: Test
