@@ -80,7 +80,7 @@ jobs:
   test_gpi:
     docker:
       - image: cimg/go:1.20
-      - image: circleci/mongo:6.0.5
+      - image: circleci/mongo:5.0.6
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
 
