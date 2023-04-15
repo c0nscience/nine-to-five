@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  build-api:
+  test-api:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -35,12 +35,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Build
-      run: |
-        cd gpi
-        go build -v ./...
-
     - name: Test
       run: |
-        cd gpi
+        cd gpi/internal
         go test -v ./...
