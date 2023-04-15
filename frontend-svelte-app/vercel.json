@@ -1,4 +1,7 @@
 {
+  "regions": [
+    "arn1"
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

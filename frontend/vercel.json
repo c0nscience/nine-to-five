@@ -1,9 +1,17 @@
 {
   "version": 2,
   "builds": [
-    {"src": "package.json", "use": "@vercel/static-build", "config": {"distDir": "build"}}
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
   ],
-  "regions": ["arn"],
+  "regions": [
+    "arn1"
+  ],
   "build": {
     "env": {
       "REACT_APP_GPI_HOST": "https://ntf-gpi.herokuapp.com",
@@ -11,8 +19,17 @@
     }
   },
   "routes": [
-    {"src": "/static/(.*)", "headers": {"cache-control": "s-maxage=31536000,immutable"}, "dest": "static/$1"},
-    {"src": "/favicon.ico", "dest": "favicon.ico"},
+    {
+      "src": "/static/(.*)",
+      "headers": {
+        "cache-control": "s-maxage=31536000,immutable"
+      },
+      "dest": "static/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "favicon.ico"
+    },
     {
       "src": "/favicon-16x16.png",
       "dest": "favicon-16x16.png"
