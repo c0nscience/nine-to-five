@@ -36,7 +36,9 @@ jobs:
           ${{ runner.os }}-go-
           
     - name: Install dependencies
-      run: go vet ./...
+      run: |
+        cd gpi
+        go vet ./...
     
     - name: Test
       run: |
