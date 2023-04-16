@@ -96,7 +96,7 @@ func main() {
 		Handler: corsOpts.Handler(r),
 	}
 
-	termChan := make(chan os.Signal)
+	termChan := make(chan os.Signal, 1)
 	signal.Notify(termChan, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {

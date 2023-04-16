@@ -35,7 +35,8 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 
 		vars := mux.Vars(r)
 
-		ctx, _ := context.WithTimeout(r.Context(), timeout)
+		ctx, cncl := context.WithTimeout(r.Context(), timeout)
+		defer cncl()
 		var config Configuration
 		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), &config)
 		if err != nil {
@@ -120,7 +121,7 @@ func byTags(userId string, tags []string) bson.M {
 }
 
 func by(field string, order int) bson.D {
-	return bson.D{{field, order}}
+	return bson.D{{Key: field, Value: order}}
 }
 
 func AdjustToStartOfWeek(t time.Time) time.Time {
@@ -156,7 +157,8 @@ func List(metricStore store.Store) http.HandlerFunc {
 			return
 		}
 
-		ctx, _ := context.WithTimeout(r.Context(), timeout)
+		ctx, cncl := context.WithTimeout(r.Context(), timeout)
+		defer cncl()
 
 		cfgs := []Configuration{}
 		err := metricStore.Find(ctx, userId, byUser(userId), by("name", 1), &cfgs)
@@ -196,7 +198,8 @@ func Create(metricStore store.Store) http.HandlerFunc {
 			return
 		}
 
-		ctx, _ := context.WithTimeout(r.Context(), timeout)
+		ctx, cncl := context.WithTimeout(r.Context(), timeout)
+		defer cncl()
 
 		b, _ := ioutil.ReadAll(r.Body)
 
@@ -238,7 +241,8 @@ func Delete(metricStore store.Store) http.HandlerFunc {
 			return
 		}
 
-		ctx, _ := context.WithTimeout(r.Context(), timeout)
+		ctx, cncl := context.WithTimeout(r.Context(), timeout)
+		defer cncl()
 
 		vars := mux.Vars(r)
 		err := metricStore.Delete(ctx, userId, byId(userId, vars[pathVariableId]), nil)
@@ -259,7 +263,8 @@ func Update(metricStore store.Store) http.HandlerFunc {
 			return
 		}
 
-		ctx, _ := context.WithTimeout(r.Context(), timeout)
+		ctx, cncl := context.WithTimeout(r.Context(), timeout)
+		defer cncl()
 
 		vars := mux.Vars(r)
 		cfg := &Configuration{}
@@ -302,7 +307,8 @@ func Load(metricStore store.Store) http.HandlerFunc {
 			return
 		}
 
-		ctx, _ := context.WithTimeout(r.Context(), timeout)
+		ctx, cncl := context.WithTimeout(r.Context(), timeout)
+		defer cncl()
 
 		vars := mux.Vars(r)
 		cfg := &Configuration{}

@@ -31,7 +31,8 @@ func TestStore_Disconnect(t *testing.T) {
 	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	ctx, cncl := context.WithTimeout(context.Background(), timeout)
+	defer cncl()
 	err = subj.Disconnect(ctx)
 	assert.NoError(t, err)
 }
@@ -54,7 +55,8 @@ func (me *A) ObjectId() primitive.ObjectID {
 func TestStore_Save(t *testing.T) {
 	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	ctx, cncl := context.WithTimeout(context.Background(), timeout)
+	defer cncl()
 	defer subj.DropCollection(ctx)
 
 	a := A{
@@ -69,7 +71,8 @@ func TestStore_Save(t *testing.T) {
 func TestStore_FindOne(t *testing.T) {
 	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	ctx, cncl := context.WithTimeout(context.Background(), timeout)
+	defer cncl()
 	defer subj.DropCollection(ctx)
 
 	a := A{
@@ -88,7 +91,8 @@ func TestStore_FindOne(t *testing.T) {
 func TestStore_Delete(t *testing.T) {
 	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	ctx, cncl := context.WithTimeout(context.Background(), timeout)
+	defer cncl()
 	t.Cleanup(func() {
 		subj.DropCollection(ctx)
 	})
@@ -112,7 +116,8 @@ func TestStore_Delete(t *testing.T) {
 func TestStore_Distinct(t *testing.T) {
 	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	ctx, cncl := context.WithTimeout(context.Background(), timeout)
+	defer cncl()
 	t.Cleanup(func() {
 		subj.DropCollection(ctx)
 	})
@@ -136,7 +141,8 @@ func TestStore_Distinct(t *testing.T) {
 func TestStore_Find(t *testing.T) {
 	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	ctx, cncl := context.WithTimeout(context.Background(), timeout)
+	defer cncl()
 	defer subj.DropCollection(ctx)
 
 	subj.Save(ctx, "userId", &A{
@@ -150,7 +156,7 @@ func TestStore_Find(t *testing.T) {
 	})
 
 	var res []A
-	err = subj.Find(context.TODO(), "userId", bson.D{{"userId", "userId"}}, nil, &res)
+	err = subj.Find(context.TODO(), "userId", bson.D{{Key: "userId", Value: "userId"}}, nil, &res)
 
 	assert.NoError(t, err)
 	assert.Len(t, res, 2)
