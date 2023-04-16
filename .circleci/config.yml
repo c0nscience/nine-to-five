@@ -19,7 +19,7 @@ jobs:
     docker:
       - image: cimg/node:lts
     resource_class: large
-    parallelism: 5
+#    parallelism: 5
 
     steps:
       - restore_cache:
@@ -53,7 +53,7 @@ jobs:
     docker:
       - image: cimg/node:lts
     resource_class: large
-    parallelism: 5
+    #    parallelism: 5
 
     steps:
       - restore_cache:
