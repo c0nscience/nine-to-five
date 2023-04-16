@@ -63,7 +63,7 @@ jobs:
           command: |
             cd frontend-svelte-app
             npm install
-            npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit
+            npm test -- --coverage --reporters=default --reporters=jest-junit
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
       - save_cache:
