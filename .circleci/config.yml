@@ -81,7 +81,7 @@ jobs:
       - image: mongo:6.0.5
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
-    resource_class: small
+    resource_class: xlarge
     parallelism: 4
 
     environment:
