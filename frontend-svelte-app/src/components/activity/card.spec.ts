@@ -38,8 +38,8 @@ describe('Activity Card', () => {
     const now = DateTime.local()
     render(Card, {
       activity: {
-        // id: '',
-        // userId: '',
+        id: '',
+        userId: '',
         name: 'some task',
         start: now.minus({ hour: 2, minute: 15 }),
         end: now,
