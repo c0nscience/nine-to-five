@@ -18,6 +18,7 @@ jobs:
   test_frontend:
     docker:
       - image: cimg/node:lts
+    resource_class: large
 
     steps:
       - restore_cache:
@@ -49,6 +50,7 @@ jobs:
   test_frontend_svelte:
     docker:
       - image: cimg/node:lts
+    resource_class: large
 
     steps:
       - restore_cache:
@@ -81,7 +83,7 @@ jobs:
       - image: mongo:6.0.5
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
-    resource_class: xlarge
+    resource_class: large
     parallelism: 4
 
     environment:
@@ -115,6 +117,7 @@ jobs:
   deploy_frontend:
     docker:
       - image: cimg/node:lts
+    resource_class: large
 
     steps:
       - restore_cache:
@@ -134,6 +137,7 @@ jobs:
   deploy_frontend_svelte:
     docker:
       - image: cimg/node:lts
+    resource_class: large
 
     steps:
       - restore_cache:
