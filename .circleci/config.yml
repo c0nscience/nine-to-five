@@ -216,6 +216,7 @@ workflows:
           requires:
             - test golang api
             - test frontend
+            - test frontend svelte
           app-name: ntf-gpi
 
       - deploy_frontend:
@@ -223,10 +224,10 @@ workflows:
           requires:
             - test golang api
             - test frontend
+            - test frontend svelte
 
       - deploy_frontend_svelte:
           name: deploy svelte frontend
           requires:
-            - check frontend svelte
             - test frontend svelte
             - test golang api
