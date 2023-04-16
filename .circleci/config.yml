@@ -199,6 +199,7 @@ workflows:
           name: test frontend
           requires:
             - checkout code
+            - check frontend svelte
       - test_frontend_svelte:
           name: test frontend svelte
           requires:
@@ -208,6 +209,7 @@ workflows:
           name: test golang api
           requires:
             - checkout code
+            - check frontend svelte
 
       - heroku/deploy-via-git:
           name: deploy gpi
