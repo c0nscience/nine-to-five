@@ -46,36 +46,36 @@ jobs:
       - store_artifacts:
           path: frontend/reports/junit
 
-#  test_frontend_svelte:
-#    docker:
-#      - image: cimg/node:lts
-#
-#    steps:
-#      - restore_cache:
-#          keys:
-#            - repo-{{ .Environment.CIRCLE_SHA1 }}
-#            - repo-
-#      - restore_cache:
-#          keys:
-#            - node-{{ checksum "frontend-svelte/package-lock.json" }}
-#            - node-
-#      - run:
-#          command: |
-#            cd frontend-svelte
-#            npm install
-#            npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit
-#          environment:
-#            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
-#      - save_cache:
-#          paths:
-#            - frontend-svelte/node_modules
-#          key: node-{{ checksum "frontend-svelte/package-lock.json" }}
-#      - store_artifacts:
-#          path: frontend-svelte/coverage
-#      - store_test_results:
-#          path: frontend-svelte/reports/junit/
-#      - store_artifacts:
-#          path: frontend-svelte/reports/junit
+  test_frontend_svelte:
+    docker:
+      - image: cimg/node:lts
+
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - repo-
+      - restore_cache:
+          keys:
+            - node-{{ checksum "frontend-svelte-app/package-lock.json" }}
+            - node-
+      - run:
+          command: |
+            cd frontend-svelte-app
+            npm install
+            npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+      - save_cache:
+          paths:
+            - frontend-svelte-app/node_modules
+          key: node-{{ checksum "frontend-svelte-app/package-lock.json" }}
+      - store_artifacts:
+          path: frontend-svelte-app/coverage
+      - store_test_results:
+          path: frontend-svelte-app/reports/junit/
+      - store_artifacts:
+          path: frontend-svelte-app/reports/junit
 
   test_gpi:
     docker:
@@ -183,4 +183,5 @@ workflows:
       - deploy_frontend_svelte:
           name: deploy svelte frontend
           requires:
+            - test frontend svelte
             - test golang api

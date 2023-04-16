@@ -25,14 +25,15 @@
   <div class="navbar-center">
     <!--    <a class="btn btn-ghost normal-case text-xl">daisyUI</a>-->
     <div class="btn-group">
-      <button class="btn btn-ghost text-xl" on:click={() => {
-        $currentDate = $currentDate.minus({day: 1})
+      <button class="btn btn-ghost text-xl" data-testid="prev-btn" on:click={() => {
+        $currentDate = $currentDate.minus({days: 1})
         dispatch('dateChanged', $currentDate)
       }}>«
       </button>
-      <button class="btn btn-ghost text-xl">{isToday ? 'Today' : $currentDate.toFormat('EEE, DD')}</button>
-      <button class="btn btn-ghost text-xl" on:click={() => {
-        $currentDate = $currentDate.plus({day: 1})
+      <button class="btn btn-ghost text-xl"
+              data-testid="current-date-label">{isToday ? 'Today' : $currentDate.toFormat('EEE, DD')}</button>
+      <button class="btn btn-ghost text-xl" data-testid="next-btn" on:click={() => {
+        $currentDate = $currentDate.plus({days: 1})
         dispatch('dateChanged', $currentDate)
       }}>»
       </button>
