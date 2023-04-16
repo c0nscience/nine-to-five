@@ -73,7 +73,7 @@ jobs:
       - store_artifacts:
           path: frontend-svelte-app/coverage
       - store_test_results:
-          path: frontend-svelte-app/reports/junit/
+          path: frontend-svelte-app/reports/junit
       - store_artifacts:
           path: frontend-svelte-app/reports/junit
 
