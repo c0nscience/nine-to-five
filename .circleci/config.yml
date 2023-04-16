@@ -19,6 +19,7 @@ jobs:
     docker:
       - image: cimg/node:lts
     resource_class: large
+    parallelism: 5
 
     steps:
       - restore_cache:
@@ -33,7 +34,8 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit
+            TEST=$(circleci tests glob "src/*.spec.js" | circleci tests split --split-by=timings)
+            npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit $TEST
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
       - save_cache:
@@ -51,6 +53,7 @@ jobs:
     docker:
       - image: cimg/node:lts
     resource_class: large
+    parallelism: 5
 
     steps:
       - restore_cache:
@@ -65,7 +68,8 @@ jobs:
           command: |
             cd frontend-svelte-app
             npm install
-            npm test -- --coverage.enabled --reporter=default --reporter=junit --outputFile.junit='./reports/junit'
+            TEST=$(circleci tests glob "src/*.spec.js" | circleci tests split --split-by=timings)
+            npm test -- --coverage.enabled --reporter=default --reporter=junit --outputFile.junit='./reports/junit' $TEST
       - save_cache:
           paths:
             - frontend-svelte-app/node_modules
@@ -84,7 +88,7 @@ jobs:
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
     resource_class: large
-    parallelism: 4
+    parallelism: 5
 
     environment:
       TEST_RESULTS: /tmp/test-results
