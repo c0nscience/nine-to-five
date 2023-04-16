@@ -1,24 +1,28 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { currentDate } from '../stores/navigation'
   import { DateTime } from 'luxon'
+  import { createEventDispatcher } from 'svelte'
   import { useAuth0 } from '../services/auth0'
+  import { currentDate } from '../stores/navigation'
 
   const dispatch = createEventDispatcher()
 
   $: isToday = $currentDate.toISODate() === DateTime.local().toISODate()
 </script>
 
-<div class="navbar bg-base-100">
+<nav class="fixed top-0 z-50 navbar bg-base-100">
   <div class="navbar-start">
     <div class="dropdown">
-      <label class="btn btn-ghost btn-circle" tabindex="0">
+      <button class="btn btn-ghost btn-circle">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
         </svg>
-      </label>
-      <ul class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-200 rounded-box w-52" tabindex="0">
-        <li on:click={() => {useAuth0.logout({logoutParams: {returnTo: window.location.origin}})}}><a>Logout</a></li>
+      </button>
+      <ul class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-200 rounded-box w-52">
+        <li>
+          <button class="btn btn-sm"
+                  on:click={() => {useAuth0.logout({logoutParams: {returnTo: window.location.origin}})}}>Logout
+          </button>
+        </li>
       </ul>
     </div>
   </div>
@@ -30,7 +34,7 @@
         dispatch('dateChanged', $currentDate)
       }}>«
       </button>
-      <button class="btn btn-ghost text-xl"
+      <button class="btn btn-ghost text-xl w-56"
               data-testid="current-date-label">{isToday ? 'Today' : $currentDate.toFormat('EEE, DD')}</button>
       <button class="btn btn-ghost text-xl" data-testid="next-btn" on:click={() => {
         $currentDate = $currentDate.plus({days: 1})
@@ -50,4 +54,4 @@
     <!--      </div>-->
     <!--    </button>-->
   </div>
-</div>
+</nav>
