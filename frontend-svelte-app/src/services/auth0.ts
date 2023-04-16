@@ -39,14 +39,11 @@ const _useAuth0 = () => {
 
       if ((search.includes('code=') || search.includes('error=')) && search.includes('state=')) {
         const { appState } = await get(auth0Client).handleRedirectCallback()
-        console.log('appState', appState)
         config.onRedirectCallback(appState)
       }
     } catch (e) {
-      console.log('error', e)
       error.set(e)
     } finally {
-      console.log('are we done yet?')
       isAuthenticated.set(await get(auth0Client).isAuthenticated())
       user.set(await get(auth0Client).getUser() || null)
       isLoading.set(false)
