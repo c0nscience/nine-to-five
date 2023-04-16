@@ -77,6 +77,7 @@ func main() {
 			"http://localhost:3000",
 			"http://localhost:5173",
 			"https://9to5.app",
+			"https://nine-to-five-svelte-conscience.vercel.app",
 		},
 		AllowedMethods: []string{
 			http.MethodGet,
