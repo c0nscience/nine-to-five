@@ -189,6 +189,12 @@ workflows:
           filters:
             branches:
               only: master
+
+      - check_frontend_svelte:
+          name: check frontend svelte
+          requires:
+            - checkout code
+
       - test_frontend:
           name: test frontend
           requires:
@@ -197,10 +203,7 @@ workflows:
           name: test frontend svelte
           requires:
             - checkout code
-      - check_frontend_svelte:
-          name: check frontend svelte
-          requires:
-            - checkout code
+            - check frontend svelte
       - test_gpi:
           name: test golang api
           requires:
