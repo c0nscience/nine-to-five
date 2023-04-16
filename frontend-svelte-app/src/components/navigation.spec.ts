@@ -1,7 +1,7 @@
-import NavigationBar from './NavigationBar.svelte'
 import { fireEvent, render, screen } from '@testing-library/svelte'
 import { DateTime } from 'luxon'
 import { currentDate } from '../stores/navigation'
+import NavigationBar from './NavigationBar.svelte'
 
 describe('NavigationBar', () => {
   afterEach(() => {
@@ -37,5 +37,17 @@ describe('NavigationBar', () => {
 
     const expected = DateTime.local().plus({ day: 1 }).toFormat('EEE, DD')
     expect(currentDateLabel.innerHTML).to.equal(expected)
+  })
+
+  test('should reset date to today clicking current date label', async () => {
+    render(NavigationBar)
+
+    const btn = screen.getByTestId('next-btn')
+    await fireEvent.click(btn)
+
+    const currentDateLabel = await screen.findByTestId('current-date-label')
+    await fireEvent.click(currentDateLabel)
+
+    expect(currentDateLabel.innerHTML).to.equal('Today')
   })
 })
