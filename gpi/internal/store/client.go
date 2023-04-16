@@ -79,7 +79,7 @@ func (me *mongoDbStore) Save(ctx context.Context, userId string, d HasObjectId) 
 		objectId = primitive.NewObjectID()
 		d.SetObjectId(objectId)
 	}
-	res := me.coll.FindOneAndUpdate(ctx, bson.M{"_id": objectId}, bson.D{{"$set", d}}, opts)
+	res := me.coll.FindOneAndUpdate(ctx, bson.M{"_id": objectId}, bson.D{{Key: "$set", Value: d}}, opts)
 
 	if res.Err() != nil {
 		return nil, res.Err()
@@ -140,7 +140,7 @@ func (me *mongoDbStore) Delete(ctx context.Context, userId string, filter interf
 }
 
 func (me *mongoDbStore) Distinct(ctx context.Context, userId string, field string) ([]interface{}, error) {
-	return me.coll.Distinct(ctx, field, bson.D{{"userId", bson.D{{"$eq", userId}}}})
+	return me.coll.Distinct(ctx, field, bson.D{{Key: "userId", Value: bson.D{{Key: "$eq", Value: userId}}}})
 }
 
 type HasObjectId interface {

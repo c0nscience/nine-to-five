@@ -336,15 +336,15 @@ func byId(userId, id string) bson.M {
 }
 
 func by(field string, order int) bson.D {
-	return bson.D{{field, order}}
+	return bson.D{{Key: field, Value: order}}
 }
 
 func byStartBetween(userId string, from, to time.Time) bson.D {
 	from = from.Truncate(24 * time.Hour)
 	to = to.Add(24 * time.Hour).Truncate(24 * time.Hour)
 	return bson.D{
-		{"userId", userId},
-		{"start", bson.M{"$gt": from, "$lt": to}},
+		{Key: "userId", Value: userId},
+		{Key: "start", Value: bson.M{"$gt": from, "$lt": to}},
 	}
 }
 

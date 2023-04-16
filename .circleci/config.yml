@@ -156,7 +156,7 @@ jobs:
             - go-mod-{{ checksum "gpi/go.sum" }}
 
       - run:
-          name: Run unit tests
+          name: Examining code
           command: |
             cd gpi
             go vet ./...

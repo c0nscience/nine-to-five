@@ -473,7 +473,7 @@ func Test_Repeat(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, resp.Code)
 
 		var stored []activity.Activity
-		err := activityStore.Find(ctx, userId, bson.M{"tags": bson.M{"$all": []string{"tag-1", "tag-2"}}}, bson.D{{"start", 1}}, &stored)
+		err := activityStore.Find(ctx, userId, bson.M{"tags": bson.M{"$all": []string{"tag-1", "tag-2"}}}, bson.D{{Key: "start", Value: 1}}, &stored)
 		assert.NoError(t, err)
 		assert.Len(t, stored, 5)
 		assert.Equal(t, time.Date(2021, time.September, 20, 8, 30, 0, 0, time.UTC), stored[0].Start)

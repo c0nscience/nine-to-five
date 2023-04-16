@@ -248,7 +248,7 @@ func Test_Metrics(t *testing.T) {
 			assert.Equal(t, http.StatusCreated, resp.Code)
 
 			cfgs := []metric.Configuration{}
-			err := metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{"name", 1}}, &cfgs)
+			err := metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{Key: "name", Value: 1}}, &cfgs)
 			assert.NoError(t, err)
 
 			assert.Len(t, cfgs, 1)
@@ -267,7 +267,7 @@ func Test_Metrics(t *testing.T) {
 			assert.Equal(t, http.StatusCreated, resp.Code)
 
 			cfgs := []metric.Configuration{}
-			err := metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{"name", 1}}, &cfgs)
+			err := metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{Key: "name", Value: 1}}, &cfgs)
 			assert.NoError(t, err)
 
 			assert.Len(t, cfgs, 1)
@@ -287,7 +287,7 @@ func Test_Metrics(t *testing.T) {
 			assert.Equal(t, http.StatusCreated, resp.Code)
 
 			cfgs := []metric.Configuration{}
-			err := metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{"name", 1}}, &cfgs)
+			err := metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{Key: "name", Value: 1}}, &cfgs)
 			assert.NoError(t, err)
 
 			assert.Len(t, cfgs, 1)
@@ -327,7 +327,7 @@ func Test_Metrics(t *testing.T) {
 			assert.NoError(t, err)
 
 			cfgs := []metric.Configuration{}
-			err = metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{"name", 1}}, &cfgs)
+			err = metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{Key: "name", Value: 1}}, &cfgs)
 			assert.NoError(t, err)
 
 			assert.Len(t, cfgs, 1)
@@ -338,7 +338,7 @@ func Test_Metrics(t *testing.T) {
 			assert.Equal(t, http.StatusOK, resp.Code)
 
 			cfgs = []metric.Configuration{}
-			err = metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{"name", 1}}, &cfgs)
+			err = metricStore.Find(ctx, userId, bson.M{"userId": userId}, bson.D{{Key: "name", Value: 1}}, &cfgs)
 			assert.NoError(t, err)
 
 			assert.Len(t, cfgs, 0)
