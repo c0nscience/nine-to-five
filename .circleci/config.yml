@@ -81,6 +81,7 @@ jobs:
       - image: mongo:6.0.5
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
+    parallelism: 4
 
     environment:
       TEST_RESULTS: /tmp/test-results
