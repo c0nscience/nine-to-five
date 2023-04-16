@@ -162,6 +162,10 @@ workflows:
           name: test frontend
           requires:
             - checkout code
+      - test_frontend_svelte:
+          name: test frontend svelte
+          requires:
+            - checkout code
       - test_gpi:
           name: test golang api
           requires:
