@@ -181,6 +181,7 @@ workflows:
             - test golang api
             - test frontend
           app-name: ntf-gpi
+          resource_class: large
 
       - deploy_frontend:
           name: deploy frontend
