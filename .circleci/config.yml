@@ -32,10 +32,10 @@ jobs:
             - node-
       - run:
           command: |
-            cd frontend
-            npm install
-            TEST=$(circleci tests glob "src/*.spec.js" | circleci tests split --split-by=timings)
-            npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit $TEST
+                     cd frontend
+                     npm install
+            #            TEST=$(circleci tests glob "src/*.spec.js" | circleci tests split --split-by=timings)
+                     npm test -- --runInBand --coverage --reporters=default --reporters=jest-junit
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
       - save_cache:
@@ -66,10 +66,10 @@ jobs:
             - node-
       - run:
           command: |
-            cd frontend-svelte-app
-            npm install
-            TEST=$(circleci tests glob "src/*.spec.js" | circleci tests split --split-by=timings)
-            npm test -- --coverage.enabled --reporter=default --reporter=junit --outputFile.junit='./reports/junit' $TEST
+                     cd frontend-svelte-app
+                     npm install
+            #            TEST=$(circleci tests glob "src/*.spec.js" | circleci tests split --split-by=timings)
+                     npm test -- --coverage.enabled --reporter=default --reporter=junit --outputFile.junit='./reports/junit'
       - save_cache:
           paths:
             - frontend-svelte-app/node_modules
