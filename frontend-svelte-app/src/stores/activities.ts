@@ -1,7 +1,8 @@
-import { Writable, writable } from 'svelte/store'
 import { DateTime } from 'luxon'
+import type { Writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 
-export class Activity {
+export interface Activity {
   id: string
   userId: string
   name: string
