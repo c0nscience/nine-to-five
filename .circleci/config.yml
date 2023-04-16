@@ -67,7 +67,7 @@ jobs:
           command: |
             cd frontend-svelte-app
             npm install
-            TEST=$(circleci tests glob "src/__tests__/*.js" | circleci tests split --split-by=timings)
+            TEST=$(circleci tests glob "src/**/*.spec.ts" | circleci tests split --split-by=timings)
             npm test -- --coverage.enabled --reporter=default --reporter=junit --outputFile.junit='./reports/junit' $TEST
       - save_cache:
           paths:
