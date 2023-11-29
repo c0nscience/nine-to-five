@@ -2,15 +2,17 @@ package jwttest
 
 import (
 	"bytes"
+	"context"
 	"fmt"
-	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
+	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
-	gjwt "github.com/form3tech-oss/jwt-go"
+	gjwt "github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 )
 
 var privateKey []byte
@@ -36,15 +38,19 @@ func MakeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 
 	token := gjwt.New(gjwt.SigningMethodHS256)
 	token.Claims = gjwt.MapClaims{"sub": userId}
-	s, e := token.SignedString(privateKey)
-	if e != nil {
-		panic(e)
+	s, err := token.SignedString(privateKey)
+	if err != nil {
+		panic(err)
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("bearer %v", s))
 
 	resp := httptest.NewRecorder()
 
-	handler := JWT().Handler(jwt.UserIdMiddleware().Middleware(h))
+	middleware, err := JWT()
+	if err != nil {
+		panic(err)
+	}
+	handler := middleware.CheckJWT(jwt.UserIdMiddleware().Middleware(h))
 	if pattern == "" {
 		handler.ServeHTTP(resp, req)
 	} else {
@@ -56,17 +62,26 @@ func MakeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 	return resp
 }
 
-func JWT() *jwtmiddleware.JWTMiddleware {
-	return jwtmiddleware.New(jwtmiddleware.Options{
-		Debug:               false,
-		CredentialsOptional: false,
-		ValidationKeyGetter: func(token *gjwt.Token) (interface{}, error) {
+func JWT() (*jwtmiddleware.JWTMiddleware, error) {
+	jwtValidator, err := validator.New(
+		func(ctx context.Context) (interface{}, error) {
 			return privateKey, nil
 		},
-		SigningMethod: gjwt.SigningMethodHS256,
-	})
+		validator.HS256,
+		"https://some-issuer",
+		[]string{"my-audience"},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jwtmiddleware.New(
+		jwtValidator.ValidateToken,
+		jwtmiddleware.WithCredentialsOptional(false),
+	), nil
 }
 
 func readPrivateKey() ([]byte, error) {
-	return ioutil.ReadFile("keys/test-key")
+	return os.ReadFile("keys/test-key")
 }
