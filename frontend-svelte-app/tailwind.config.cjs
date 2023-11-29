@@ -12,7 +12,7 @@ const config = {
   plugins: [forms, typography, daisyui],
 
   daisyui: {
-    themes: ['luxury']
+    themes: ['business']
   }
 }
 

@@ -28,10 +28,9 @@ describe('Activity Card', () => {
         tags: ['tag-n-1', 'tag-n-2']
       }
     })
-
-    const tags = await screen.findByText(/tag/i)
-    expect(tags.innerHTML).to.contain('tag-n-1')
-    expect(tags.innerHTML).to.contain('tag-n-2')
+    const tags = await screen.findAllByText(/tag/i)
+    expect(tags[0].innerHTML).to.contain('tag-n-1')
+    expect(tags[1].innerHTML).to.contain('tag-n-2')
   })
 
   test('should display time', async () => {

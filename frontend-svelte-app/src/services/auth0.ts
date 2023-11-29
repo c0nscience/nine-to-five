@@ -1,14 +1,14 @@
-import type { Auth0Client, LogoutOptions, RedirectLoginOptions, User } from '@auth0/auth0-spa-js'
-import { createAuth0Client } from '@auth0/auth0-spa-js'
-import type { Writable } from 'svelte/store'
-import { get, writable } from 'svelte/store'
+import type {Auth0Client, LogoutOptions, RedirectLoginOptions, User} from '@auth0/auth0-spa-js'
+import {createAuth0Client} from '@auth0/auth0-spa-js'
+import type {Writable} from 'svelte/store'
+import {get, writable} from 'svelte/store'
 
 const _useAuth0 = () => {
-  const auth0Client: Writable<Auth0Client> = writable(null)
-  const isAuthenticated: Writable<boolean> = writable(false)
+  const auth0Client: Writable<Auth0Client | undefined> = writable(undefined)
+  const isAuthenticated: Writable<boolean | undefined> = writable(false)
   const isLoading: Writable<boolean> = writable(true)
-  const user: Writable<User> = writable(null)
-  const error = writable(null)
+  const user: Writable<User | undefined> = writable(undefined)
+  const error = writable(undefined)
 
   const initializeAuth0 = async (config: { onRedirectCallback?: any } = {}) => {
     auth0Client.set(
@@ -38,28 +38,28 @@ const _useAuth0 = () => {
       const search = window.location.search
 
       if ((search.includes('code=') || search.includes('error=')) && search.includes('state=')) {
-        const { appState } = await get(auth0Client).handleRedirectCallback()
-        config.onRedirectCallback(appState)
+        const result = await get(auth0Client)?.handleRedirectCallback()
+        config.onRedirectCallback(result?.appState)
       }
     } catch (e) {
       error.set(e)
     } finally {
-      isAuthenticated.set(await get(auth0Client).isAuthenticated())
-      user.set(await get(auth0Client).getUser() || null)
+      isAuthenticated.set(await get(auth0Client)?.isAuthenticated())
+      user.set(await get(auth0Client)?.getUser())
       isLoading.set(false)
     }
   }
 
   const login = async (options: RedirectLoginOptions): Promise<void> => {
-    await get(auth0Client).loginWithRedirect(options)
+    await get(auth0Client)?.loginWithRedirect(options)
   }
 
   const logout = async (options: LogoutOptions): Promise<void> => {
-    await get(auth0Client).logout(options)
+    await get(auth0Client)?.logout(options)
   }
 
-  const getAccessToken = async (): Promise<string> => {
-    return await get(auth0Client).getTokenSilently()
+  const getAccessToken = async (): Promise<string | undefined> => {
+    return await get(auth0Client)?.getTokenSilently()
   }
 
 
