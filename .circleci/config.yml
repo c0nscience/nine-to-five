@@ -106,8 +106,8 @@ jobs:
 
   test_gpi:
     docker:
-      - image: cimg/go:1.20
-      - image: mongo:6.0.5
+      - image: cimg/go:1.21
+      - image: mongo:7.0.4
         environment:
           MONGO_INITDB_DATABASE: ntf-db-test
     resource_class: large
@@ -143,7 +143,7 @@ jobs:
 
   check_gpi:
     docker:
-      - image: cimg/go:1.20
+      - image: cimg/go:1.21
     resource_class: large
 
     steps:
@@ -223,7 +223,6 @@ workflows:
           name: test frontend
           requires:
             - checkout code
-            - check frontend svelte
             - check gpi
       - test_frontend_svelte:
           name: test frontend svelte
@@ -235,7 +234,6 @@ workflows:
           name: test golang api
           requires:
             - checkout code
-            - check frontend svelte
             - check gpi
 
       - heroku/deploy-via-git:
@@ -243,7 +241,6 @@ workflows:
           requires:
             - test golang api
             - test frontend
-            - test frontend svelte
           app-name: ntf-gpi
 
       - deploy_frontend:
