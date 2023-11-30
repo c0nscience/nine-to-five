@@ -70,7 +70,7 @@ func JWT() (*jwtmiddleware.JWTMiddleware, error) {
 		func(ctx context.Context) (interface{}, error) {
 			return privateKey, nil
 		},
-		validator.RS256,
+		validator.HS256, //todo that does not correspond with what we have from auth0. how do I create my own key then?
 		"https://some-issuer",
 		[]string{"my-audience"},
 	)
