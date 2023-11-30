@@ -244,15 +244,27 @@ workflows:
             - test golang api
             - test frontend
           app-name: ntf-gpi
+          filters:
+            branches:
+              only:
+                - master
 
       - deploy_frontend:
           name: deploy frontend
           requires:
             - test golang api
             - test frontend
+          filters:
+            branches:
+              only:
+                - master
 
       - deploy_frontend_svelte:
           name: deploy svelte frontend
           requires:
             - test frontend svelte
             - test golang api
+          filters:
+            branches:
+              only:
+                - master
