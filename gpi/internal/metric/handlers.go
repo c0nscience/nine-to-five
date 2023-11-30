@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/c0nscience/nine-to-five/gpi/internal/activity"
 	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
+	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -19,16 +20,14 @@ import (
 
 const (
 	pathVariableId = "id"
-
-	contextUserIdKey = "userId"
 )
 
 const timeout = 200 * time.Millisecond
 
 func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -38,7 +37,7 @@ func Calculate(metricStore, activityStore store.Store) http.HandlerFunc {
 		ctx, cncl := context.WithTimeout(r.Context(), timeout)
 		defer cncl()
 		var config Configuration
-		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), &config)
+		err = metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), &config)
 		if err != nil {
 			log.Err(err).Msg("Could not find metric configuration")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -151,8 +150,8 @@ func jsonResponse(w http.ResponseWriter, status int, a interface{}) error {
 
 func List(metricStore store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -161,7 +160,7 @@ func List(metricStore store.Store) http.HandlerFunc {
 		defer cncl()
 
 		cfgs := []Configuration{}
-		err := metricStore.Find(ctx, userId, byUser(userId), by("name", 1), &cfgs)
+		err = metricStore.Find(ctx, userId, byUser(userId), by("name", 1), &cfgs)
 		if err != nil {
 			log.Err(err).Msg("Could not find metric configurations")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -192,8 +191,8 @@ type cfgForm struct {
 
 func Create(metricStore store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -204,7 +203,7 @@ func Create(metricStore store.Store) http.HandlerFunc {
 		b, _ := ioutil.ReadAll(r.Body)
 
 		bdy := cfgForm{}
-		err := json.Unmarshal(b, &bdy)
+		err = json.Unmarshal(b, &bdy)
 		defer r.Body.Close()
 		if err != nil {
 			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
@@ -235,8 +234,8 @@ func Create(metricStore store.Store) http.HandlerFunc {
 
 func Delete(metricStore store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -245,7 +244,7 @@ func Delete(metricStore store.Store) http.HandlerFunc {
 		defer cncl()
 
 		vars := mux.Vars(r)
-		err := metricStore.Delete(ctx, userId, byId(userId, vars[pathVariableId]), nil)
+		err = metricStore.Delete(ctx, userId, byId(userId, vars[pathVariableId]), nil)
 		if err != nil {
 			log.Err(err).Msg("Could not delete metric configuration")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -257,8 +256,8 @@ func Delete(metricStore store.Store) http.HandlerFunc {
 
 func Update(metricStore store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -268,7 +267,7 @@ func Update(metricStore store.Store) http.HandlerFunc {
 
 		vars := mux.Vars(r)
 		cfg := &Configuration{}
-		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), cfg)
+		err = metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), cfg)
 		if err != nil {
 			log.Err(err).Msg("Could not find metric configuration")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -301,8 +300,8 @@ func Update(metricStore store.Store) http.HandlerFunc {
 
 func Load(metricStore store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -312,7 +311,7 @@ func Load(metricStore store.Store) http.HandlerFunc {
 
 		vars := mux.Vars(r)
 		cfg := &Configuration{}
-		err := metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), cfg)
+		err = metricStore.FindOne(ctx, userId, byId(userId, vars[pathVariableId]), cfg)
 		if err != nil {
 			log.Err(err).Msg("Could not find metric configuration")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

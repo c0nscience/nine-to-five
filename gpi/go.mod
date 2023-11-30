@@ -1,7 +1,9 @@
 module github.com/c0nscience/nine-to-five/gpi
 
 // +heroku goVersion go1.20
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	github.com/auth0/go-jwt-middleware/v2 v2.1.0
