@@ -3,12 +3,13 @@ package activity
 import (
 	"encoding/json"
 	"errors"
+	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -17,26 +18,24 @@ const (
 	pathVariableId = "id"
 	pathFromDate   = "from"
 	pathToDate     = "to"
-
-	contextUserIdKey = "userId"
 )
 
 func Start(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
-		if err := store.FindOne(r.Context(), userId, runningBy(userId), nil); err != mongo.ErrNoDocuments {
+		if err := store.FindOne(r.Context(), userId, runningBy(userId), nil); !errors.Is(err, mongo.ErrNoDocuments) {
 			http.Error(w, "Activity already running", http.StatusBadRequest)
 			return
 		}
 
 		bdy := startActivity{}
-		b, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(b, &bdy)
+		b, _ := io.ReadAll(r.Body)
+		err = json.Unmarshal(b, &bdy)
 		defer r.Body.Close()
 		if err != nil {
 			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)
@@ -87,14 +86,14 @@ type startActivity struct {
 
 func Stop(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		var running Activity
-		err := store.FindOne(r.Context(), userId, runningBy(userId), &running)
+		err = store.FindOne(r.Context(), userId, runningBy(userId), &running)
 		if err != nil {
 			http.Error(w, "No activity stopped", http.StatusOK)
 			return
@@ -118,14 +117,14 @@ func Stop(store store.Store) http.HandlerFunc {
 
 func Running(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		var running Activity
-		err := store.FindOne(r.Context(), userId, runningBy(userId), &running)
+		err = store.FindOne(r.Context(), userId, runningBy(userId), &running)
 		if err != nil {
 			http.Error(w, "No running activity found", http.StatusNotFound)
 			return
@@ -141,8 +140,8 @@ func Running(store store.Store) http.HandlerFunc {
 
 func Get(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -150,7 +149,7 @@ func Get(store store.Store) http.HandlerFunc {
 		vars := mux.Vars(r)
 
 		var activity Activity
-		err := store.FindOne(r.Context(), userId, byId(userId, vars[pathVariableId]), &activity)
+		err = store.FindOne(r.Context(), userId, byId(userId, vars[pathVariableId]), &activity)
 		if err != nil {
 			http.Error(w, "Activity not found", http.StatusNotFound)
 			return
@@ -166,15 +165,15 @@ func Get(store store.Store) http.HandlerFunc {
 
 func Update(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		vars := mux.Vars(r)
 
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -216,8 +215,8 @@ func Update(store store.Store) http.HandlerFunc {
 
 func Delete(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -225,9 +224,9 @@ func Delete(store store.Store) http.HandlerFunc {
 		vars := mux.Vars(r)
 
 		var deletedAct Activity
-		err := store.Delete(r.Context(), userId, byId(userId, vars[pathVariableId]), &deletedAct)
+		err = store.Delete(r.Context(), userId, byId(userId, vars[pathVariableId]), &deletedAct)
 		if err != nil {
-			if err == mongo.ErrNoDocuments {
+			if errors.Is(err, mongo.ErrNoDocuments) {
 				http.NotFound(w, r)
 				return
 			}
@@ -248,8 +247,8 @@ func Delete(store store.Store) http.HandlerFunc {
 
 func Tags(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -272,8 +271,8 @@ const pathDateLayout = "2006-01-02"
 
 func InRange(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -294,7 +293,7 @@ func InRange(store store.Store) http.HandlerFunc {
 		res := []Activity{}
 		err = store.Find(r.Context(), userId, byStartBetween(userId, fromDate, toDate), by("start", 1), &res)
 		if err != nil {
-			if err == mongo.ErrNoDocuments {
+			if errors.Is(err, mongo.ErrNoDocuments) {
 				http.Error(w, "Could not find any data in range", http.StatusNotFound)
 				return
 			}
@@ -350,15 +349,15 @@ func byStartBetween(userId string, from, to time.Time) bson.D {
 
 func Repeat(store store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, ok := r.Context().Value(contextUserIdKey).(string)
-		if !ok {
+		userId, err := jwt.UserId(r.Context())
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		bdy := repeatActivityWithConfig{}
-		b, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(b, &bdy)
+		b, _ := io.ReadAll(r.Body)
+		err = json.Unmarshal(b, &bdy)
 		defer r.Body.Close()
 		if err != nil {
 			http.Error(w, "Payload does not have correct format.", http.StatusBadRequest)

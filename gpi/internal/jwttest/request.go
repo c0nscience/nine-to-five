@@ -6,7 +6,6 @@ import (
 	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
-	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	gjwt "github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"io"
@@ -37,7 +36,11 @@ func MakeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 	req, _ := http.NewRequest(method, path, buf)
 
 	token := gjwt.New(gjwt.SigningMethodHS256)
-	token.Claims = gjwt.MapClaims{"sub": userId}
+	token.Claims = gjwt.MapClaims{
+		"sub": userId,
+		"iss": "https://some-issuer",
+		"aud": []string{"my-audience"},
+	}
 	s, err := token.SignedString(privateKey)
 	if err != nil {
 		panic(err)
@@ -50,7 +53,7 @@ func MakeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 	if err != nil {
 		panic(err)
 	}
-	handler := middleware.CheckJWT(jwt.UserIdMiddleware().Middleware(h))
+	handler := middleware.CheckJWT(h)
 	if pattern == "" {
 		handler.ServeHTTP(resp, req)
 	} else {
@@ -67,7 +70,7 @@ func JWT() (*jwtmiddleware.JWTMiddleware, error) {
 		func(ctx context.Context) (interface{}, error) {
 			return privateKey, nil
 		},
-		validator.HS256,
+		validator.RS256,
 		"https://some-issuer",
 		[]string{"my-audience"},
 	)
