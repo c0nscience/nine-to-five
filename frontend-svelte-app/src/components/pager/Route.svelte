@@ -1,9 +1,10 @@
 <script lang="ts">
+  import type { ComponentType } from 'svelte'
   import { activeRoute, register } from './Router.svelte'
 
   export let path = '/'
-  export let component = null
-  export let middleware = []
+  export let component: ComponentType
+  export let middleware: PageJS.Callback[] = []
 
   let params = {}
 

@@ -1,19 +1,19 @@
 <script lang="ts">
-    import {onMount} from 'svelte'
-    import Card from '../components/activity/Card.svelte'
-    import NavigationBar from '../components/NavigationBar.svelte'
-    import SkeletonCard from '../components/SkeletonCard.svelte'
-    import activitiesService from '../services/activities'
-    import {activities} from '../stores/activities'
-    import {currentDate} from '../stores/navigation'
+  import { onMount } from 'svelte'
+  import Card from '../components/activity/Card.svelte'
+  import NavigationBar from '../components/NavigationBar.svelte'
+  import SkeletonCard from '../components/SkeletonCard.svelte'
+  import activitiesService from '../services/activities'
+  import { activities } from '../stores/activities'
+  import { currentDate } from '../stores/navigation'
 
-    let promise: Promise<void>
+  let promise: Promise<void>
 
     onMount(() => {
         promise = activitiesService.loadInRange($currentDate, $currentDate)
     })
 
-    const onDateChanged = (e) => {
+    const onDateChanged = (e: any) => {
         promise = activitiesService.loadInRange(e.detail, e.detail)
     }
 </script>

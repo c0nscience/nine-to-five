@@ -1,14 +1,14 @@
-import type {Auth0Client, LogoutOptions, RedirectLoginOptions, User} from '@auth0/auth0-spa-js'
-import {createAuth0Client} from '@auth0/auth0-spa-js'
-import type {Writable} from 'svelte/store'
-import {get, writable} from 'svelte/store'
+import type { Auth0Client, LogoutOptions, RedirectLoginOptions, User } from '@auth0/auth0-spa-js'
+import { createAuth0Client } from '@auth0/auth0-spa-js'
+import type { Writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 const _useAuth0 = () => {
   const auth0Client: Writable<Auth0Client | undefined> = writable(undefined)
   const isAuthenticated: Writable<boolean | undefined> = writable(false)
   const isLoading: Writable<boolean> = writable(true)
   const user: Writable<User | undefined> = writable(undefined)
-  const error = writable(undefined)
+  const error: Writable<any> = writable(undefined)
 
   const initializeAuth0 = async (config: { onRedirectCallback?: any } = {}) => {
     auth0Client.set(
@@ -41,7 +41,7 @@ const _useAuth0 = () => {
         const result = await get(auth0Client)?.handleRedirectCallback()
         config.onRedirectCallback(result?.appState)
       }
-    } catch (e) {
+    } catch (e: any) {
       error.set(e)
     } finally {
       isAuthenticated.set(await get(auth0Client)?.isAuthenticated())
