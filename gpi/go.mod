@@ -7,7 +7,6 @@ toolchain go1.21.0
 
 require (
 	github.com/auth0/go-jwt-middleware/v2 v2.1.0
-	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
 	github.com/golang-jwt/jwt/v5 v5.1.0
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.1
