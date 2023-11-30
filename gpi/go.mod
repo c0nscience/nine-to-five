@@ -1,6 +1,6 @@
 module github.com/c0nscience/nine-to-five/gpi
 
-// +heroku goVersion go1.20
+// +heroku goVersion go1.21
 go 1.21
 
 toolchain go1.21.0
