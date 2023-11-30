@@ -17,7 +17,7 @@
   import page from 'page'
 
   export let disabled = false
-  export let basePath = undefined
+  export let basePath = ''
 
   const last = (route: Route) => {
     return function (ctx: PageJS.Context) {
@@ -35,7 +35,7 @@
       page(path, ...route.middleware, last(route))
     }
 
-    if (basePath) {
+    if (basePath !== '') {
       page.base(basePath)
     }
 
