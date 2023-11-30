@@ -208,7 +208,9 @@ workflows:
           name: checkout code
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - /dependabot\/.*/
 
       - check_frontend_svelte:
           name: check frontend svelte
