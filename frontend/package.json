@@ -61,5 +61,10 @@
       ],
       "react-hooks/exhaustive-deps": "off"
     }
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/(?!d3)/"
+    ]
   }
 }
