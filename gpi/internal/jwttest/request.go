@@ -3,6 +3,9 @@ package jwttest
 import (
 	"bytes"
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
@@ -13,16 +16,6 @@ import (
 	"net/http/httptest"
 	"os"
 )
-
-var privateKey []byte
-
-func init() {
-	var err error
-	privateKey, err = readPrivateKey()
-	if err != nil {
-		panic(err)
-	}
-}
 
 func MakeAuthenticatedRequest(h http.HandlerFunc, userId, method, path, body string) *httptest.ResponseRecorder {
 	return MakeAuthenticatedRequestWithPattern(h, "", userId, method, path, body)
@@ -35,24 +28,27 @@ func MakeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 	}
 	req, _ := http.NewRequest(method, path, buf)
 
-	token := gjwt.New(gjwt.SigningMethodHS256)
-	token.Claims = gjwt.MapClaims{
-		"sub": userId,
-		"iss": "https://some-issuer",
-		"aud": []string{"my-audience"},
-	}
+	token := gjwt.NewWithClaims(gjwt.SigningMethodRS256, gjwt.RegisteredClaims{
+		Subject:  userId,
+		Issuer:   "https://some-issuer",
+		Audience: []string{"my-audience"},
+	})
+
+	privateKey, publicKey, err := readKeyPair()
+	mustNot(err)
+
 	s, err := token.SignedString(privateKey)
-	if err != nil {
-		panic(err)
-	}
+	mustNot(err)
+
 	req.Header.Set("Authorization", fmt.Sprintf("bearer %v", s))
 
 	resp := httptest.NewRecorder()
 
-	middleware, err := JWT()
+	middleware, err := JWT(publicKey)
 	if err != nil {
 		panic(err)
 	}
+
 	handler := middleware.CheckJWT(h)
 	if pattern == "" {
 		handler.ServeHTTP(resp, req)
@@ -65,12 +61,12 @@ func MakeAuthenticatedRequestWithPattern(h http.HandlerFunc, pattern, userId, me
 	return resp
 }
 
-func JWT() (*jwtmiddleware.JWTMiddleware, error) {
+func JWT(publicKey *rsa.PublicKey) (*jwtmiddleware.JWTMiddleware, error) {
 	jwtValidator, err := validator.New(
 		func(ctx context.Context) (interface{}, error) {
-			return privateKey, nil
+			return publicKey, nil
 		},
-		validator.HS256, //todo that does not correspond with what we have from auth0. how do I create my own key then?
+		validator.RS256,
 		"https://some-issuer",
 		[]string{"my-audience"},
 	)
@@ -85,6 +81,42 @@ func JWT() (*jwtmiddleware.JWTMiddleware, error) {
 	), nil
 }
 
+func readKeyPair() (*rsa.PrivateKey, *rsa.PublicKey, error) {
+	privateKey, err := readPrivateKey()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	privBlock, _ := pem.Decode(privateKey)
+	privKey, err := x509.ParsePKCS1PrivateKey(privBlock.Bytes)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	publicKey, err := readPublicKey()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pubBlock, _ := pem.Decode(publicKey)
+
+	pubKey, err := x509.ParsePKIXPublicKey(pubBlock.Bytes)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return privKey, pubKey.(*rsa.PublicKey), nil
+}
+
 func readPrivateKey() ([]byte, error) {
-	return os.ReadFile("keys/test-key")
+	return os.ReadFile("../jwttest/jwtRS256.key")
+}
+func readPublicKey() ([]byte, error) {
+	return os.ReadFile("../jwttest/jwtRS256.key.pub")
+}
+
+func mustNot(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
