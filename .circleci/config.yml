@@ -209,7 +209,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
                 - /dependabot\/.*/
 
       - check_frontend_svelte:
@@ -247,7 +247,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
 
       - deploy_frontend:
           name: deploy frontend
@@ -257,7 +257,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
 
       - deploy_frontend_svelte:
           name: deploy svelte frontend
@@ -267,4 +267,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
