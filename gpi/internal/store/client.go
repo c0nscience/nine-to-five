@@ -33,9 +33,12 @@ type mongoDbStore struct {
 }
 
 func New(uri, db string, collection CollectionName) (Store, error) {
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
+
 	ctx, cncl := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cncl()
-	cl, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	cl, err := mongo.Connect(ctx, opts)
 	if err != nil {
 		log.Fatal().Err(err).
 			Msg("could not create mongodb client")

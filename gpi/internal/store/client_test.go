@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const timeout = 100 * time.Millisecond
+const timeout = 500 * time.Millisecond
 
 func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
