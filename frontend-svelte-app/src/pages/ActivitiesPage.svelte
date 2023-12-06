@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import Card from '../components/activity/Card.svelte'
-  import NavigationBar from '../components/NavigationBar.svelte'
-  import SkeletonCard from '../components/SkeletonCard.svelte'
-  import activitiesService from '../services/activities'
-  import { activities } from '../stores/activities'
-  import { currentDate } from '../stores/navigation'
+    import { onMount } from 'svelte'
+    import Card from '../components/activity/Card.svelte'
+    import NavigationBar from '../components/NavigationBar.svelte'
+    import SkeletonCard from '../components/SkeletonCard.svelte'
+    import StartButton from '../components/StartButton.svelte'
+    import activitiesService from '../services/activities'
+    import { activities } from '../stores/activities'
+    import { currentDate } from '../stores/navigation'
 
-  let promise: Promise<void>
+    let promise: Promise<void>
 
     onMount(() => {
         promise = activitiesService.loadInRange($currentDate, $currentDate)
@@ -25,6 +26,7 @@
         <SkeletonCard/>
         <SkeletonCard/>
         <SkeletonCard/>
+        <SkeletonCard last={true}/>
     {:then _}
         {#each $activities as activity, idx (activity.id)}
             {activity.start.toFormat('T')}
@@ -33,5 +35,11 @@
         {:else}
             <h1>No activities entered yet.</h1>
         {/each}
+    {:catch error}
+        <p>Something went wrong: {error.message}</p>
     {/await}
+</div>
+
+<div class="absolute bottom-5 right-5">
+    <StartButton/>
 </div>

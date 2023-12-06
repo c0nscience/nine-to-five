@@ -12,3 +12,5 @@ export interface Activity {
 }
 
 export const activities: Writable<Activity[]> = writable([])
+
+export const running: Writable<Activity> = writable()
