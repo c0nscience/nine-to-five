@@ -4,8 +4,8 @@
         <module name="gpi"/>
         <working_directory value="$PROJECT_DIR$/gpi"/>
         <envs>
-            <env name="DB_URI" value="mongodb://localhost:27017/ntf-db"/>
             <env name="DB_NAME" value="ntf-db"/>
+            <env name="DB_URI" value="mongodb://localhost:27017/ntf-db"/>
             <env name="POPULATE" value="true"/>
         </envs>
         <kind value="PACKAGE"/>
