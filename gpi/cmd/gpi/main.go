@@ -54,22 +54,22 @@ func main() {
 	//TODO define middleware to validate scope: https://auth0.com/docs/quickstart/backend/golang/01-authorization#validate-scopes
 	// README: also a good source: https://auth0.com/blog/authentication-in-golang/#Authorization-with-Golang
 	// for middlewares https://drstearns.github.io/tutorials/gomiddleware/
-	r.Handle("/activity", jwtMiddleware.CheckJWT(activity.Start(activityClient))).Methods("POST", "OPTIONS")
-	r.Handle("/activity/{id}", jwtMiddleware.CheckJWT(activity.Update(activityClient))).Methods("PUT", "OPTIONS")
-	r.Handle("/activity/{id}", jwtMiddleware.CheckJWT(activity.Delete(activityClient))).Methods("DELETE", "OPTIONS")
-	r.Handle("/activity/stop", jwtMiddleware.CheckJWT(activity.Stop(activityClient))).Methods("POST", "OPTIONS")
-	r.Handle("/activity/running", jwtMiddleware.CheckJWT(activity.Running(activityClient))).Methods("GET", "OPTIONS")
-	r.Handle("/activity/repeat", jwtMiddleware.CheckJWT(activity.Repeat(activityClient))).Methods("POST", "OPTIONS")
-	r.Handle("/activities/tags", jwtMiddleware.CheckJWT(activity.Tags(activityClient))).Methods("GET", "OPTIONS")
-	r.Handle("/activities/{id}", jwtMiddleware.CheckJWT(activity.Get(activityClient))).Methods("GET", "OPTIONS")
-	r.Handle("/activities/{from}/{to}", jwtMiddleware.CheckJWT(activity.InRange(activityClient))).Methods("GET", "OPTIONS")
+	r.Handle("/activity", activity.Start(activityClient)).Methods("POST", "OPTIONS")
+	r.Handle("/activity/{id}", activity.Update(activityClient)).Methods("PUT", "OPTIONS")
+	r.Handle("/activity/{id}", activity.Delete(activityClient)).Methods("DELETE", "OPTIONS")
+	r.Handle("/activity/stop", activity.Stop(activityClient)).Methods("POST", "OPTIONS")
+	r.Handle("/activity/running", activity.Running(activityClient)).Methods("GET", "OPTIONS")
+	r.Handle("/activity/repeat", activity.Repeat(activityClient)).Methods("POST", "OPTIONS")
+	r.Handle("/activities/tags", activity.Tags(activityClient)).Methods("GET", "OPTIONS")
+	r.Handle("/activities/{id}", activity.Get(activityClient)).Methods("GET", "OPTIONS")
+	r.Handle("/activities/{from}/{to}", activity.InRange(activityClient)).Methods("GET", "OPTIONS")
 
-	r.Handle("/metrics", jwtMiddleware.CheckJWT(metric.List(metricClient))).Methods("GET", "OPTIONS")
-	r.Handle("/metrics", jwtMiddleware.CheckJWT(metric.Create(metricClient))).Methods("POST", "OPTIONS")
-	r.Handle("/metrics/{id}", jwtMiddleware.CheckJWT(metric.Calculate(metricClient, activityClient))).Methods("GET", "OPTIONS")
-	r.Handle("/metrics/{id}", jwtMiddleware.CheckJWT(metric.Update(metricClient))).Methods("POST", "OPTIONS")
-	r.Handle("/metrics/{id}/config", jwtMiddleware.CheckJWT(metric.Load(metricClient))).Methods("GET", "OPTIONS")
-	r.Handle("/metrics/{id}", jwtMiddleware.CheckJWT(metric.Delete(metricClient))).Methods("DELETE", "OPTIONS")
+	r.Handle("/metrics", metric.List(metricClient)).Methods("GET", "OPTIONS")
+	r.Handle("/metrics", metric.Create(metricClient)).Methods("POST", "OPTIONS")
+	r.Handle("/metrics/{id}", metric.Calculate(metricClient, activityClient)).Methods("GET", "OPTIONS")
+	r.Handle("/metrics/{id}", metric.Update(metricClient)).Methods("POST", "OPTIONS")
+	r.Handle("/metrics/{id}/config", metric.Load(metricClient)).Methods("GET", "OPTIONS")
+	r.Handle("/metrics/{id}", metric.Delete(metricClient)).Methods("DELETE", "OPTIONS")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{
@@ -88,7 +88,11 @@ func main() {
 		AllowedHeaders: []string{"*"},
 	})
 
-	r.Use(logger.Middleware())
+	r.Use(
+		jwtMiddleware.CheckJWT,
+		logger.RequestId(),
+		logger.Middleware(),
+	)
 
 	httpServer := &http.Server{
 		Addr:    ":" + port,
