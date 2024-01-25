@@ -55,22 +55,26 @@ func main() {
 	//TODO define middleware to validate scope: https://auth0.com/docs/quickstart/backend/golang/01-authorization#validate-scopes
 	// README: also a good source: https://auth0.com/blog/authentication-in-golang/#Authorization-with-Golang
 	// for middlewares https://drstearns.github.io/tutorials/gomiddleware/
-	r.Handle("/activity", activity.Start(activityClient)).Methods("POST", "OPTIONS")
-	r.Handle("/activity/{id}", activity.Update(activityClient)).Methods("PUT", "OPTIONS")
-	r.Handle("/activity/{id}", activity.Delete(activityClient)).Methods("DELETE", "OPTIONS")
-	r.Handle("/activity/stop", activity.Stop(activityClient)).Methods("POST", "OPTIONS")
-	r.Handle("/activity/running", activity.Running(activityClient)).Methods("GET", "OPTIONS")
-	r.Handle("/activity/repeat", activity.Repeat(activityClient)).Methods("POST", "OPTIONS")
-	r.Handle("/activities/tags", activity.Tags(activityClient)).Methods("GET", "OPTIONS")
-	r.Handle("/activities/{id}", activity.Get(activityClient)).Methods("GET", "OPTIONS")
-	r.Handle("/activities/{from}/{to}", activity.InRange(activityClient)).Methods("GET", "OPTIONS")
+	subRouter := r.PathPrefix("/").Subrouter()
+	subRouter.Use(
+		jwtMiddleware.CheckJWT,
+	)
+	subRouter.Handle("/activity", activity.Start(activityClient)).Methods("POST", "OPTIONS")
+	subRouter.Handle("/activity/{id}", activity.Update(activityClient)).Methods("PUT", "OPTIONS")
+	subRouter.Handle("/activity/{id}", activity.Delete(activityClient)).Methods("DELETE", "OPTIONS")
+	subRouter.Handle("/activity/stop", activity.Stop(activityClient)).Methods("POST", "OPTIONS")
+	subRouter.Handle("/activity/running", activity.Running(activityClient)).Methods("GET", "OPTIONS")
+	subRouter.Handle("/activity/repeat", activity.Repeat(activityClient)).Methods("POST", "OPTIONS")
+	subRouter.Handle("/activities/tags", activity.Tags(activityClient)).Methods("GET", "OPTIONS")
+	subRouter.Handle("/activities/{id}", activity.Get(activityClient)).Methods("GET", "OPTIONS")
+	subRouter.Handle("/activities/{from}/{to}", activity.InRange(activityClient)).Methods("GET", "OPTIONS")
 
-	r.Handle("/metrics", metric.List(metricClient)).Methods("GET", "OPTIONS")
-	r.Handle("/metrics", metric.Create(metricClient)).Methods("POST", "OPTIONS")
-	r.Handle("/metrics/{id}", metric.Calculate(metricClient, activityClient)).Methods("GET", "OPTIONS")
-	r.Handle("/metrics/{id}", metric.Update(metricClient)).Methods("POST", "OPTIONS")
-	r.Handle("/metrics/{id}/config", metric.Load(metricClient)).Methods("GET", "OPTIONS")
-	r.Handle("/metrics/{id}", metric.Delete(metricClient)).Methods("DELETE", "OPTIONS")
+	subRouter.Handle("/metrics", metric.List(metricClient)).Methods("GET", "OPTIONS")
+	subRouter.Handle("/metrics", metric.Create(metricClient)).Methods("POST", "OPTIONS")
+	subRouter.Handle("/metrics/{id}", metric.Calculate(metricClient, activityClient)).Methods("GET", "OPTIONS")
+	subRouter.Handle("/metrics/{id}", metric.Update(metricClient)).Methods("POST", "OPTIONS")
+	subRouter.Handle("/metrics/{id}/config", metric.Load(metricClient)).Methods("GET", "OPTIONS")
+	subRouter.Handle("/metrics/{id}", metric.Delete(metricClient)).Methods("DELETE", "OPTIONS")
 
 	r.Handle("/ping", ping.Handler()).Methods("GET")
 
@@ -92,7 +96,6 @@ func main() {
 	})
 
 	r.Use(
-		jwtMiddleware.CheckJWT,
 		logger.RequestId(),
 		logger.Middleware(),
 	)
@@ -145,7 +148,7 @@ func main() {
 	log.Info().Msg("SIGTERM received. Shutdown process initiated")
 	ctx, cancel := context.WithCancel(context.Background())
 	if err := httpServer.Shutdown(ctx); err != nil {
-		log.Fatal().Err(err).Msg("Server shut down failed")
+		log.Fatal().Err(err).Msg("Server shutdown failed")
 	}
 	if err := activityClient.Disconnect(ctx); err != nil {
 		log.Fatal().Err(err).Msg("Disconnect from mongodb failed")
