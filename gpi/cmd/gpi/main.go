@@ -8,6 +8,7 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
 	"github.com/c0nscience/nine-to-five/gpi/internal/logger"
 	"github.com/c0nscience/nine-to-five/gpi/internal/metric"
+	"github.com/c0nscience/nine-to-five/gpi/internal/ping"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
 
@@ -70,6 +71,8 @@ func main() {
 	r.Handle("/metrics/{id}", metric.Update(metricClient)).Methods("POST", "OPTIONS")
 	r.Handle("/metrics/{id}/config", metric.Load(metricClient)).Methods("GET", "OPTIONS")
 	r.Handle("/metrics/{id}", metric.Delete(metricClient)).Methods("DELETE", "OPTIONS")
+
+	r.Handle("/ping", ping.Handler()).Methods("GET")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{
