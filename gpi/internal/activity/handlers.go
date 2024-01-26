@@ -293,7 +293,7 @@ func InRange(store store.Store) http.HandlerFunc {
 			return
 		}
 
-		var res []Activity
+		res := []Activity{}
 		err = store.Find(r.Context(), userId, byStartBetween(userId, fromDate, toDate), by("start", 1), &res)
 		if err != nil {
 			if errors.Is(err, mongo.ErrNoDocuments) {
