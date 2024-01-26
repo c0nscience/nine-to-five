@@ -3,7 +3,10 @@ package activity
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/c0nscience/nine-to-five/gpi/internal/jwt"
+	"github.com/c0nscience/nine-to-five/gpi/internal/logger"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
@@ -290,7 +293,7 @@ func InRange(store store.Store) http.HandlerFunc {
 			return
 		}
 
-		res := []Activity{}
+		var res []Activity
 		err = store.Find(r.Context(), userId, byStartBetween(userId, fromDate, toDate), by("start", 1), &res)
 		if err != nil {
 			if errors.Is(err, mongo.ErrNoDocuments) {
@@ -301,11 +304,13 @@ func InRange(store store.Store) http.HandlerFunc {
 			return
 		}
 
+		jsonRespTime := clock.Now()
 		err = jsonResponse(w, http.StatusOK, &inRangeActivities{Entries: res})
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+		clock.Track(jsonRespTime, fmt.Sprintf("%s json response", logger.GetRequestId(r.Context())))
 	}
 }
 
