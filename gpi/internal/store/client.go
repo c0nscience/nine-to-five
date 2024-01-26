@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -111,12 +112,17 @@ func (me *mongoDbStore) Find(ctx context.Context, userId string, filter interfac
 	if sort != nil {
 		opts.SetSort(sort)
 	}
+	findTime := clock.Now()
 	cur, err := me.coll.Find(ctx, filter, opts)
 	if err != nil {
 		return err
 	}
+	clock.Track(findTime, withRequestId(ctx, "coll.Find"))
 
-	return cur.All(ctx, rec)
+	curTime := clock.Now()
+	err = cur.All(ctx, rec)
+	clock.Track(curTime, withRequestId(ctx, "cur.All"))
+	return err
 }
 
 func (me *mongoDbStore) DeleteAll(ctx context.Context, userId string) (int64, error) {
