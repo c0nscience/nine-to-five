@@ -14,7 +14,7 @@
   ],
   "build": {
     "env": {
-      "REACT_APP_GPI_HOST": "https://whale-app-5mr2p.ondigitalocean.app",
+      "REACT_APP_GPI_HOST": "https://ntf-gpi.herokuapp.com",
       "REACT_APP_CALLBACK_URL": "https://9to5.app"
     }
   },
