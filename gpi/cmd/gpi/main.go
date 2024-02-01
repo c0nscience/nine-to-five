@@ -11,8 +11,9 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/ping"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
-
 	_ "github.com/heroku/x/hmetrics/onload"
+	"github.com/newrelic/go-agent/v3/integrations/nrgorilla"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -32,6 +33,12 @@ func main() {
 		port = "9000"
 	}
 
+	nrLicenseKey := os.Getenv("NEW_RELIC_LICENSE_KEY")
+	nrapp, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("ntf-gpi"),
+		newrelic.ConfigLicense(nrLicenseKey),
+	)
+
 	dbUri := os.Getenv("DB_URI")
 	dbName := os.Getenv("DB_NAME")
 	ac, err := store.New(dbUri, dbName, activity.Collection)
@@ -39,6 +46,7 @@ func main() {
 		log.Panic().Err(err).Msg("Could not create activity store")
 	}
 	activityClient := store.NewLogged(ac)
+
 	mc, err := store.New(dbUri, dbName, metric.Collection)
 	if err != nil {
 		log.Panic().Err(err).Msg("Could not create metric store")
@@ -96,6 +104,7 @@ func main() {
 	})
 
 	r.Use(
+		nrgorilla.Middleware(nrapp),
 		logger.RequestId(),
 		logger.Middleware(),
 	)
