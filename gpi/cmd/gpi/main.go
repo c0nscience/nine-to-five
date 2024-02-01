@@ -37,6 +37,7 @@ func main() {
 	nrapp, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("ntf-gpi"),
 		newrelic.ConfigLicense(nrLicenseKey),
+		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
 
 	dbUri := os.Getenv("DB_URI")
@@ -54,6 +55,11 @@ func main() {
 	metricClient := store.NewLogged(store.NewNewrelicStore(nrapp, mc))
 
 	r := mux.NewRouter()
+	r.Use(
+		nrgorilla.Middleware(nrapp),
+		logger.RequestId(),
+		logger.Middleware(),
+	)
 
 	jwtMiddleware, err := jwt.Middleware()
 	if err != nil {
@@ -102,12 +108,6 @@ func main() {
 		},
 		AllowedHeaders: []string{"*"},
 	})
-
-	r.Use(
-		nrgorilla.Middleware(nrapp),
-		logger.RequestId(),
-		logger.Middleware(),
-	)
 
 	httpServer := &http.Server{
 		Addr:    ":" + port,
