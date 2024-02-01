@@ -10,9 +10,10 @@ type newrelicStore struct {
 	s   Store
 }
 
-func NewNewrelicStore(nrapp *newrelic.Application, store Store) Store {
+func NewNewrelicStore(app *newrelic.Application, store Store) Store {
 	return &newrelicStore{
-		s: store,
+		s:   store,
+		app: app,
 	}
 }
 
