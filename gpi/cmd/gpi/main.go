@@ -167,6 +167,5 @@ func main() {
 }
 
 func setupLog() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339, NoColor: os.Getenv("NO_COLOR") == "true"})
 }
