@@ -28,9 +28,9 @@ func init() {
 const timeout = 5 * time.Second
 
 func Test_Metrics(t *testing.T) {
-	metricStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
+	metricStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), metric.Collection)
 	assert.NoError(t, err)
-	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("Calculate", func(t *testing.T) {
