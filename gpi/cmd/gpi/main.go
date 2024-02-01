@@ -45,13 +45,13 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Could not create activity store")
 	}
-	activityClient := store.NewLogged(ac)
+	activityClient := store.NewLogged(store.NewNewrelicStore(nrapp, ac))
 
 	mc, err := store.New(dbUri, dbName, metric.Collection)
 	if err != nil {
 		log.Panic().Err(err).Msg("Could not create metric store")
 	}
-	metricClient := store.NewLogged(mc)
+	metricClient := store.NewLogged(store.NewNewrelicStore(nrapp, mc))
 
 	r := mux.NewRouter()
 

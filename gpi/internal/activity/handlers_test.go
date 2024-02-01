@@ -28,7 +28,7 @@ func init() {
 const timeout = 200 * time.Millisecond
 
 func Test_Start(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	userId := "userid"
@@ -94,7 +94,7 @@ func Test_Start(t *testing.T) {
 }
 
 func Test_Stop(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("should set the end date to the current date of the current running activity", func(t *testing.T) {
@@ -128,7 +128,7 @@ func Test_Stop(t *testing.T) {
 }
 
 func Test_Running(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("should return currently running activity", func(t *testing.T) {
@@ -162,7 +162,7 @@ func Test_Running(t *testing.T) {
 }
 
 func Test_Get(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("should return activity by id", func(t *testing.T) {
@@ -197,7 +197,7 @@ func Test_Get(t *testing.T) {
 }
 
 func Test_Update(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 	const dateFmt = "2006-01-02T15:04:05Z"
 
@@ -300,7 +300,7 @@ func Test_Update(t *testing.T) {
 }
 
 func Test_Delete(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("should remove activity by id", func(t *testing.T) {
@@ -339,7 +339,7 @@ func Test_Delete(t *testing.T) {
 }
 
 func Test_Tags(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("should return used tags", func(t *testing.T) {
@@ -374,7 +374,7 @@ func Test_Tags(t *testing.T) {
 }
 
 func Test_InRange(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("should return only activities in date range", func(t *testing.T) {
@@ -457,7 +457,7 @@ func Test_InRange(t *testing.T) {
 }
 
 func Test_Repeat(t *testing.T) {
-	activityStore, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
+	activityStore, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), activity.Collection)
 	assert.NoError(t, err)
 
 	t.Run("should create configured activities", func(t *testing.T) {
