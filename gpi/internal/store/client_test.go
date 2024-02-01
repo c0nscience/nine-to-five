@@ -22,13 +22,13 @@ func init() {
 }
 
 func TestStore_New(t *testing.T) {
-	subj, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
+	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 	assert.NotNil(t, subj)
 }
 
 func TestStore_Disconnect(t *testing.T) {
-	subj, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
+	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 
 	ctx, cncl := context.WithTimeout(context.Background(), timeout)
@@ -53,7 +53,7 @@ func (me *A) ObjectId() primitive.ObjectID {
 }
 
 func TestStore_Save(t *testing.T) {
-	subj, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
+	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 	ctx, cncl := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(func() {
@@ -71,7 +71,7 @@ func TestStore_Save(t *testing.T) {
 }
 
 func TestStore_FindOne(t *testing.T) {
-	subj, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
+	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 	ctx, cncl := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(func() {
@@ -93,7 +93,7 @@ func TestStore_FindOne(t *testing.T) {
 }
 
 func TestStore_Delete(t *testing.T) {
-	subj, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
+	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 	ctx, cncl := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(func() {
@@ -118,7 +118,7 @@ func TestStore_Delete(t *testing.T) {
 }
 
 func TestStore_Distinct(t *testing.T) {
-	subj, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
+	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 	ctx, cncl := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(func() {
@@ -143,7 +143,7 @@ func TestStore_Distinct(t *testing.T) {
 }
 
 func TestStore_Find(t *testing.T) {
-	subj, err := store.New(nil, os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
+	subj, err := store.New(os.Getenv("DB_URI"), os.Getenv("DB_NAME"), "test")
 	assert.NoError(t, err)
 	ctx, cncl := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(func() {
