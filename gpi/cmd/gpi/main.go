@@ -34,11 +34,19 @@ func main() {
 	}
 
 	nrLicenseKey := os.Getenv("NEW_RELIC_LICENSE_KEY")
-	nrapp, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("ntf-gpi"),
-		newrelic.ConfigLicense(nrLicenseKey),
-		newrelic.ConfigAppLogForwardingEnabled(true),
-	)
+	var nrapp *newrelic.Application
+	if len(nrLicenseKey) > 0 {
+		log.Info().Msg("configure newrelic client")
+		app, err := newrelic.NewApplication(
+			newrelic.ConfigAppName("ntf-gpi"),
+			newrelic.ConfigLicense(nrLicenseKey),
+			newrelic.ConfigAppLogForwardingEnabled(true),
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("could not configure newrelic client")
+		}
+		nrapp = app
+	}
 
 	dbUri := os.Getenv("DB_URI")
 	dbName := os.Getenv("DB_NAME")
@@ -46,17 +54,25 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Could not create activity store")
 	}
-	activityClient := store.NewLogged(store.NewNewrelicStore(nrapp, ac))
+	activityClient := store.NewLogged(ac)
+	if nrapp != nil {
+		activityClient = store.NewNewrelicStore(nrapp, activityClient)
+	}
 
 	mc, err := store.New(dbUri, dbName, metric.Collection)
 	if err != nil {
 		log.Panic().Err(err).Msg("Could not create metric store")
 	}
-	metricClient := store.NewLogged(store.NewNewrelicStore(nrapp, mc))
+	metricClient := store.NewLogged(mc)
+	if nrapp != nil {
+		metricClient = store.NewNewrelicStore(nrapp, metricClient)
+	}
 
 	r := mux.NewRouter()
+	if nrapp != nil {
+		r.Use(nrgorilla.Middleware(nrapp))
+	}
 	r.Use(
-		nrgorilla.Middleware(nrapp),
 		logger.RequestId(),
 		logger.Middleware(),
 	)
