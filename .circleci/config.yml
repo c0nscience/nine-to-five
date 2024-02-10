@@ -144,11 +144,10 @@ workflows:
           name: test frontend
           requires:
             - checkout code
-            - check gpi
+
       - test_gpi:
           name: test golang api
           requires:
-            - checkout code
             - check gpi
 
       - heroku/deploy-via-git:
@@ -171,4 +170,3 @@ workflows:
             branches:
               only:
                 - main
-
