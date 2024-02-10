@@ -1,3 +1,0 @@
-<div>
-  Loadnig ...
-</div>
