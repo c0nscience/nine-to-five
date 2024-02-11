@@ -23,6 +23,7 @@ type Store interface {
 	DropCollection(ctx context.Context) error
 	Delete(ctx context.Context, userId string, filter interface{}, rec interface{}) error
 	Distinct(ctx context.Context, userId string, field string) ([]interface{}, error)
+	Ping(ctx context.Context) error
 }
 
 var _ Store = &mongoDbStore{}
@@ -155,6 +156,10 @@ func (me *mongoDbStore) Delete(ctx context.Context, userId string, filter interf
 
 func (me *mongoDbStore) Distinct(ctx context.Context, userId string, field string) ([]interface{}, error) {
 	return me.coll.Distinct(ctx, field, bson.D{{Key: "userId", Value: bson.D{{Key: "$eq", Value: userId}}}})
+}
+
+func (me *mongoDbStore) Ping(ctx context.Context) error {
+	return me.client.Ping(ctx, readpref.Primary())
 }
 
 type HasObjectId interface {

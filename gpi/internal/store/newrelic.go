@@ -70,3 +70,9 @@ func (me *newrelicStore) Distinct(ctx context.Context, userId string, field stri
 	defer txn.End()
 	return me.s.Distinct(newrelic.NewContext(ctx, txn), userId, field)
 }
+
+func (me *newrelicStore) Ping(ctx context.Context) error {
+	txn := me.app.StartTransaction("ping")
+	defer txn.End()
+	return me.s.Ping(ctx)
+}
