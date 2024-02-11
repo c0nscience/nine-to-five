@@ -55,6 +55,11 @@ func (me *testStore) Distinct(context.Context, string, string) ([]interface{}, e
 	return nil, nil
 }
 
+func (me *testStore) Ping(context.Context) error {
+	me.Invoked = true
+	return nil
+}
+
 var _ Store = &testStore{}
 
 func TestLogger(t *testing.T) {
@@ -128,6 +133,14 @@ func TestLogger(t *testing.T) {
 		}
 		subj := NewLogged(store)
 		subj.Distinct(context.TODO(), "", "")
+		assert.True(t, store.Invoked)
+	})
+	t.Run("Ping", func(t *testing.T) {
+		store := &testStore{
+			Invoked: false,
+		}
+		subj := NewLogged(store)
+		subj.Ping(context.TODO())
 		assert.True(t, store.Invoked)
 	})
 }

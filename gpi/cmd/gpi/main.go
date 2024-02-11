@@ -106,7 +106,7 @@ func main() {
 	subRouter.Handle("/metrics/{id}/config", metric.Load(metricClient)).Methods("GET", "OPTIONS")
 	subRouter.Handle("/metrics/{id}", metric.Delete(metricClient)).Methods("DELETE", "OPTIONS")
 
-	r.Handle("/ping", ping.Handler()).Methods("GET")
+	r.Handle("/ping", ping.Handler(activityClient)).Methods("GET")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{
