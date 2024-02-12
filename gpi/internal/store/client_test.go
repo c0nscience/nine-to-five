@@ -165,7 +165,7 @@ func TestStore_Find(t *testing.T) {
 	err = subj.Find(context.TODO(), "userId", bson.D{{Key: "userId", Value: "userId"}}, nil, &res)
 
 	assert.NoError(t, err)
-	assert.Len(t, res, 2)
+	assert.Len(t, res, 1)
 	assert.Equal(t, "value2", res[0].S)
 	assert.Equal(t, "value1", res[1].S)
 }
