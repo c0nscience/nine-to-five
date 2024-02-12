@@ -1,17 +1,13 @@
-<!doctype html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
-  <title>Nine to Five</title>
-  <meta name="theme-color" content="#fafafa">
-</head>
+{% block title %}Nine to Five{% endblock %}
 
-<body>
+{% block head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
 
-  <p>Welcome to Nine to Five. Get control over your time. Discard annoying excel sheets and have your time at your finger tips.</p>
+{% block content %}
 
-</body>
-
-</html>
+<h1 class="text-3xl font-bold underline">Welcome to Nine to Five</h1>
+<p><a href="/login" class="text-white bg-fuchsia-900 rounded p-2 inline-block" >Login</a></p>
+{% endblock %}
