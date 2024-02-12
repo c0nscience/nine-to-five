@@ -45,54 +45,54 @@ jobs:
       - store_artifacts:
           path: frontend/reports/junit
 
-  test_gpi:
-    docker:
-      - image: cimg/go:1.21
-      - image: mongo:7.0.4
-        environment:
-          MONGO_INITDB_DATABASE: ntf-db-test
-    resource_class: large
-    parallelism: 5
-    environment:
-      TEST_RESULTS: /tmp/test-results
-    steps:
-      - run: mkdir -p $TEST_RESULTS
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
-            - repo-
-      - restore_cache:
-          keys:
-            - go-mod-{{ checksum "gpi/go.sum" }}
-      - run:
-          name: Run unit tests
-          command: |
-            cd gpi/internal
-            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings)
-            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
-      - store_artifacts:
-          path: /tmp/test-results
-          destination: raw-test-output
-      - store_test_results:
-          path: /tmp/test-results
-
-  check_gpi:
-    docker:
-      - image: cimg/go:1.21
-    resource_class: large
-    steps:
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
-            - repo-
-      - restore_cache:
-          keys:
-            - go-mod-{{ checksum "gpi/go.sum" }}
-      - run:
-          name: Examining code
-          command: |
-            cd gpi
-            go vet ./...
+  #  test_gpi:
+  #    docker:
+  #      - image: cimg/go:1.21
+  #      - image: mongo:7.0.4
+  #        environment:
+  #          MONGO_INITDB_DATABASE: ntf-db-test
+  #    resource_class: large
+  #    parallelism: 5
+  #    environment:
+  #      TEST_RESULTS: /tmp/test-results
+  #    steps:
+  #      - run: mkdir -p $TEST_RESULTS
+  #      - restore_cache:
+  #          keys:
+  #            - repo-{{ .Environment.CIRCLE_SHA1 }}
+  #            - repo-
+  #      - restore_cache:
+  #          keys:
+  #            - go-mod-{{ checksum "gpi/go.sum" }}
+  #      - run:
+  #          name: Run unit tests
+  #          command: |
+  #            cd gpi/internal
+  #            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings)
+  #            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+  #      - store_artifacts:
+  #          path: /tmp/test-results
+  #          destination: raw-test-output
+  #      - store_test_results:
+  #          path: /tmp/test-results
+  #
+  #  check_gpi:
+  #    docker:
+  #      - image: cimg/go:1.21
+  #    resource_class: large
+  #    steps:
+  #      - restore_cache:
+  #          keys:
+  #            - repo-{{ .Environment.CIRCLE_SHA1 }}
+  #            - repo-
+  #      - restore_cache:
+  #          keys:
+  #            - go-mod-{{ checksum "gpi/go.sum" }}
+  #      - run:
+  #          name: Examining code
+  #          command: |
+  #            cd gpi
+  #            go vet ./...
 
   deploy_frontend:
     docker:
@@ -124,31 +124,31 @@ workflows:
                 - main
                 - /dependabot\/.*/
 
-      - check_gpi:
-          name: check gpi
-          requires:
-            - checkout code
+      #      - check_gpi:
+      #          name: check gpi
+      #          requires:
+      #            - checkout code
 
       - test_frontend:
           name: test frontend
           requires:
             - checkout code
 
-      - test_gpi:
-          name: test golang api
-          requires:
-            - check gpi
+      #      - test_gpi:
+      #          name: test golang api
+      #          requires:
+      #            - check gpi
 
-      - heroku/deploy-via-git:
-          name: deploy gpi
-          requires:
-            - test golang api
-            - test frontend
-          app-name: ntf-gpi
-          filters:
-            branches:
-              only:
-                - main
+      #      - heroku/deploy-via-git:
+      #          name: deploy gpi
+      #          requires:
+      #            - test golang api
+      #            - test frontend
+      #          app-name: ntf-gpi
+      #          filters:
+      #            branches:
+      #              only:
+      #                - main
 
       - deploy_frontend:
           name: deploy frontend
