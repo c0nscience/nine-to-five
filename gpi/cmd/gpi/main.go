@@ -12,8 +12,6 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
 	_ "github.com/heroku/x/hmetrics/onload"
-	"github.com/newrelic/go-agent/v3/integrations/nrgorilla"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -33,21 +31,6 @@ func main() {
 		port = "9000"
 	}
 
-	nrLicenseKey := os.Getenv("NEW_RELIC_LICENSE_KEY")
-	var nrapp *newrelic.Application
-	if len(nrLicenseKey) > 0 {
-		log.Info().Msg("configure newrelic client")
-		app, err := newrelic.NewApplication(
-			newrelic.ConfigAppName("ntf-gpi"),
-			newrelic.ConfigLicense(nrLicenseKey),
-			newrelic.ConfigAppLogForwardingEnabled(true),
-		)
-		if err != nil {
-			log.Error().Err(err).Msg("could not configure newrelic client")
-		}
-		nrapp = app
-	}
-
 	dbUri := os.Getenv("DB_URI")
 	dbName := os.Getenv("DB_NAME")
 	ac, err := store.New(dbUri, dbName, activity.Collection)
@@ -55,23 +38,14 @@ func main() {
 		log.Panic().Err(err).Msg("Could not create activity store")
 	}
 	activityClient := store.NewLogged(ac)
-	if nrapp != nil {
-		activityClient = store.NewNewrelicStore(nrapp, activityClient)
-	}
 
 	mc, err := store.New(dbUri, dbName, metric.Collection)
 	if err != nil {
 		log.Panic().Err(err).Msg("Could not create metric store")
 	}
 	metricClient := store.NewLogged(mc)
-	if nrapp != nil {
-		metricClient = store.NewNewrelicStore(nrapp, metricClient)
-	}
 
 	r := mux.NewRouter()
-	if nrapp != nil {
-		r.Use(nrgorilla.Middleware(nrapp))
-	}
 	r.Use(
 		logger.RequestId(),
 		logger.Middleware(),
@@ -106,7 +80,7 @@ func main() {
 	subRouter.Handle("/metrics/{id}/config", metric.Load(metricClient)).Methods("GET", "OPTIONS")
 	subRouter.Handle("/metrics/{id}", metric.Delete(metricClient)).Methods("DELETE", "OPTIONS")
 
-	r.Handle("/ping", ping.Handler(activityClient)).Methods("GET")
+	r.Handle("/ping", ping.Handler()).Methods("GET")
 
 	corsOpts := cors.New(cors.Options{
 		AllowedOrigins: []string{
