@@ -9,6 +9,7 @@ import (
 	"github.com/c0nscience/nine-to-five/gpi/internal/logger"
 	"github.com/c0nscience/nine-to-five/gpi/internal/store"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -300,6 +301,7 @@ func InRange(store store.Store) http.HandlerFunc {
 				http.Error(w, "Could not find any data in range", http.StatusNotFound)
 				return
 			}
+			log.Error().Err(err).Msg("could not find activities in range")
 			http.Error(w, "An error occurred during searching activities in the range", http.StatusInternalServerError)
 			return
 		}
