@@ -3,13 +3,11 @@ package store
 import (
 	"context"
 	"github.com/c0nscience/nine-to-five/gpi/internal/clock"
-	"github.com/newrelic/go-agent/v3/integrations/nrmongo"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"time"
 )
 
@@ -23,7 +21,6 @@ type Store interface {
 	DropCollection(ctx context.Context) error
 	Delete(ctx context.Context, userId string, filter interface{}, rec interface{}) error
 	Distinct(ctx context.Context, userId string, field string) ([]interface{}, error)
-	Ping(ctx context.Context) error
 }
 
 var _ Store = &mongoDbStore{}
@@ -36,12 +33,10 @@ type mongoDbStore struct {
 }
 
 func New(uri, db string, collection CollectionName) (Store, error) {
-	nrMon := nrmongo.NewCommandMonitor(nil)
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().
 		ApplyURI(uri).
-		SetServerAPIOptions(serverAPI).
-		SetMonitor(nrMon)
+		SetServerAPIOptions(serverAPI)
 
 	ctx, cncl := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cncl()
@@ -49,13 +44,6 @@ func New(uri, db string, collection CollectionName) (Store, error) {
 	if err != nil {
 		log.Fatal().Err(err).
 			Msg("could not create mongodb client")
-		return nil, err
-	}
-
-	err = cl.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal().Err(err).
-			Msg("cloud not ping database")
 		return nil, err
 	}
 
@@ -156,10 +144,6 @@ func (me *mongoDbStore) Delete(ctx context.Context, userId string, filter interf
 
 func (me *mongoDbStore) Distinct(ctx context.Context, userId string, field string) ([]interface{}, error) {
 	return me.coll.Distinct(ctx, field, bson.D{{Key: "userId", Value: bson.D{{Key: "$eq", Value: userId}}}})
-}
-
-func (me *mongoDbStore) Ping(ctx context.Context) error {
-	return me.client.Ping(ctx, readpref.Primary())
 }
 
 type HasObjectId interface {

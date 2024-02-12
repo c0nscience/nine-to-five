@@ -65,11 +65,6 @@ func (me *loggedStore) Distinct(ctx context.Context, userId string, field string
 	return me.s.Distinct(ctx, userId, field)
 }
 
-func (me *loggedStore) Ping(ctx context.Context) error {
-	defer clock.Track(time.Now(), withRequestId(ctx, "Store.Ping"))
-	return me.s.Ping(ctx)
-}
-
 func withRequestId(ctx context.Context, s string) string {
 	return fmt.Sprintf("request_id=%s %s", logger.GetRequestId(ctx), s)
 }
