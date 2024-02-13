@@ -157,5 +157,25 @@ func main() {
 }
 
 func setupLog() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339, NoColor: os.Getenv("NO_COLOR") == "true"})
+	writer := zerolog.MultiLevelWriter(
+		logger.SpecificLevelWriter{
+			Writer: zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339, NoColor: os.Getenv("NO_COLOR") == "true"},
+			Levels: []zerolog.Level{
+				zerolog.DebugLevel,
+				zerolog.InfoLevel,
+				zerolog.NoLevel,
+				zerolog.TraceLevel,
+			},
+		},
+		logger.SpecificLevelWriter{
+			Writer: zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339, NoColor: os.Getenv("NO_COLOR") == "true"},
+			Levels: []zerolog.Level{
+				zerolog.WarnLevel,
+				zerolog.ErrorLevel,
+				zerolog.FatalLevel,
+				zerolog.PanicLevel,
+			},
+		},
+	)
+	log.Logger = log.Output(writer)
 }
