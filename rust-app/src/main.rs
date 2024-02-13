@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
 use askama::Template;
 use axum::{
     extract::{FromRef, Query, Request, State},
@@ -15,13 +18,8 @@ use oauth2::{
     TokenUrl,
 };
 use serde::Deserialize;
-use sqlx::{
-    postgres::PgPoolOptions, // PgPool,
-};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use tracing::error;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use sqlx::postgres::PgPoolOptions;
+use tracing::{error, info};
 
 #[derive(Clone)]
 struct AppState {
@@ -36,19 +34,14 @@ impl FromRef<AppState> for Key {
         input.key.clone()
     }
 }
-
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "ntf_rust=debug".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    tracing_subscriber::fmt().init();
 
-    let db_connection_str = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://postgres:rust@localhost".to_string());
+    let db_connection_str = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        info!("no database url provided falling back to default local database.");
+        "postgres://postgres:rust@localhost".to_string()
+    });
 
     let _db = PgPoolOptions::new()
         .max_connections(5)
@@ -57,8 +50,8 @@ async fn main() {
         .await
         .expect("can not connect to database");
 
-    let client_id = std::env::var("CLIENT_ID").unwrap();
-    let client_secret = std::env::var("CLIENT_SECRET").unwrap();
+    let client_id = std::env::var("CLIENT_ID").expect("oauth2 client id not provided");
+    let client_secret = std::env::var("CLIENT_SECRET").expect("oauth2 secret not provided");
     let oauth_client = build_oauth_client(client_id, client_secret);
 
     let verifiers = HashMap::new();
@@ -84,8 +77,16 @@ async fn main() {
         .route("/callback", get(callback))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+        .await
+        .expect("could not create listener");
+    info!(
+        "server started on {}",
+        listener.local_addr().expect("could not get local address")
+    );
+    axum::serve(listener, app)
+        .await
+        .expect("could not start server");
 }
 
 async fn index() -> impl IntoResponse {
