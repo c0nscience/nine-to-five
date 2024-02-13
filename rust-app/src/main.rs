@@ -65,7 +65,7 @@ async fn main() {
     let state = AppState {
         // db,
         oauth_client,
-        key: Key::generate(),
+        key: Key::generate(), // TODO we have to read,create a given key
         verifiers: Arc::new(Mutex::new(verifiers)),
     };
 
