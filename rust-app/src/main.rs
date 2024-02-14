@@ -1,3 +1,4 @@
+use core::panic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -43,16 +44,34 @@ async fn main() {
         "postgres://postgres:rust@localhost".to_string()
     });
 
-    let _db = PgPoolOptions::new()
+    let _db = match PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(std::time::Duration::from_secs(3))
         .connect(&db_connection_str)
         .await
-        .expect("can not connect to database");
+    {
+        Ok(db) => db,
+        Err(e) => {
+            panic!("could not connect to database: {e}");
+        }
+    };
 
-    let client_id = std::env::var("CLIENT_ID").expect("oauth2 client id not provided");
-    let client_secret = std::env::var("CLIENT_SECRET").expect("oauth2 secret not provided");
-    let oauth_client = build_oauth_client(client_id, client_secret);
+    let client_id = match std::env::var("CLIENT_ID") {
+        Ok(id) => id,
+        Err(e) => panic!("oauth2 client id not provided: {e}"),
+    };
+    let client_secret = match std::env::var("CLIENT_SECRET") {
+        Ok(secret) => secret,
+        Err(e) => panic!("oauth2 secret not provided: {e}"),
+    };
+    let idp_domain = match std::env::var("IDP_DOMAIN") {
+        Ok(domain) => domain,
+        Err(e) => panic!("idp domain not provided: {e}"),
+    };
+    let oauth_client = match build_oauth_client(client_id, client_secret, &idp_domain) {
+        Ok(cli) => cli,
+        Err(e) => panic!("could not create oauth client: {e}"),
+    };
 
     let verifiers = HashMap::new();
     let state = AppState {
@@ -77,16 +96,22 @@ async fn main() {
         .route("/callback", get(callback))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
-        .await
-        .expect("could not create listener");
-    info!(
-        "server started on {}",
-        listener.local_addr().expect("could not get local address")
-    );
-    axum::serve(listener, app)
-        .await
-        .expect("could not start server");
+    let listener = match tokio::net::TcpListener::bind("0.0.0.0:3000").await {
+        Ok(l) => {
+            let addr = match l.local_addr() {
+                Ok(a) => a,
+                Err(e) => panic!("could not get local address: {e}"),
+            };
+            info!("listen on {}", addr);
+            l
+        }
+        Err(e) => panic!("could not create listener: {e}"),
+    };
+
+    match axum::serve(listener, app).await {
+        Ok(()) => (),
+        Err(e) => panic!("could not start server: {e}"),
+    };
 }
 
 async fn index() -> impl IntoResponse {
@@ -97,7 +122,7 @@ async fn protected() -> impl IntoResponse {
     ProtectedTemplate {}
 }
 
-async fn login(State(state): State<AppState>) -> Redirect {
+async fn login(State(state): State<AppState>) -> Result<impl IntoResponse, impl IntoResponse> {
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (auth_url, csrf_token) = state
@@ -106,29 +131,39 @@ async fn login(State(state): State<AppState>) -> Redirect {
         .set_pkce_challenge(pkce_challenge)
         .url();
 
-    state.verifiers.lock().unwrap().insert(
-        csrf_token.secret().to_string(),
-        pkce_verifier.secret().to_string(),
-    );
+    match state.verifiers.lock() {
+        Ok(mut v) => {
+            v.insert(
+                csrf_token.secret().to_string(),
+                pkce_verifier.secret().to_string(),
+            );
+        }
+        Err(e) => {
+            error!("could not lock the verifiers store in login handler");
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
+        }
+    };
 
-    Redirect::temporary(auth_url.as_str())
+    Ok(Redirect::temporary(auth_url.as_str()))
 }
 
-fn build_oauth_client(client_id: String, client_secret: String) -> BasicClient {
-    let redirect_url = "http://localhost:3000/callback".to_string();
+fn build_oauth_client(
+    client_id: String,
+    client_secret: String,
+    idp_domain: &str,
+) -> Result<BasicClient, oauth2::url::ParseError> {
+    // TODO parametrize the callback url
+    let redirect_url = RedirectUrl::new("http://localhost:3000/callback".to_string())?;
 
-    let auth_url = AuthUrl::new("https://ninetofive.eu.auth0.com/authorize".to_string())
-        .expect("invalid authorize endpoint URL");
-    let token_url = TokenUrl::new("https://ninetofive.eu.auth0.com/oauth/token".to_string())
-        .expect("invalid token endpoint URL");
-
-    BasicClient::new(
+    let auth_url = AuthUrl::new(format!("https://{idp_domain}/authorize"))?;
+    let token_url = TokenUrl::new(format!("https://{idp_domain}/oauth/token"))?;
+    Ok(BasicClient::new(
         ClientId::new(client_id),
         Some(ClientSecret::new(client_secret)),
         auth_url,
         Some(token_url),
     )
-    .set_redirect_uri(RedirectUrl::new(redirect_url).unwrap())
+    .set_redirect_uri(redirect_url))
 }
 
 #[derive(Debug, Deserialize)]
@@ -142,10 +177,20 @@ async fn callback(
     jar: PrivateCookieJar,
     Query(auth_request): Query<AuthRequest>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
-    let pkce_verifier = {
-        let verifiers = state.verifiers.lock().unwrap();
-        verifiers.get(&auth_request.state).unwrap().into()
+    let pkce_verifier = match state.verifiers.lock() {
+        Ok(verifiers) => {
+            let lock = verifiers.get(&auth_request.state);
+            match lock {
+                Some(v) => v.into(),
+                None => return Err((StatusCode::UNAUTHORIZED, "not allowed".to_string())),
+            }
+        }
+        Err(e) => {
+            error!("could not lock the verifiers store in callback handler: {e}");
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
+        }
     };
+
     let pkce_verifier = PkceCodeVerifier::new(pkce_verifier);
 
     let token = match state
@@ -162,7 +207,24 @@ async fn callback(
         }
     };
 
-    let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
+    let secs: i64 = if let Some(resp) = token.expires_in() {
+        match resp.as_secs().try_into() {
+            Ok(s) => s,
+            Err(e) => {
+                error!("could not get token expiration in seconds: {e}");
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "could net get token expiration in seconds".to_string(),
+                ));
+            }
+        }
+    } else {
+        error!("token does not have an expiration");
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "no expriation date found".to_string(),
+        ));
+    };
 
     let _max_age = Local::now().naive_local() + Duration::seconds(secs);
 
