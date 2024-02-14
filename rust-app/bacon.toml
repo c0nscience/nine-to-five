@@ -74,13 +74,20 @@ on_success = "back"                                                    # so that
 [jobs.run]
 command = [
     "cargo",
-    "watch",
-    "--",
-    "cargo",
-    "--color=always",
     "run",
+    "--color",
+    "always",
     # put launch parameters for your program behind a `--` separator
 ]
+# command = [
+#     "cargo",
+#     "watch",
+#     "--",
+#     "cargo",
+#     "--color=always",
+#     "run",
+#     # put launch parameters for your program behind a `--` separator
+# ]
 need_stdout = true
 allow_warnings = true
 background = true
