@@ -72,12 +72,16 @@ async fn main() {
         Ok(cli) => cli,
         Err(e) => panic!("could not create oauth client: {e}"),
     };
+    let cookie_key = match std::env::var("COOKIE_KEY") {
+        Ok(domain) => domain,
+        Err(e) => panic!("cookie key not provided: {e}"),
+    };
 
     let verifiers = HashMap::new();
     let state = AppState {
         // db,
         oauth_client,
-        key: Key::generate(), // TODO we have to read,create a given key
+        key: Key::from(cookie_key.as_bytes()),
         verifiers: Arc::new(Mutex::new(verifiers)),
     };
 
@@ -108,10 +112,7 @@ async fn main() {
         Err(e) => panic!("could not create listener: {e}"),
     };
 
-    match axum::serve(listener, app).await {
-        Ok(()) => (),
-        Err(e) => panic!("could not start server: {e}"),
-    };
+    assert!(axum::serve(listener, app).await.is_ok(), "could not start server");
 }
 
 async fn index() -> impl IntoResponse {
