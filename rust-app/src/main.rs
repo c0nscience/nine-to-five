@@ -21,6 +21,7 @@ use oauth2::{
 };
 use serde::Deserialize;
 use sqlx::postgres::PgPoolOptions;
+use std::net::SocketAddr;
 use tracing::{error, info};
 
 #[derive(Clone)]
@@ -101,7 +102,9 @@ async fn main() {
         .route("/callback", get(callback))
         .with_state(state);
 
-    let listener = match tokio::net::TcpListener::bind("0.0.0.0:3000").await {
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let addr = SocketAddr::from(([0, 0, 0, 0], str::parse(&port).unwrap()));
+    let listener = match tokio::net::TcpListener::bind(addr).await {
         Ok(l) => {
             let addr = match l.local_addr() {
                 Ok(a) => a,
