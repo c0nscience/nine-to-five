@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use askama::Template;
+use axum::Extension;
 use axum::{
     extract::{FromRef, Query, Request, State},
     http::StatusCode,
@@ -112,14 +113,18 @@ async fn main() {
         Err(e) => panic!("could not create listener: {e}"),
     };
 
-    assert!(axum::serve(listener, app).await.is_ok(), "could not start server");
+    assert!(
+        axum::serve(listener, app).await.is_ok(),
+        "could not start server"
+    );
 }
 
 async fn index() -> impl IntoResponse {
     IndexTemplate {}
 }
 
-async fn protected() -> impl IntoResponse {
+async fn protected(Extension(user_id): Extension<String>) -> impl IntoResponse {
+    info!("user id: {user_id}");
     ProtectedTemplate {}
 }
 
@@ -130,6 +135,9 @@ async fn login(State(state): State<AppState>) -> Result<impl IntoResponse, impl 
         .oauth_client
         .authorize_url(CsrfToken::new_random)
         .set_pkce_challenge(pkce_challenge)
+        .add_scope(oauth2::Scope::new("openid".to_string()))
+        .add_scope(oauth2::Scope::new("offline_access".to_string()))
+        .add_extra_param("audience", "https://api.ntf.io")
         .url();
 
     match state.verifiers.lock() {
@@ -207,7 +215,7 @@ async fn callback(
             return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
         }
     };
-
+    info!("token: {:?}", token);
     let secs: i64 = if let Some(resp) = token.expires_in() {
         match resp.as_secs().try_into() {
             Ok(s) => s,
@@ -228,15 +236,26 @@ async fn callback(
     };
 
     let _max_age = Local::now().naive_local() + Duration::seconds(secs);
-
-    let cookie = Cookie::build(("sid", token.access_token().secret().to_owned()))
+    let cookie = Cookie::build(("access_token", token.access_token().secret().to_owned()))
         .domain(".localhost")
         .path("/")
         .secure(true)
         .http_only(true)
         .max_age(time::Duration::seconds(secs));
+    let cookie_refresh_token = Cookie::build((
+        "refresh_token",
+        token.refresh_token().unwrap().secret().to_owned(),
+    ))
+    .domain(".localhost")
+    .path("/")
+    .secure(true)
+    .http_only(true)
+    .max_age(time::Duration::seconds(secs));
 
-    Ok((jar.add(cookie), Redirect::temporary("/app")))
+    Ok((
+        jar.add(cookie).add(cookie_refresh_token),
+        Redirect::temporary("/app"),
+    ))
 }
 
 async fn check_authorized(
@@ -245,10 +264,22 @@ async fn check_authorized(
     mut req: Request,
     next: Next,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
-    let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
+    let Some(cookie) = jar
+        .get("access_token")
+        .map(|cookie| cookie.value().to_owned())
+    else {
+        return Err((StatusCode::UNAUTHORIZED, "Unauthorized!".to_string()));
+    };
+    let Some(refresh_token) = jar
+        .get("refresh_token")
+        .map(|cookie| cookie.value().to_owned())
+    else {
         return Err((StatusCode::UNAUTHORIZED, "Unauthorized!".to_string()));
     };
 
+    // TODO if access_token is expired get new access_token with refresh token
+    // TODO update access_token and refresh_token in cookie
+    info!("{refresh_token}");
     req.extensions_mut().insert(cookie);
 
     Ok(next.run(req).await)

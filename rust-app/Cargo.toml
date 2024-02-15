@@ -13,7 +13,12 @@ axum = "0.7"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "any", "postgres"] }
+sqlx = { version = "0.7", features = [
+  "runtime-tokio",
+  "tls-native-tls",
+  "any",
+  "postgres",
+] }
 oauth2 = "4.4.2"
 axum-extra = { version = "0.9.2", features = ["cookie-private"] }
 serde = "1.0.196"
