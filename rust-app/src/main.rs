@@ -97,6 +97,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(index))
+        .route("/health", get(health))
         .nest("/app", protected_route)
         .route("/login", get(login))
         .route("/callback", get(callback))
@@ -124,6 +125,10 @@ async fn main() {
 
 async fn index() -> impl IntoResponse {
     IndexTemplate {}
+}
+
+async fn health() -> (StatusCode, impl IntoResponse) {
+    (StatusCode::OK, "OK")
 }
 
 async fn protected(Extension(user_id): Extension<String>) -> impl IntoResponse {
