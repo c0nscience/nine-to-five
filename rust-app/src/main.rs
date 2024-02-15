@@ -62,6 +62,7 @@ async fn main() {
         Ok(id) => id,
         Err(e) => panic!("oauth2 client id not provided: {e}"),
     };
+    let app_url = std::env::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
     let client_secret = match std::env::var("CLIENT_SECRET") {
         Ok(secret) => secret,
         Err(e) => panic!("oauth2 secret not provided: {e}"),
@@ -70,7 +71,7 @@ async fn main() {
         Ok(domain) => domain,
         Err(e) => panic!("idp domain not provided: {e}"),
     };
-    let oauth_client = match build_oauth_client(client_id, client_secret, &idp_domain) {
+    let oauth_client = match build_oauth_client(app_url, client_id, client_secret, &idp_domain) {
         Ok(cli) => cli,
         Err(e) => panic!("could not create oauth client: {e}"),
     };
@@ -165,12 +166,12 @@ async fn login(State(state): State<AppState>) -> Result<impl IntoResponse, impl 
 }
 
 fn build_oauth_client(
+    app_url: String,
     client_id: String,
     client_secret: String,
     idp_domain: &str,
 ) -> Result<BasicClient, oauth2::url::ParseError> {
-    // TODO parametrize the callback url
-    let redirect_url = RedirectUrl::new("http://localhost:3000/callback".to_string())?;
+    let redirect_url = RedirectUrl::new(format!("{app_url}/callback"))?;
 
     let auth_url = AuthUrl::new(format!("https://{idp_domain}/authorize"))?;
     let token_url = TokenUrl::new(format!("https://{idp_domain}/oauth/token"))?;
