@@ -28,3 +28,6 @@ chrono = { version = "0.4.34", features = ["clock"] }
 dotenvy = "0.15.7"
 anyhow = "1.0.79"
 thiserror = "1.0.57"
+axum_session = { version = "0.12.4", default-features = false, features = [
+  "postgres-native",
+] }

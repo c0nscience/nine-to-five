@@ -38,10 +38,12 @@ Anyhow if you are interested head over to (9to5.app)[https://9to5.app] and try i
 
 ## Running the server
 
+Put all required environment variables in an `.env` file.
+
 Just execute bacon with all the required environment variables and press `r`
 
 ```bash
-CLIENT_ID=<oauth2-client-id> CLIENT_SECRET=<oauth2-client-secret> IDP_DOMAIN=<oauth2-domain> COOKIE_KEY=<cookie-secret-512bit> bacon
+bacon
 ```
 
 ## Generating a secret key for secure cookies
