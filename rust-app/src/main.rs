@@ -1,11 +1,12 @@
-use core::panic;
+
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+use anyhow::Context;
 use askama::Template;
 use axum::Extension;
 use axum::{
-    extract::{FromRef, Query, Request, State},
+    extract::{FromRef, Host, Query, Request, State},
     http::StatusCode,
     middleware::{self, Next},
     response::{IntoResponse, Redirect},
@@ -38,47 +39,31 @@ impl FromRef<AppState> for Key {
     }
 }
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
 
-    let db_connection_str = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+    let app_url = dotenvy::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+    let port = dotenvy::var("PORT").map_or_else(|_| Ok(3000), |p| p.parse::<u16>())?;
+
+    let client_id = dotenvy::var("CLIENT_ID").context("oauth2 client id not provided: {e}")?;
+    let client_secret = dotenvy::var("CLIENT_SECRET").context("oauth2 secret not provided: {e}")?;
+    let idp_domain = dotenvy::var("IDP_DOMAIN").context("idp domain not provided: {e}")?;
+    let cookie_key = dotenvy::var("COOKIE_KEY").context("cookie key not provided: {e}")?;
+
+    let database_url = dotenvy::var("DATABASE_URL").unwrap_or_else(|_| {
         info!("no database url provided falling back to default local database.");
         "postgres://postgres:rust@localhost".to_string()
     });
 
-    let _db = match PgPoolOptions::new()
+    let _db = PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(std::time::Duration::from_secs(3))
-        .connect(&db_connection_str)
+        .connect(&database_url)
         .await
-    {
-        Ok(db) => db,
-        Err(e) => {
-            panic!("could not connect to database: {e}");
-        }
-    };
+        .context("could not connect to database: {e}")?;
 
-    let client_id = match std::env::var("CLIENT_ID") {
-        Ok(id) => id,
-        Err(e) => panic!("oauth2 client id not provided: {e}"),
-    };
-    let app_url = std::env::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
-    let client_secret = match std::env::var("CLIENT_SECRET") {
-        Ok(secret) => secret,
-        Err(e) => panic!("oauth2 secret not provided: {e}"),
-    };
-    let idp_domain = match std::env::var("IDP_DOMAIN") {
-        Ok(domain) => domain,
-        Err(e) => panic!("idp domain not provided: {e}"),
-    };
-    let oauth_client = match build_oauth_client(app_url, client_id, client_secret, &idp_domain) {
-        Ok(cli) => cli,
-        Err(e) => panic!("could not create oauth client: {e}"),
-    };
-    let cookie_key = match std::env::var("COOKIE_KEY") {
-        Ok(domain) => domain,
-        Err(e) => panic!("cookie key not provided: {e}"),
-    };
+    let oauth_client = build_oauth_client(app_url, client_id, client_secret, &idp_domain)
+        .context("could not create oauth client: {e}")?;
 
     let verifiers = HashMap::new();
     let state = AppState {
@@ -104,24 +89,15 @@ async fn main() {
         .route("/callback", get(callback))
         .with_state(state);
 
-    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
-    let addr = SocketAddr::from(([0, 0, 0, 0], str::parse(&port).unwrap()));
-    let listener = match tokio::net::TcpListener::bind(addr).await {
-        Ok(l) => {
-            let addr = match l.local_addr() {
-                Ok(a) => a,
-                Err(e) => panic!("could not get local address: {e}"),
-            };
-            info!("listen on {}", addr);
-            l
-        }
-        Err(e) => panic!("could not create listener: {e}"),
-    };
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+    if let Ok(addr) = listener.local_addr() {
+        info!("server started at {}", addr);
+    }
 
-    assert!(
-        axum::serve(listener, app).await.is_ok(),
-        "could not start server"
-    );
+    axum::serve(listener, app)
+        .await
+        .context("failed to start server")
 }
 
 async fn index() -> impl IntoResponse {
@@ -194,7 +170,9 @@ async fn callback(
     State(state): State<AppState>,
     jar: PrivateCookieJar,
     Query(auth_request): Query<AuthRequest>,
+    Host(hostname): Host,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
+    info!("{hostname}");
     let pkce_verifier = match state.verifiers.lock() {
         Ok(verifiers) => {
             let lock = verifiers.get(&auth_request.state);
@@ -246,7 +224,7 @@ async fn callback(
 
     let _max_age = Local::now().naive_local() + Duration::seconds(secs);
     let cookie = Cookie::build(("access_token", token.access_token().secret().to_owned()))
-        .domain(".localhost")
+        .domain(hostname)
         .path("/")
         .secure(true)
         .http_only(true)
@@ -277,12 +255,14 @@ async fn check_authorized(
         .get("access_token")
         .map(|cookie| cookie.value().to_owned())
     else {
+        info!("no access_token found");
         return Err((StatusCode::UNAUTHORIZED, "Unauthorized!".to_string()));
     };
     let Some(refresh_token) = jar
         .get("refresh_token")
         .map(|cookie| cookie.value().to_owned())
     else {
+        info!("no refresh_token found");
         return Err((StatusCode::UNAUTHORIZED, "Unauthorized!".to_string()));
     };
 
