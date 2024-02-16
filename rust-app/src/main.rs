@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -45,10 +44,10 @@ async fn main() -> anyhow::Result<()> {
     let app_url = dotenvy::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
     let port = dotenvy::var("PORT").map_or_else(|_| Ok(3000), |p| p.parse::<u16>())?;
 
-    let client_id = dotenvy::var("CLIENT_ID").context("oauth2 client id not provided: {e}")?;
-    let client_secret = dotenvy::var("CLIENT_SECRET").context("oauth2 secret not provided: {e}")?;
-    let idp_domain = dotenvy::var("IDP_DOMAIN").context("idp domain not provided: {e}")?;
-    let cookie_key = dotenvy::var("COOKIE_KEY").context("cookie key not provided: {e}")?;
+    let client_id = dotenvy::var("CLIENT_ID").context("oauth2 client id not provided")?;
+    let client_secret = dotenvy::var("CLIENT_SECRET").context("oauth2 secret not provided")?;
+    let idp_domain = dotenvy::var("IDP_DOMAIN").context("idp domain not provided")?;
+    let cookie_key = dotenvy::var("COOKIE_KEY").context("cookie key not provided")?;
 
     let database_url = dotenvy::var("DATABASE_URL").unwrap_or_else(|_| {
         info!("no database url provided falling back to default local database.");
@@ -60,10 +59,10 @@ async fn main() -> anyhow::Result<()> {
         .acquire_timeout(std::time::Duration::from_secs(3))
         .connect(&database_url)
         .await
-        .context("could not connect to database: {e}")?;
+        .context("could not connect to database")?;
 
     let oauth_client = build_oauth_client(app_url, client_id, client_secret, &idp_domain)
-        .context("could not create oauth client: {e}")?;
+        .context("could not create oauth client")?;
 
     let verifiers = HashMap::new();
     let state = AppState {
