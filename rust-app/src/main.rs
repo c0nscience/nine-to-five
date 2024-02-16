@@ -3,17 +3,18 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Context;
 use askama::Template;
-use axum::Extension;
 use axum::{
-    extract::{FromRef, Host, Query, Request, State},
+    extract::{Query, Request, State},
     http::StatusCode,
     middleware::{self, Next},
-    response::{IntoResponse, Redirect},
+    response::{IntoResponse, Redirect, Response},
     routing::get,
     Router,
 };
-use axum_extra::extract::{cookie::Cookie, cookie::Key, PrivateCookieJar};
-use chrono::{Duration, Local};
+use axum_session::{
+    Key, SessionConfig, SessionLayer, SessionPgPool, SessionPgSession, SessionStore,
+};
+
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, TokenResponse,
@@ -26,17 +27,10 @@ use tracing::{error, info};
 
 #[derive(Clone)]
 struct AppState {
-    // db: PgPool,
     oauth_client: BasicClient,
-    key: Key,
     verifiers: Arc<Mutex<HashMap<String, String>>>,
 }
 
-impl FromRef<AppState> for Key {
-    fn from_ref(input: &AppState) -> Self {
-        input.key.clone()
-    }
-}
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
@@ -48,28 +42,34 @@ async fn main() -> anyhow::Result<()> {
     let client_secret = dotenvy::var("CLIENT_SECRET").context("oauth2 secret not provided")?;
     let idp_domain = dotenvy::var("IDP_DOMAIN").context("idp domain not provided")?;
     let cookie_key = dotenvy::var("COOKIE_KEY").context("cookie key not provided")?;
+    let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
 
     let database_url = dotenvy::var("DATABASE_URL").unwrap_or_else(|_| {
         info!("no database url provided falling back to default local database.");
         "postgres://postgres:rust@localhost".to_string()
     });
 
-    let _db = PgPoolOptions::new()
-        .max_connections(5)
+    let db = PgPoolOptions::new()
+        .max_connections(20)
         .acquire_timeout(std::time::Duration::from_secs(3))
         .connect(&database_url)
         .await
         .context("could not connect to database")?;
 
+    let session_config = SessionConfig::default()
+        .with_table_name("sessions")
+        .with_key(Key::from(cookie_key.as_bytes()))
+        .with_database_key(Key::from(database_key.as_bytes()));
+    let session_store = SessionStore::<SessionPgPool>::new(Some(db.clone().into()), session_config)
+        .await
+        .context("could not create session store")?;
+
     let oauth_client = build_oauth_client(app_url, client_id, client_secret, &idp_domain)
         .context("could not create oauth client")?;
 
-    let verifiers = HashMap::new();
     let state = AppState {
-        // db,
         oauth_client,
-        key: Key::from(cookie_key.as_bytes()),
-        verifiers: Arc::new(Mutex::new(verifiers)),
+        verifiers: Arc::new(Mutex::new(HashMap::new())),
     };
 
     let protected_route =
@@ -86,7 +86,8 @@ async fn main() -> anyhow::Result<()> {
         .nest("/app", protected_route)
         .route("/login", get(login))
         .route("/callback", get(callback))
-        .with_state(state);
+        .with_state(state)
+        .layer(SessionLayer::new(session_store));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;
@@ -94,9 +95,12 @@ async fn main() -> anyhow::Result<()> {
         info!("server started at {}", addr);
     }
 
-    axum::serve(listener, app)
-        .await
-        .context("failed to start server")
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .context("failed to start server")
 }
 
 async fn index() -> impl IntoResponse {
@@ -107,8 +111,7 @@ async fn health() -> (StatusCode, impl IntoResponse) {
     (StatusCode::OK, "OK")
 }
 
-async fn protected(Extension(user_id): Extension<String>) -> impl IntoResponse {
-    info!("user id: {user_id}");
+async fn protected() -> impl IntoResponse {
     ProtectedTemplate {}
 }
 
@@ -121,7 +124,7 @@ async fn login(State(state): State<AppState>) -> Result<impl IntoResponse, impl 
         .set_pkce_challenge(pkce_challenge)
         .add_scope(oauth2::Scope::new("openid".to_string()))
         .add_scope(oauth2::Scope::new("offline_access".to_string()))
-        .add_extra_param("audience", "https://api.ntf.io")
+        .add_extra_param("audience", "https://api.ntf.io") //TODO parametrize the audience value
         .url();
 
     match state.verifiers.lock() {
@@ -166,12 +169,10 @@ struct AuthRequest {
 }
 
 async fn callback(
+    session: SessionPgSession,
     State(state): State<AppState>,
-    jar: PrivateCookieJar,
     Query(auth_request): Query<AuthRequest>,
-    Host(hostname): Host,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
-    info!("{hostname}");
     let pkce_verifier = match state.verifiers.lock() {
         Ok(verifiers) => {
             let lock = verifiers.get(&auth_request.state);
@@ -201,74 +202,38 @@ async fn callback(
             return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
         }
     };
-    info!("token: {:?}", token);
-    let secs: i64 = if let Some(resp) = token.expires_in() {
-        match resp.as_secs().try_into() {
-            Ok(s) => s,
-            Err(e) => {
-                error!("could not get token expiration in seconds: {e}");
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "could net get token expiration in seconds".to_string(),
-                ));
-            }
-        }
-    } else {
-        error!("token does not have an expiration");
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "no expriation date found".to_string(),
-        ));
-    };
 
-    let _max_age = Local::now().naive_local() + Duration::seconds(secs);
-    let cookie = Cookie::build(("access_token", token.access_token().secret().to_owned()))
-        .domain(hostname)
-        .path("/")
-        .secure(true)
-        .http_only(true)
-        .max_age(time::Duration::seconds(secs));
-    let cookie_refresh_token = Cookie::build((
+    session.set(
         "refresh_token",
         token.refresh_token().unwrap().secret().to_owned(),
-    ))
-    .domain(".localhost")
-    .path("/")
-    .secure(true)
-    .http_only(true)
-    .max_age(time::Duration::seconds(secs));
-
-    Ok((
-        jar.add(cookie).add(cookie_refresh_token),
-        Redirect::temporary("/app"),
-    ))
+    );
+    session.set("access_token", token.access_token().secret().to_owned());
+    //TODO validate access token, extract user id, and store also user id in session
+    //TODO do I need then still the access token ? ... or is it enough to just extract the expiration
+    //from the access token and also store it ... once it has expired we exchange the refresh token for
+    //a new access token
+    Ok(Redirect::temporary("/app"))
 }
 
 async fn check_authorized(
+    session: SessionPgSession,
     State(_state): State<AppState>,
-    jar: PrivateCookieJar,
-    mut req: Request,
+    req: Request,
     next: Next,
-) -> Result<impl IntoResponse, impl IntoResponse> {
-    let Some(cookie) = jar
-        .get("access_token")
-        .map(|cookie| cookie.value().to_owned())
-    else {
-        info!("no access_token found");
-        return Err((StatusCode::UNAUTHORIZED, "Unauthorized!".to_string()));
-    };
-    let Some(refresh_token) = jar
-        .get("refresh_token")
-        .map(|cookie| cookie.value().to_owned())
-    else {
-        info!("no refresh_token found");
-        return Err((StatusCode::UNAUTHORIZED, "Unauthorized!".to_string()));
-    };
-
-    // TODO if access_token is expired get new access_token with refresh token
-    // TODO update access_token and refresh_token in cookie
-    info!("{refresh_token}");
-    req.extensions_mut().insert(cookie);
+) -> Result<Response, StatusCode> {
+    //TODO grab expired from session and check if the token is still valid
+    //  if true: grab user id and put it in extensions
+    //  if false: grab refresh token and exchange with new access token
+    //    successful: update expired and refresh token in session
+    //    failed: user is unauthorized
+    if session.get::<String>("access_token").is_none() {
+        error!("no access token found in session");
+        return Err(StatusCode::UNAUTHORIZED);
+    }
+    if session.get::<String>("refresh_token").is_none() {
+        error!("no refresh token found in session");
+        return Err(StatusCode::UNAUTHORIZED);
+    }
 
     Ok(next.run(req).await)
 }
