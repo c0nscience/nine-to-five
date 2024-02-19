@@ -121,7 +121,7 @@ async fn main() -> anyhow::Result<()> {
         .with_key(Key::from(cookie_key.as_bytes()))
         .with_database_key(Key::from(database_key.as_bytes()))
         .with_http_only(true)
-        // .with_secure(true)
+        .with_secure(true)
         // .with_cookie_same_site(axum_session::SameSite::Strict)
         // .with_ip_and_user_agent(true)
         .with_lifetime(Duration::days(32))
