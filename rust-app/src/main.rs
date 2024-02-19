@@ -125,12 +125,13 @@ async fn main() -> anyhow::Result<()> {
         .with_cookie_same_site(axum_session::SameSite::Strict)
         .with_ip_and_user_agent(true)
         .with_lifetime(Duration::days(32))
-        .with_max_age(Some(Duration::days(64)));
+        .with_max_age(Some(Duration::days(64)))
+        .with_cookie_domain("nine-to-five-production.up.railway.app".to_string());
     let session_store = SessionStore::<SessionPgPool>::new(Some(db.clone().into()), session_config)
         .await
         .context("could not create session store")?;
 
-    let oauth_client = build_oauth_client(app_url, client_id, client_secret, &idp_domain)
+    let oauth_client = build_oauth_client(&app_url, client_id, client_secret, &idp_domain)
         .context("could not create oauth client")?;
 
     let state = AppState {
@@ -212,7 +213,7 @@ async fn login(State(state): State<AppState>) -> Result<impl IntoResponse, impl 
 }
 
 fn build_oauth_client(
-    app_url: String,
+    app_url: &str,
     client_id: String,
     client_secret: String,
     idp_domain: &str,
