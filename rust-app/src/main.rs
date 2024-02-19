@@ -116,6 +116,12 @@ async fn main() -> anyhow::Result<()> {
         .await
         .context("could not connect to database")?;
 
+    // TODO we can not set the same site policy to strict, otherwise after login it is an endless
+    // lopp
+    // TODO with the current configuration the user authenticates once, we validate its token and
+    // grant access to 32 days ... after that the session expires
+    // TODO only set secure in production
+    //
     let session_config = SessionConfig::default()
         .with_table_name("sessions")
         .with_key(Key::from(cookie_key.as_bytes()))
