@@ -1,8 +1,10 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use anyhow::Context;
 use askama::Template;
+use axum::Extension;
 use axum::{
     extract::{Query, Request, State},
     http::StatusCode,
@@ -11,24 +13,75 @@ use axum::{
     routing::get,
     Router,
 };
+use axum_macros::debug_handler;
 use axum_session::{
     Key, SessionConfig, SessionLayer, SessionPgPool, SessionPgSession, SessionStore,
 };
 
+use chrono::Duration;
+use jsonwebtoken::jwk::AlgorithmParameters;
+use jsonwebtoken::{decode, decode_header, jwk, Algorithm, DecodingKey, Validation};
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, TokenResponse,
     TokenUrl,
 };
 use serde::Deserialize;
+
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
+use thiserror::Error;
 use tracing::{error, info};
 
 #[derive(Clone)]
 struct AppState {
+    jwk_set: jwk::JwkSet,
     oauth_client: BasicClient,
     verifiers: Arc<Mutex<HashMap<String, String>>>,
+}
+
+#[derive(Error, Debug)]
+enum AppError {
+    #[error("unauthorized")]
+    Unauthorized,
+
+    #[error("internal server error")]
+    InternalError,
+
+    #[error("{0}")]
+    HttpRequestError(#[from] reqwest::Error),
+
+    #[error("{0}")]
+    OAuthError(
+        #[from]
+        oauth2::RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            oauth2::StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
+        >,
+    ),
+
+    #[error("{0}")]
+    JwtError(#[from] jsonwebtoken::errors::Error),
+
+    #[error("{0}")]
+    Anyhow(#[from] anyhow::Error),
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        use AppError::{
+            Anyhow, HttpRequestError, InternalError, JwtError, OAuthError, Unauthorized,
+        };
+
+        match self {
+            Unauthorized | JwtError(_) | OAuthError(_) => {
+                (StatusCode::UNAUTHORIZED).into_response()
+            }
+            InternalError | Anyhow(_) | HttpRequestError(_) => {
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+        }
+    }
 }
 
 #[tokio::main]
@@ -49,6 +102,13 @@ async fn main() -> anyhow::Result<()> {
         "postgres://postgres:rust@localhost".to_string()
     });
 
+    let jwk_set = reqwest::get(format!("https://{idp_domain}/.well-known/jwks.json"))
+        .await
+        .context("could not load jwks")?
+        .json::<jwk::JwkSet>()
+        .await
+        .context("could not transform jwks response into jwk::JwkSet")?;
+
     let db = PgPoolOptions::new()
         .max_connections(20)
         .acquire_timeout(std::time::Duration::from_secs(3))
@@ -59,7 +119,13 @@ async fn main() -> anyhow::Result<()> {
     let session_config = SessionConfig::default()
         .with_table_name("sessions")
         .with_key(Key::from(cookie_key.as_bytes()))
-        .with_database_key(Key::from(database_key.as_bytes()));
+        .with_database_key(Key::from(database_key.as_bytes()))
+        .with_http_only(true)
+        .with_secure(true)
+        .with_cookie_same_site(axum_session::SameSite::Strict)
+        .with_ip_and_user_agent(true)
+        .with_lifetime(Duration::days(32))
+        .with_max_age(Some(Duration::days(64)));
     let session_store = SessionStore::<SessionPgPool>::new(Some(db.clone().into()), session_config)
         .await
         .context("could not create session store")?;
@@ -68,6 +134,7 @@ async fn main() -> anyhow::Result<()> {
         .context("could not create oauth client")?;
 
     let state = AppState {
+        jwk_set,
         oauth_client,
         verifiers: Arc::new(Mutex::new(HashMap::new())),
     };
@@ -111,7 +178,8 @@ async fn health() -> (StatusCode, impl IntoResponse) {
     (StatusCode::OK, "OK")
 }
 
-async fn protected() -> impl IntoResponse {
+async fn protected(Extension(user_id): Extension<String>) -> impl IntoResponse {
+    info!("user {}", user_id);
     ProtectedTemplate {}
 }
 
@@ -168,72 +236,94 @@ struct AuthRequest {
     state: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct Claims {
+    sub: String,
+}
+
+#[debug_handler]
 async fn callback(
     session: SessionPgSession,
     State(state): State<AppState>,
     Query(auth_request): Query<AuthRequest>,
-) -> Result<impl IntoResponse, impl IntoResponse> {
+) -> Result<impl IntoResponse, AppError> {
     let pkce_verifier = match state.verifiers.lock() {
         Ok(verifiers) => {
             let lock = verifiers.get(&auth_request.state);
             match lock {
                 Some(v) => v.into(),
-                None => return Err((StatusCode::UNAUTHORIZED, "not allowed".to_string())),
+                None => return Err(AppError::Unauthorized),
             }
         }
-        Err(e) => {
-            error!("could not lock the verifiers store in callback handler: {e}");
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
-        }
+        Err(_) => return Err(AppError::InternalError),
     };
 
     let pkce_verifier = PkceCodeVerifier::new(pkce_verifier);
 
-    let token = match state
+    let token = state
         .oauth_client
         .exchange_code(AuthorizationCode::new(auth_request.code))
         .set_pkce_verifier(pkce_verifier)
         .request_async(async_http_client)
-        .await
-    {
-        Ok(res) => res,
-        Err(e) => {
-            error!("could not exchange code: {e}");
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
-        }
+        .await?;
+
+    let header = decode_header(token.access_token().secret())?;
+    let kid = match header.kid {
+        Some(k) => k,
+        None => return Err(AppError::InternalError),
     };
 
-    session.set(
-        "refresh_token",
-        token.refresh_token().unwrap().secret().to_owned(),
-    );
-    session.set("access_token", token.access_token().secret().to_owned());
-    //TODO validate access token, extract user id, and store also user id in session
-    //TODO do I need then still the access token ? ... or is it enough to just extract the expiration
-    //from the access token and also store it ... once it has expired we exchange the refresh token for
-    //a new access token
+    if let Some(j) = state.jwk_set.find(&kid) {
+        match &j.algorithm {
+            AlgorithmParameters::RSA(rsa) => {
+                let decoding_key = DecodingKey::from_rsa_components(&rsa.n, &rsa.e)
+                    .context("could not create deconding key")?;
+
+                let key_algorithm = match j.common.key_algorithm {
+                    Some(ka) => ka,
+                    None => return Err(AppError::InternalError),
+                };
+
+                let mut validation = Validation::new(
+                    Algorithm::from_str(key_algorithm.to_string().as_str())
+                        .context("could not create algorithm from jwk")?,
+                );
+                //TODO grab these values from the environment
+                validation.set_audience(&[
+                    "https://api.ntf.io",
+                    "https://ninetofive.eu.auth0.com/userinfo",
+                ]);
+
+                validation.set_issuer(&["https://ninetofive.eu.auth0.com/"]);
+
+                let decoded_token = decode::<Claims>(
+                    token.access_token().secret().as_str(),
+                    &decoding_key,
+                    &validation,
+                )
+                .context("could not decode access token")?;
+
+                session.set("id", decoded_token.claims.sub);
+            }
+            _ => unreachable!("wrong algorithm"),
+        }
+    }
+
     Ok(Redirect::temporary("/app"))
 }
 
 async fn check_authorized(
     session: SessionPgSession,
     State(_state): State<AppState>,
-    req: Request,
+    mut req: Request,
     next: Next,
-) -> Result<Response, StatusCode> {
-    //TODO grab expired from session and check if the token is still valid
-    //  if true: grab user id and put it in extensions
-    //  if false: grab refresh token and exchange with new access token
-    //    successful: update expired and refresh token in session
-    //    failed: user is unauthorized
-    if session.get::<String>("access_token").is_none() {
-        error!("no access token found in session");
-        return Err(StatusCode::UNAUTHORIZED);
-    }
-    if session.get::<String>("refresh_token").is_none() {
-        error!("no refresh token found in session");
-        return Err(StatusCode::UNAUTHORIZED);
-    }
+) -> Result<Response, AppError> {
+    let user_id = match session.get::<String>("id") {
+        Some(id) => id,
+        None => return Ok(Redirect::to("/login").into_response()),
+    };
+
+    req.extensions_mut().insert(user_id);
 
     Ok(next.run(req).await)
 }
