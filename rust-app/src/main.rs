@@ -122,9 +122,9 @@ async fn main() -> anyhow::Result<()> {
         .with_database_key(Key::from(database_key.as_bytes()))
         .with_http_only(true)
         .with_secure(true)
-        .with_cookie_same_site(axum_session::SameSite::Strict)
         .with_ip_and_user_agent(true)
-        .with_cookie_domain(".nine-to-five-production.up.railway.app".to_string())
+        // .with_cookie_same_site(axum_session::SameSite::Strict)
+        // .with_cookie_domain(".nine-to-five-production.up.railway.app".to_string())
         .with_lifetime(Duration::days(32))
         .with_max_age(Some(Duration::days(64)));
     let session_store = SessionStore::<SessionPgPool>::new(Some(db.clone().into()), session_config)
