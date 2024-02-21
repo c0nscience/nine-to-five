@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT \n            activities.*,\n            array_agg((tags.id, tags.user_id, tags.name)) AS \"tags?: Vec<Tag>\"\n        FROM activities\n        LEFT JOIN activities_tags\n            ON activities.id = activities_tags.activity_id\n        LEFT JOIN tags\n            ON activities_tags.tag_id = tags.id\n        WHERE activities.user_id = $1 AND activities.start_time BETWEEN $2 AND $3\n        GROUP BY activities.id\n        ",
+  "query": "\n        SELECT \n            activities.*,\n            array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL) AS \"tags?: Vec<Tag>\"\n        FROM activities\n        LEFT JOIN activities_tags\n            ON activities.id = activities_tags.activity_id\n        LEFT JOIN tags\n            ON activities_tags.tag_id = tags.id\n        WHERE activities.user_id = $1 AND activities.start_time BETWEEN $2 AND $3\n        GROUP BY activities.id\n        ",
   "describe": {
     "columns": [
       {
@@ -50,5 +50,5 @@
       null
     ]
   },
-  "hash": "2acf46f3f319eb7b07163b5cd17e1942e12aeb73d3faff78e2f7ebdeb5680066"
+  "hash": "5eb57f0c5410a5dfd6bd163b2ed3a23c17425dbcdba77d293ec2bd5e9c7354c7"
 }
