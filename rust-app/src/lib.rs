@@ -1,3 +1,4 @@
+pub mod activity;
 pub mod auth;
-pub mod error;
-pub mod state;
+pub mod errors;
+pub mod states;
