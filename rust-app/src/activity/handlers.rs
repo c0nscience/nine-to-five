@@ -7,7 +7,7 @@ use axum::{
     Extension, Router,
 };
 use chrono::prelude::*;
-use tracing::{error, info};
+use tracing::info;
 
 use crate::states::AppState;
 
@@ -30,17 +30,12 @@ async fn activities(
     let Some(end) = start.succ_opt() else {
         return Err(crate::errors::AppError::InternalError);
     };
-    let activities = match crate::activity::in_range(state.db, user_id, start, end).await {
-        Ok(a) => a,
-        Err(e) => {
-            error!("error {e}");
-            Vec::new()
-        }
-    };
-    info!("activities: {:#?}", activities);
-    Ok(ActivitiesTemplate {})
+    let activities = crate::activity::in_range(state.db, user_id, start, end).await?;
+    Ok(ActivitiesTemplate { activities })
 }
 
 #[derive(Template)]
 #[template(path = "activities.html")]
-struct ActivitiesTemplate {}
+struct ActivitiesTemplate {
+    activities: Vec<crate::activity::Activity>,
+}
