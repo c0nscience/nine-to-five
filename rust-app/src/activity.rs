@@ -45,7 +45,7 @@ pub async fn in_range(
         r#"
         SELECT 
             activities.*,
-            array_agg((tags.id, tags.user_id, tags.name)) AS "tags?: Vec<Tag>"
+            array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL) AS "tags?: Vec<Tag>"
         FROM activities
         LEFT JOIN activities_tags
             ON activities.id = activities_tags.activity_id
