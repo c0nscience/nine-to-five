@@ -9,4 +9,11 @@
 {% block content %}
 
 <h1 class="text-3xl font-bold underline">Today - YAY</h1>
+
+<ul>
+{% for activity in activities %}
+<li>{{ activity.name }} - {% match activity.tags %}{% when Some with (tags) %}{% for tag in tags %}{{ tag.name }}, {% endfor %}{% when None %}{% endmatch %}</li>
+{% endfor %}
+</ul>
+
 {% endblock %}
