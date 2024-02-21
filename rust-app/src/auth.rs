@@ -21,8 +21,8 @@ use serde::Deserialize;
 use tracing::error;
 
 pub async fn login(
-    State(state): State<crate::state::AppState>,
-) -> Result<impl IntoResponse, crate::error::AppError> {
+    State(state): State<crate::states::AppState>,
+) -> Result<impl IntoResponse, crate::errors::AppError> {
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (auth_url, csrf_token) = state
@@ -31,7 +31,7 @@ pub async fn login(
         .set_pkce_challenge(pkce_challenge)
         .add_scope(oauth2::Scope::new("openid".to_string()))
         .add_scope(oauth2::Scope::new("offline_access".to_string()))
-        .add_extra_param("audience", "https://api.ntf.io") //TODO parametrize the audience value
+        .add_extra_param("audience", state.oauth_config.audience)
         .url();
 
     match state.verifiers.lock() {
@@ -43,7 +43,7 @@ pub async fn login(
         }
         Err(_) => {
             error!("could not lock the verifiers store in login handler");
-            return Err(crate::error::AppError::InternalError);
+            return Err(crate::errors::AppError::InternalError);
         }
     };
 
@@ -83,18 +83,18 @@ struct Claims {
 #[debug_handler]
 pub async fn callback(
     session: SessionPgSession,
-    State(state): State<crate::state::AppState>,
+    State(state): State<crate::states::AppState>,
     Query(auth_request): Query<AuthRequest>,
-) -> Result<impl IntoResponse, crate::error::AppError> {
+) -> Result<impl IntoResponse, crate::errors::AppError> {
     let pkce_verifier = match state.verifiers.lock() {
-        Ok(verifiers) => {
-            let lock = verifiers.get(&auth_request.state);
-            match lock {
-                Some(v) => v.into(),
-                None => return Err(crate::error::AppError::Unauthorized),
+        Ok(mut verifiers) => {
+            let verifier = verifiers.remove(&auth_request.state);
+            match verifier {
+                Some(v) => v,
+                None => return Err(crate::errors::AppError::Unauthorized),
             }
         }
-        Err(_) => return Err(crate::error::AppError::InternalError),
+        Err(_) => return Err(crate::errors::AppError::InternalError),
     };
 
     let pkce_verifier = PkceCodeVerifier::new(pkce_verifier);
@@ -109,7 +109,7 @@ pub async fn callback(
     let header = decode_header(token.access_token().secret())?;
     let kid = match header.kid {
         Some(k) => k,
-        None => return Err(crate::error::AppError::InternalError),
+        None => return Err(crate::errors::AppError::InternalError),
     };
 
     if let Some(j) = state.jwk_set.find(&kid) {
@@ -120,20 +120,20 @@ pub async fn callback(
 
                 let key_algorithm = match j.common.key_algorithm {
                     Some(ka) => ka,
-                    None => return Err(crate::error::AppError::InternalError),
+                    None => return Err(crate::errors::AppError::InternalError),
                 };
 
                 let mut validation = Validation::new(
                     Algorithm::from_str(key_algorithm.to_string().as_str())
                         .context("could not create algorithm from jwk")?,
                 );
-                //TODO grab these values from the environment
+
                 validation.set_audience(&[
-                    "https://api.ntf.io",
-                    "https://ninetofive.eu.auth0.com/userinfo",
+                    state.oauth_config.audience,
+                    format!("https://{}/userinfo", state.oauth_config.idp_domain),
                 ]);
 
-                validation.set_issuer(&["https://ninetofive.eu.auth0.com/"]);
+                validation.set_issuer(&[format!("https://{}/", state.oauth_config.idp_domain)]);
 
                 let decoded_token = decode::<Claims>(
                     token.access_token().secret().as_str(),
@@ -153,10 +153,10 @@ pub async fn callback(
 
 pub async fn check_authorized(
     session: SessionPgSession,
-    State(_state): State<crate::state::AppState>,
+    State(_state): State<crate::states::AppState>,
     mut req: Request,
     next: Next,
-) -> Result<Response, crate::error::AppError> {
+) -> Result<Response, crate::errors::AppError> {
     let user_id = match session.get::<String>("id") {
         Some(id) => id,
         None => return Ok(Redirect::to("/login").into_response()),

@@ -1,13 +1,14 @@
+
 use std::collections::HashMap;
 
 use std::sync::{Arc, Mutex};
 
 use anyhow::Context;
 use askama::Template;
-use axum::Extension;
+
+
 use axum::{
     http::StatusCode,
-    middleware::{self},
     response::IntoResponse,
     routing::get,
     Router,
@@ -18,6 +19,7 @@ use axum_session::{Key, SessionConfig, SessionLayer, SessionPgPool, SessionStore
 use chrono::Duration;
 use jsonwebtoken::jwk;
 
+use nine_to_five::states::OAuthConfig;
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
 
@@ -36,11 +38,10 @@ async fn main() -> anyhow::Result<()> {
     let idp_domain = dotenvy::var("IDP_DOMAIN").context("idp domain not provided")?;
     let cookie_key = dotenvy::var("COOKIE_KEY").context("cookie key not provided")?;
     let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
+    let audience = dotenvy::var("OAUTH_AUDIENCE").context("audience not provided")?;
 
-    let database_url = dotenvy::var("DATABASE_URL").unwrap_or_else(|_| {
-        info!("no database url provided falling back to default local database.");
-        "postgres://postgres:rust@localhost".to_string()
-    });
+    let database_url =
+        dotenvy::var("DATABASE_URL").context("no postgres connection url provided")?;
 
     let jwk_set = reqwest::get(format!("https://{idp_domain}/.well-known/jwks.json"))
         .await
@@ -55,6 +56,7 @@ async fn main() -> anyhow::Result<()> {
         .connect(&database_url)
         .await
         .context("could not connect to database")?;
+    sqlx::migrate!().run(&db).await?;
 
     let secure = production == "prod";
 
@@ -75,23 +77,24 @@ async fn main() -> anyhow::Result<()> {
         nine_to_five::auth::build_oauth_client(&app_url, client_id, client_secret, &idp_domain)
             .context("could not create oauth client")?;
 
-    let state = nine_to_five::state::AppState {
+    let oauth_config = OAuthConfig {
+        audience,
+        idp_domain,
+    };
+    let state = nine_to_five::states::AppState {
+        db,
         jwk_set,
         oauth_client,
         verifiers: Arc::new(Mutex::new(HashMap::new())),
+        oauth_config,
     };
-
-    let protected_route =
-        Router::new()
-            .route("/", get(protected))
-            .route_layer(middleware::from_fn_with_state(
-                state.clone(),
-                nine_to_five::auth::check_authorized,
-            ));
 
     let app = Router::new()
         .route("/callback", get(nine_to_five::auth::callback))
-        .nest("/app", protected_route)
+        .nest(
+            "/app",
+            nine_to_five::activity::handlers::router(state.clone()),
+        )
         .layer(SessionLayer::new(session_store))
         .route("/", get(index))
         .route("/login", get(nine_to_five::auth::login))
@@ -120,15 +123,6 @@ async fn health() -> (StatusCode, impl IntoResponse) {
     (StatusCode::OK, "OK")
 }
 
-async fn protected(Extension(user_id): Extension<String>) -> impl IntoResponse {
-    info!("user {}", user_id);
-    ProtectedTemplate {}
-}
-
 #[derive(Template)]
 #[template(path = "index.html")]
 struct IndexTemplate {}
-
-#[derive(Template)]
-#[template(path = "app.html")]
-struct ProtectedTemplate {}

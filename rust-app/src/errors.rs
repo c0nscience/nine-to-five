@@ -14,6 +14,9 @@ pub enum AppError {
     HttpRequestError(#[from] reqwest::Error),
 
     #[error("{0}")]
+    Sqlx(#[from] sqlx::Error),
+
+    #[error("{0}")]
     OAuthError(
         #[from]
         oauth2::RequestTokenError<
@@ -27,19 +30,23 @@ pub enum AppError {
 
     #[error("{0}")]
     Anyhow(#[from] anyhow::Error),
+
+    #[error("{0}")]
+    Chrono(#[from] chrono::ParseError),
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         use AppError::{
-            Anyhow, HttpRequestError, InternalError, JwtError, OAuthError, Unauthorized,
+            Anyhow, Chrono, HttpRequestError, InternalError, JwtError, OAuthError, Sqlx,
+            Unauthorized,
         };
 
         match self {
             Unauthorized | JwtError(_) | OAuthError(_) => {
                 (StatusCode::UNAUTHORIZED).into_response()
             }
-            InternalError | Anyhow(_) | HttpRequestError(_) => {
+            InternalError | Anyhow(_) | HttpRequestError(_) | Sqlx(_) | Chrono(_) => {
                 (StatusCode::INTERNAL_SERVER_ERROR).into_response()
             }
         }
