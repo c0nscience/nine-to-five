@@ -4,16 +4,18 @@
 
 {% block head %}
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 {% endblock %}
 
 {% block content %}
 
-<h1 class="text-3xl font-bold underline">Today - YAY</h1>
-
+<h1 class="text-3xl font-bold underline">{{ date }}</h1>
+<button hx-get="/app/new" hx-target="#modal-container" class="text-white bg-fuchsia-900 rounded p-2 inline-block">New</button
 <ul>
 {% for activity in activities %}
 <li>{{ activity.name }} - {% match activity.tags %}{% when Some with (tags) %}{% for tag in tags %}{{ tag.name }}, {% endfor %}{% when None %}{% endmatch %}</li>
 {% endfor %}
 </ul>
 
+<div id="modal-container"></div>
 {% endblock %}
