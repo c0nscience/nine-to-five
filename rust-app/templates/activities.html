@@ -3,19 +3,34 @@
 {% block title %}Nine to Five{% endblock %}
 
 {% block head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="/assets/css/output.css" rel="stylesheet">
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 {% endblock %}
 
 {% block content %}
+<div class="mx-auto bg-gray-900 max-w-7xl sm:px-6 lg:px-8">
+  <div class="h-dvh mx-auto max-w-3xl">
+    <ul role="list" class="divide-y divide-gray-200">
+      {% for activity in activities %}
+        <li class="px-4 py-4 sm:px-0 text-gray-300">
+          {{ activity.name }} - {{ activity.tags|join(", ") }}
+        </li>
+      {% endfor %}
+    </ul>
 
-<h1 class="text-3xl font-bold underline">{{ date }}</h1>
-<button hx-get="/app/new" hx-target="#modal-container" class="text-white bg-fuchsia-900 rounded p-2 inline-block">New</button
-<ul>
-{% for activity in activities %}
-<li>{{ activity.name }} - {% match activity.tags %}{% when Some with (tags) %}{% for tag in tags %}{{ tag.name }}, {% endfor %}{% when None %}{% endmatch %}</li>
-{% endfor %}
-</ul>
-
-<div id="modal-container"></div>
+    <div class="fixed bottom-0 left-0 right-0 flex h-16 items-center justify-center">
+      <div>
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+        </svg>
+      </div>
+      <div class="text-gray-300 text-3xl">{{ date }}</div>
+      <div>
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
