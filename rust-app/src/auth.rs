@@ -50,6 +50,37 @@ pub async fn login(
     Ok(Redirect::temporary(auth_url.as_str()))
 }
 
+pub async fn signup(
+    State(state): State<crate::states::AppState>,
+) -> Result<impl IntoResponse, crate::errors::AppError> {
+    let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
+
+    let (auth_url, csrf_token) = state
+        .oauth_client
+        .authorize_url(CsrfToken::new_random)
+        .set_pkce_challenge(pkce_challenge)
+        .add_scope(oauth2::Scope::new("openid".to_string()))
+        .add_scope(oauth2::Scope::new("offline_access".to_string()))
+        .add_extra_param("audience", state.oauth_config.audience)
+        .add_extra_param("screen_hint", "signup")
+        .url();
+
+    match state.verifiers.lock() {
+        Ok(mut v) => {
+            v.insert(
+                csrf_token.secret().to_string(),
+                pkce_verifier.secret().to_string(),
+            );
+        }
+        Err(_) => {
+            error!("could not lock the verifiers store in login handler");
+            return Err(crate::errors::AppError::InternalError);
+        }
+    };
+
+    Ok(Redirect::temporary(auth_url.as_str()))
+}
+
 pub fn build_oauth_client(
     app_url: &str,
     client_id: String,

@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 
 use std::sync::{Arc, Mutex};
@@ -6,13 +5,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::Context;
 use askama::Template;
 
-
-use axum::{
-    http::StatusCode,
-    response::IntoResponse,
-    routing::get,
-    Router,
-};
+use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
 
 use axum_session::{Key, SessionConfig, SessionLayer, SessionPgPool, SessionStore};
 
@@ -22,6 +15,7 @@ use jsonwebtoken::jwk;
 use nine_to_five::states::OAuthConfig;
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
+use tower_http::services::ServeDir;
 
 use tracing::info;
 
@@ -98,7 +92,9 @@ async fn main() -> anyhow::Result<()> {
         .layer(SessionLayer::new(session_store))
         .route("/", get(index))
         .route("/login", get(nine_to_five::auth::login))
+        .route("/signup", get(nine_to_five::auth::signup))
         .route("/health", get(health))
+        .nest_service("/assets", ServeDir::new("assets"))
         .with_state(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
