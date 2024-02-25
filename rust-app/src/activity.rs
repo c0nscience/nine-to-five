@@ -1,17 +1,19 @@
+use core::fmt;
+
 use chrono::{prelude::*, LocalResult};
 use sqlx::prelude::*;
 use sqlx::PgPool;
 
 pub mod handlers;
 
-#[derive(Debug, FromRow)]
+#[derive(Debug)]
 pub struct Activity {
     id: sqlx::types::Uuid,
     user_id: String,
     name: String,
     start_time: chrono::DateTime<chrono::Utc>,
     end_time: Option<chrono::DateTime<chrono::Utc>>,
-    tags: Option<Vec<Tag>>,
+    tags: Vec<Tag>,
 }
 
 #[derive(Debug, Type)]
@@ -20,6 +22,12 @@ pub struct Tag {
     id: sqlx::types::Uuid,
     user_id: String,
     name: String,
+}
+
+impl fmt::Display for Tag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }
 
 pub async fn in_range(
@@ -45,7 +53,7 @@ pub async fn in_range(
         r#"
         SELECT 
             activities.*,
-            array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL) AS "tags?: Vec<Tag>"
+            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<Tag>"
         FROM activities
         LEFT JOIN activities_tags
             ON activities.id = activities_tags.activity_id
