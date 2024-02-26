@@ -79,6 +79,7 @@ command = [
     "always",
     # put launch parameters for your program behind a `--` separator
 ]
+watch = ["templates"]
 need_stdout = true
 allow_warnings = true
 background = true
