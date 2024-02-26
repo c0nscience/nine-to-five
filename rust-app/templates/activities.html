@@ -18,18 +18,25 @@
         </li>
       {% endfor %}
     </ul>
+    <div class="fixed bottom-0 left-0 right-0 ">
+      <button type="button" class="absolute right-4 bottom-20 rounded-full bg-indigo-600 p-2 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+        <svg class="h-12 w-12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+      </button>
 
-    <div class="fixed bottom-0 left-0 right-0 flex h-16 items-center justify-center">
-      <div>
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg>
-      </div>
-      <div class="text-gray-300 text-3xl">{{ date }}</div>
-      <div>
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
-          <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-        </svg>
+      <div class="flex space-x-4 h-16 items-center justify-center">
+        <div class="rounded-md bg-white/10 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-8 h-8 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </div>
+        <div class="text-gray-300 text-3xl">{{ date }}</div>
+        <div class="rounded-md bg-white/10 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-8 h-8 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
+        </div>
       </div>
     </div>
   </div>
