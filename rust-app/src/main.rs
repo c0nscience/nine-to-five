@@ -15,7 +15,7 @@ use jsonwebtoken::jwk;
 use nine_to_five::states::OAuthConfig;
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 
 use tracing::info;
 
@@ -95,6 +95,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/signup", get(nine_to_five::auth::signup))
         .route("/health", get(health))
         .nest_service("/assets", ServeDir::new("assets"))
+        .nest_service("/favicon.ico", ServeFile::new("assets/favicon.ico"))
         .with_state(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
