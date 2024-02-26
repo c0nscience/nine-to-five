@@ -71,3 +71,37 @@ pub async fn in_range(
 
     Ok(result)
 }
+
+#[derive(Debug)]
+pub struct StoreActivity {
+    user_id: String,
+    name: String,
+    start_time: chrono::DateTime<chrono::Utc>,
+    end_time: Option<chrono::DateTime<chrono::Utc>>,
+    tags: Vec<Tag>,
+}
+
+pub async fn create(
+    db: PgPool,
+    activity: StoreActivity,
+) -> Result<Activity, crate::errors::AppError> {
+    let result = sqlx::query_as!(
+        Activity,
+        r#"
+            with created_activity as (
+                insert into activities(user_id, name, start_time, end_time)
+                values ($1, $2, $3, $4)
+                returning id, user_id, name, start_time, end_time
+            )
+            select id, user_id, name, start_time, end_time, '{}' as "tags!: Vec<Tag>"
+            from created_activity
+        "#,
+        activity.user_id,
+        activity.name,
+        activity.start_time,
+        activity.end_time,
+    )
+    .fetch_one(&db)
+    .await?;
+    Ok(result)
+}

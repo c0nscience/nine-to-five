@@ -15,6 +15,7 @@ use jsonwebtoken::jwk;
 use nine_to_five::states::OAuthConfig;
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
+use tower_http::compression::CompressionLayer;
 use tower_http::services::{ServeDir, ServeFile};
 
 use tracing::info;
@@ -94,9 +95,10 @@ async fn main() -> anyhow::Result<()> {
         .route("/login", get(nine_to_five::auth::login))
         .route("/signup", get(nine_to_five::auth::signup))
         .route("/health", get(health))
+        .layer(CompressionLayer::new())
         .nest_service("/assets", ServeDir::new("assets"))
         .nest_service("/favicon.ico", ServeFile::new("assets/favicon.ico"))
-        .with_state(state);
+        .with_state(state.clone());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;
