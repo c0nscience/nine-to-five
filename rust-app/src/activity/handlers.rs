@@ -9,6 +9,7 @@ use axum::{
 use axum_macros::debug_handler;
 use chrono::prelude::*;
 use serde::Deserialize;
+use tracing::{error, info};
 
 use crate::states::AppState;
 
@@ -134,8 +135,8 @@ async fn create_new_activity(
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
     Form(create_activity): Form<CreateActivity>,
-) -> Result<impl IntoResponse, crate::errors::AppError> {
-    let _ = crate::activity::create(
+) -> Result<Redirect, crate::errors::AppError> {
+    crate::activity::create(
         state.db,
         StoreActivity {
             user_id,
@@ -146,5 +147,5 @@ async fn create_new_activity(
         },
     )
     .await?;
-    Ok(Redirect::temporary("/app"))
+    Ok(Redirect::to("/app"))
 }

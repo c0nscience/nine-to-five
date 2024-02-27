@@ -61,6 +61,7 @@ pub async fn in_range(
             ON activities_tags.tag_id = tags.id
         WHERE activities.user_id = $1 AND activities.start_time BETWEEN $2 AND $3
         GROUP BY activities.id
+        ORDER BY activities.start_time ASC
         "#,
         user_id,
         from,
@@ -78,30 +79,20 @@ pub struct StoreActivity {
     name: String,
     start_time: chrono::DateTime<chrono::Utc>,
     end_time: Option<chrono::DateTime<chrono::Utc>>,
-    // tags: Vec<Tag>,
 }
 
-pub async fn create(
-    db: PgPool,
-    activity: StoreActivity,
-) -> Result<Activity, crate::errors::AppError> {
-    let result = sqlx::query_as!(
-        Activity,
+pub async fn create(db: PgPool, activity: StoreActivity) -> Result<(), crate::errors::AppError> {
+    sqlx::query!(
         r#"
-            with created_activity as (
-                insert into activities(user_id, name, start_time, end_time)
-                values ($1, $2, $3, $4)
-                returning id, user_id, name, start_time, end_time
-            )
-            select id, user_id, name, start_time, end_time, '{}' as "tags!: Vec<Tag>"
-            from created_activity
+            insert into activities(user_id, name, start_time, end_time)
+            values ($1, $2, $3, $4)
         "#,
         activity.user_id,
         activity.name,
         activity.start_time,
         activity.end_time,
     )
-    .fetch_one(&db)
+    .execute(&db)
     .await?;
-    Ok(result)
+    Ok(())
 }
