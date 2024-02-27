@@ -1,12 +1,12 @@
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
     middleware,
     response::{IntoResponse, Redirect},
     routing::{get, post},
     Extension, Form, Router,
 };
+use axum_macros::debug_handler;
 use chrono::prelude::*;
 use serde::Deserialize;
 
@@ -129,11 +129,12 @@ struct CreateActivity {
     name: String,
 }
 
+#[debug_handler]
 async fn create_new_activity(
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
     Form(create_activity): Form<CreateActivity>,
-) -> Result<StatusCode, crate::errors::AppError> {
+) -> Result<impl IntoResponse, crate::errors::AppError> {
     let _ = crate::activity::create(
         state.db,
         StoreActivity {
@@ -141,9 +142,9 @@ async fn create_new_activity(
             name: create_activity.name,
             start_time: Utc::now(),
             end_time: None,
-            tags: Vec::new(),
+            // tags: Vec::new(),
         },
     )
     .await?;
-    Ok(StatusCode::NO_CONTENT)
+    Ok(Redirect::temporary("/app"))
 }
