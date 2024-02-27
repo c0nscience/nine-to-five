@@ -24,7 +24,7 @@ use tracing::info;
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
 
-    let production = dotenvy::var("ENV").unwrap_or("dev".to_string());
+    let production = dotenvy::var("ENV").unwrap_or_else(|_| "dev".to_string());
     let app_url = dotenvy::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
     let port = dotenvy::var("PORT").map_or_else(|_| Ok(3000), |p| p.parse::<u16>())?;
 

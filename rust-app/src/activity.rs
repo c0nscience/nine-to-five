@@ -78,7 +78,7 @@ pub struct StoreActivity {
     name: String,
     start_time: chrono::DateTime<chrono::Utc>,
     end_time: Option<chrono::DateTime<chrono::Utc>>,
-    tags: Vec<Tag>,
+    // tags: Vec<Tag>,
 }
 
 pub async fn create(
