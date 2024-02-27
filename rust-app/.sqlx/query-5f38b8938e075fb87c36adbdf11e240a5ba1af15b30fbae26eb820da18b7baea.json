@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            with created_activity as (\n                insert into activities(user_id, name, start_time, end_time)\n                values ($1, $2, $3, $4)\n                returning id, user_id, name, start_time, end_time\n            )\n            select id, user_id, name, start_time, end_time, '{}' as \"tags!: Vec<Tag>\"\n            from created_activity\n        ",
+  "query": "\n        SELECT \n            activities.*,\n            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS \"tags!: Vec<Tag>\"\n        FROM activities\n        LEFT JOIN activities_tags\n            ON activities.id = activities_tags.activity_id\n        LEFT JOIN tags\n            ON activities_tags.tag_id = tags.id\n        WHERE activities.user_id = $1 AND activities.start_time BETWEEN $2 AND $3\n        GROUP BY activities.id\n        ORDER BY activities.start_time ASC\n        ",
   "describe": {
     "columns": [
       {
@@ -31,12 +31,11 @@
       {
         "ordinal": 5,
         "name": "tags!: Vec<Tag>",
-        "type_info": "Text"
+        "type_info": "RecordArray"
       }
     ],
     "parameters": {
       "Left": [
-        "Text",
         "Text",
         "Timestamptz",
         "Timestamptz"
@@ -51,5 +50,5 @@
       null
     ]
   },
-  "hash": "892401e14f6000d4e44faf108fe82fe0b53b1fe7a9c35e062004e650612b5d3b"
+  "hash": "5f38b8938e075fb87c36adbdf11e240a5ba1af15b30fbae26eb820da18b7baea"
 }
