@@ -34,17 +34,14 @@ pub async fn login(
         .add_extra_param("audience", state.oauth_config.audience)
         .url();
 
-    match state.verifiers.lock() {
-        Ok(mut v) => {
-            v.insert(
-                csrf_token.secret().to_string(),
-                pkce_verifier.secret().to_string(),
-            );
-        }
-        Err(_) => {
-            error!("could not lock the verifiers store in login handler");
-            return Err(crate::errors::AppError::InternalError);
-        }
+    if let Ok(mut v) = state.verifiers.lock() {
+        v.insert(
+            csrf_token.secret().to_string(),
+            pkce_verifier.secret().to_string(),
+        );
+    } else {
+        error!("could not lock the verifiers store in login handler");
+        return Err(crate::errors::AppError::InternalError);
     };
 
     Ok(Redirect::temporary(auth_url.as_str()))
@@ -65,17 +62,14 @@ pub async fn signup(
         .add_extra_param("screen_hint", "signup")
         .url();
 
-    match state.verifiers.lock() {
-        Ok(mut v) => {
-            v.insert(
-                csrf_token.secret().to_string(),
-                pkce_verifier.secret().to_string(),
-            );
-        }
-        Err(_) => {
-            error!("could not lock the verifiers store in login handler");
-            return Err(crate::errors::AppError::InternalError);
-        }
+    if let Ok(mut v) = state.verifiers.lock() {
+        v.insert(
+            csrf_token.secret().to_string(),
+            pkce_verifier.secret().to_string(),
+        );
+    } else {
+        error!("could not lock the verifiers store in login handler");
+        return Err(crate::errors::AppError::InternalError);
     };
 
     Ok(Redirect::temporary(auth_url.as_str()))
@@ -138,9 +132,8 @@ pub async fn callback(
         .await?;
 
     let header = decode_header(token.access_token().secret())?;
-    let kid = match header.kid {
-        Some(k) => k,
-        None => return Err(crate::errors::AppError::InternalError),
+    let Some(kid) = header.kid else {
+        return Err(crate::errors::AppError::InternalError);
     };
 
     if let Some(j) = state.jwk_set.find(&kid) {
@@ -149,9 +142,8 @@ pub async fn callback(
                 let decoding_key = DecodingKey::from_rsa_components(&rsa.n, &rsa.e)
                     .context("could not create deconding key")?;
 
-                let key_algorithm = match j.common.key_algorithm {
-                    Some(ka) => ka,
-                    None => return Err(crate::errors::AppError::InternalError),
+                let Some(key_algorithm) = j.common.key_algorithm else {
+                    return Err(crate::errors::AppError::InternalError);
                 };
 
                 let mut validation = Validation::new(
@@ -188,9 +180,8 @@ pub async fn check_authorized(
     mut req: Request,
     next: Next,
 ) -> Result<Response, crate::errors::AppError> {
-    let user_id = match session.get::<String>("id") {
-        Some(id) => id,
-        None => return Ok(Redirect::to("/login").into_response()),
+    let Some(user_id) = session.get::<String>("id") else {
+        return Ok(Redirect::to("/login").into_response());
     };
 
     req.extensions_mut().insert(user_id);
