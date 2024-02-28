@@ -12,7 +12,7 @@ use serde::Deserialize;
 
 use crate::states::AppState;
 
-use super::Create;
+use super::{AvailableTag, Create};
 
 pub fn router(state: crate::states::AppState) -> Router<AppState> {
     Router::new()
@@ -145,13 +145,16 @@ async fn list(
 
 #[derive(Template)]
 #[template(path = "activities/start_form.html")]
-struct StartForm {}
+struct StartForm {
+    available_tags: Vec<AvailableTag>,
+}
 
 async fn start_form(
-    State(_state): State<crate::states::AppState>,
-    Extension(_user_id): Extension<String>,
+    State(state): State<crate::states::AppState>,
+    Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
-    Ok(StartForm {})
+    let available_tags = crate::activity::available_tags(&state.db, user_id).await?;
+    Ok(StartForm { available_tags })
 }
 
 #[derive(Debug, Deserialize)]
