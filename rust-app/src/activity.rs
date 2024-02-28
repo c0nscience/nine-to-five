@@ -30,6 +30,7 @@ impl fmt::Display for Tag {
     }
 }
 
+#[allow(clippy::missing_panics_doc)]
 pub async fn in_range(
     db: &PgPool,
     user_id: String,
@@ -85,6 +86,7 @@ pub struct Create {
     end_time: Option<chrono::DateTime<chrono::Utc>>,
 }
 
+#[allow(clippy::missing_panics_doc)]
 pub async fn create(db: PgPool, activity_to_create: Create) -> Result<(), crate::errors::AppError> {
     sqlx::query!(
         r#"
@@ -110,6 +112,8 @@ pub struct Running {
     end_time: Option<chrono::DateTime<chrono::Utc>>,
     tags: Vec<Tag>,
 }
+
+#[allow(clippy::missing_panics_doc)]
 pub async fn running(db: &PgPool, user_id: String) -> anyhow::Result<Option<Running>> {
     let result = sqlx::query_as!(
         Running, 
@@ -132,6 +136,7 @@ pub async fn running(db: &PgPool, user_id: String) -> anyhow::Result<Option<Runn
     Ok(result)
 }
 
+#[allow(clippy::missing_panics_doc)]
 pub async fn stop(db: &PgPool, user_id: String, id: String) -> anyhow::Result<()> {
     let id = sqlx::types::Uuid::parse_str(id.as_str())?;
     sqlx::query!(
