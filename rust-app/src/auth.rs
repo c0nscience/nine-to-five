@@ -20,6 +20,7 @@ use serde::Deserialize;
 
 use tracing::error;
 
+#[allow(clippy::unused_async)]
 pub async fn login(
     State(state): State<crate::states::AppState>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
@@ -47,6 +48,7 @@ pub async fn login(
     Ok(Redirect::temporary(auth_url.as_str()))
 }
 
+#[allow(clippy::unused_async)]
 pub async fn signup(
     State(state): State<crate::states::AppState>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
@@ -95,7 +97,7 @@ pub fn build_oauth_client(
 }
 
 #[derive(Debug, Deserialize)]
-pub struct AuthRequest {
+pub struct CodeResponse {
     code: String,
     state: String,
 }
@@ -109,7 +111,7 @@ struct Claims {
 pub async fn callback(
     session: SessionPgSession,
     State(state): State<crate::states::AppState>,
-    Query(auth_request): Query<AuthRequest>,
+    Query(auth_request): Query<CodeResponse>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
     let pkce_verifier = match state.verifiers.lock() {
         Ok(mut verifiers) => {

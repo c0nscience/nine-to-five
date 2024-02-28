@@ -77,7 +77,7 @@ async fn list(
     } else {
         start.format("%a, %b %d %Y").to_string()
     };
-    let activities = crate::activity::in_range(&state.db, user_id.to_owned(), start, end).await?;
+    let activities = crate::activity::in_range(&state.db, user_id.clone(), start, end).await?;
     let activities = activities
         .iter()
         .filter(|a| a.end_time.is_some())
@@ -107,7 +107,7 @@ async fn list(
         })
         .collect();
 
-    let running = crate::activity::running(&state.db, user_id.to_owned())
+    let running = crate::activity::running(&state.db, user_id.clone())
         .await?
         .map(|a| {
             let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
@@ -189,7 +189,7 @@ async fn stop(
     Extension(user_id): Extension<String>,
     Query(query): Query<StopQuery>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
-    crate::activity::stop(&state.db, user_id.to_owned(), id.to_owned()).await?;
+    crate::activity::stop(&state.db, user_id.clone(), id.clone()).await?;
 
     let start = query.date.parse::<NaiveDate>()?;
     let Some(end) = start.succ_opt() else {
@@ -203,7 +203,7 @@ async fn stop(
     } else {
         start.format("%a, %b %d %Y").to_string()
     };
-    let activities = crate::activity::in_range(&state.db, user_id.to_owned(), start, end).await?;
+    let activities = crate::activity::in_range(&state.db, user_id.clone(), start, end).await?;
     let activities = activities
         .iter()
         .filter(|a| a.end_time.is_some())
@@ -233,7 +233,7 @@ async fn stop(
         })
         .collect();
 
-    let running = crate::activity::running(&state.db, user_id.to_owned())
+    let running = crate::activity::running(&state.db, user_id.clone())
         .await?
         .map(|a| {
             let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
