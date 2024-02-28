@@ -9,7 +9,6 @@ pub mod handlers;
 
 pub struct Range {
     id: sqlx::types::Uuid,
-    user_id: String,
     name: String,
     start_time: chrono::DateTime<chrono::Utc>,
     end_time: Option<chrono::DateTime<chrono::Utc>>,
@@ -44,7 +43,7 @@ pub async fn in_range(
         Range,
         r#"
         SELECT 
-            activities.*,
+            activities.id, activities.name, activities.start_time, activities.end_time,
             COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<Tag>"
         FROM activities
         LEFT JOIN activities_tags
@@ -106,7 +105,6 @@ pub async fn create(db: PgPool, activity_to_create: Create) -> Result<(), crate:
 #[derive(Debug)]
 pub struct Running {
     id: sqlx::types::Uuid,
-    user_id: String,
     name: String,
     start_time: chrono::DateTime<chrono::Utc>,
     end_time: Option<chrono::DateTime<chrono::Utc>>,
@@ -119,7 +117,7 @@ pub async fn running(db: &PgPool, user_id: String) -> anyhow::Result<Option<Runn
         Running, 
         r#"
         SELECT 
-            activities.*,
+            activities.id, activities.name, activities.start_time, activities.end_time,
             COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<Tag>"
         FROM activities
         LEFT JOIN activities_tags
