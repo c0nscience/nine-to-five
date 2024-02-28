@@ -147,3 +147,19 @@ pub async fn stop(db: &PgPool, user_id: String, id: String) -> anyhow::Result<()
         .execute(db).await?;
     Ok(())
 }
+
+#[derive(Debug)]
+pub struct AvailableTag {
+    name: String
+}
+
+async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<AvailableTag>> {
+    let result = sqlx::query_as!(
+        AvailableTag, 
+        r#"
+            SELECT name FROM tags where user_id = $1
+        "#,
+        user_id).fetch_all(db).await?;
+
+    Ok(result)
+}
