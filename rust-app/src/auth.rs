@@ -111,11 +111,11 @@ struct Claims {
 pub async fn callback(
     session: SessionPgSession,
     State(state): State<crate::states::AppState>,
-    Query(auth_request): Query<CodeResponse>,
+    Query(code_response): Query<CodeResponse>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
     let pkce_verifier = match state.verifiers.lock() {
         Ok(mut verifiers) => {
-            let verifier = verifiers.remove(&auth_request.state);
+            let verifier = verifiers.remove(&code_response.state);
             match verifier {
                 Some(v) => v,
                 None => return Err(crate::errors::AppError::Unauthorized),
@@ -128,7 +128,7 @@ pub async fn callback(
 
     let token = state
         .oauth_client
-        .exchange_code(AuthorizationCode::new(auth_request.code))
+        .exchange_code(AuthorizationCode::new(code_response.code))
         .set_pkce_verifier(pkce_verifier)
         .request_async(async_http_client)
         .await?;
