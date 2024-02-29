@@ -46,11 +46,18 @@
   end
 </script>
 <script type="text/hyperscript">
-  def createPill(tag_name)
+  def createPill(tag_name,id)
     set pill to `
-      <span id="pill-${tag_name}" _="install Removable(removeButton: #del-btn-${tag_name})" class="inline-flex select-none items-center gap-x-0.5 rounded-md bg-purple-400/10 px-2 py-1 text-md font-medium text-purple-400 ring-1 ring-inset ring-purple-700/10">
+      <span id="pill-${tag_name}" _="
+                                      install Removable(removeButton: #del-btn-${tag_name})
+                                    "
+            class="inline-flex select-none items-center gap-x-0.5 rounded-md bg-purple-400/10 px-2 py-1 text-md font-medium text-purple-400 ring-1 ring-inset ring-purple-700/10">
         ${tag_name}
-        <button type="button" id="del-btn-${tag_name}" class="group relative -mr-1 h-3.5 w-3.5 rounded-sm hover:bg-purple-600/20">
+        <button _="
+                    on click set #cb-${id}.checked to false
+                      then remove .hidden from #opt-${id}
+                  "
+                type="button" id="del-btn-${tag_name}" class="group relative -mr-1 h-3.5 w-3.5 rounded-sm hover:bg-purple-600/20">
           <span class="sr-only">Remove</span>
           <svg viewBox="0 0 14 14" class="h-3.5 w-3.5 stroke-violet-600/50 group-hover:stroke-violet-600/75">
             <path d="M4 4l6 6m0-6l-6 6" />
@@ -103,15 +110,22 @@
                       clip-rule="evenodd" />
                   </svg>
                 </button>
+
+                {% for tag in available_tags %}
+                <input type="checkbox" name="tags[]" value="{{ tag.id }}" hidden id="cb-{{tag.id}}" />
+                {% endfor %}
               </div>
               <ul
                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm hidden"
                 id="options" role="listbox">
                 {% for tag in available_tags %}
                 <li _="
-                       on click createPill('{{tag.name}}')
+                       on click createPill('{{tag.name}}','{{tag.id}}')
+                        then add .hidden to closest <ul[role=listbox]/>
+                        then set #cb-{{tag.id}}.checked to true
+                        then add .hidden to me
                        " class="relative cursor-default select-none py-2 pl-3 pr-9 text-white hover:bg-white/10"
-                  id="option-{{loop.index0}}" role="option" tabindex="-1">
+                  id="opt-{{tag.id}}" role="option" tabindex="-1">
                   <!-- Selected: "font-semibold" -->
                   <span class="block truncate">{{tag.name}}</span>
                   <!-- <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600"> -->
