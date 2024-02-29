@@ -3,11 +3,9 @@ use core::fmt;
 use anyhow::anyhow;
 use chrono::{prelude::*, LocalResult};
 use sqlx::prelude::*;
-use sqlx::Execute;
 use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
-use tracing::info;
 
 pub mod handlers;
 
@@ -171,6 +169,9 @@ async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<Avai
 }
 
 async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uuid>, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
+    if tags.len() == 0 {
+        return Ok(());
+    }
     let mut query_builder = QueryBuilder::<Postgres>::new("INSERT INTO activities_tags (activity_id, tag_id) VALUES ");
     
     for (idx, tag_id) in tags.iter().enumerate() {
@@ -186,7 +187,6 @@ async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uu
     }
 
     let query = query_builder.build();
-   info!("query: {}", query.sql()); 
     query.execute(db).await?;
     Ok(())
 }
