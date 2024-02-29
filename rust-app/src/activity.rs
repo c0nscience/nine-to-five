@@ -3,7 +3,11 @@ use core::fmt;
 use anyhow::anyhow;
 use chrono::{prelude::*, LocalResult};
 use sqlx::prelude::*;
+use sqlx::Execute;
 use sqlx::PgPool;
+use sqlx::Postgres;
+use sqlx::QueryBuilder;
+use tracing::info;
 
 pub mod handlers;
 
@@ -86,20 +90,21 @@ pub struct Create {
 }
 
 #[allow(clippy::missing_panics_doc)]
-pub async fn create(db: PgPool, activity_to_create: Create) -> Result<(), crate::errors::AppError> {
-    sqlx::query!(
+pub async fn create(db: &PgPool, activity_to_create: Create) -> anyhow::Result<sqlx::types::Uuid> {
+    let result = sqlx::query!(
         r#"
             insert into activities(user_id, name, start_time, end_time)
             values ($1, $2, $3, $4)
+            returning id
         "#,
         activity_to_create.user_id,
         activity_to_create.name,
         activity_to_create.start_time,
         activity_to_create.end_time,
     )
-    .execute(&db)
+    .fetch_one(db)
     .await?;
-    Ok(())
+    Ok(result.id)
 }
 
 #[derive(Debug)]
@@ -150,6 +155,7 @@ pub async fn stop(db: &PgPool, user_id: String, id: String) -> anyhow::Result<()
 
 #[derive(Debug)]
 pub struct AvailableTag {
+    id: sqlx::types::Uuid,
     name: String
 }
 
@@ -157,9 +163,30 @@ async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<Avai
     let result = sqlx::query_as!(
         AvailableTag, 
         r#"
-            SELECT name FROM tags where user_id = $1
+            SELECT id, name FROM tags where user_id = $1
         "#,
         user_id).fetch_all(db).await?;
 
     Ok(result)
+}
+
+async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uuid>, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
+    let mut query_builder = QueryBuilder::<Postgres>::new("INSERT INTO activities_tags (activity_id, tag_id) VALUES ");
+    
+    for (idx, tag_id) in tags.iter().enumerate() {
+        query_builder.push("(");
+        query_builder.push_bind(activity_id);
+        query_builder.push(",");
+        query_builder.push_bind(tag_id);
+        query_builder.push(")");
+
+        if idx < tags.len() - 1 {
+            query_builder.push(",");
+        }
+    }
+
+    let query = query_builder.build();
+   info!("query: {}", query.sql()); 
+    query.execute(db).await?;
+    Ok(())
 }

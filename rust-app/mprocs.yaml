@@ -1,0 +1,9 @@
+procs:
+  dev:
+    shell: "npm run dev"
+  prd:
+    shell: "npm run prd"
+    autostart: false
+  sqlx:
+    shell: "cargo sqlx prepare"
+    autostart: false
