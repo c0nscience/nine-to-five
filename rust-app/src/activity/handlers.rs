@@ -4,13 +4,15 @@ use axum::{
     middleware,
     response::{IntoResponse, Redirect},
     routing::{get, post},
-    Extension, Form, Router,
+    Extension, Router,
 };
 
+use axum_extra::extract::Form;
 use chrono::prelude::*;
 use serde::Deserialize;
+use tracing::{error, info};
 
-use crate::states::AppState;
+use crate::{states::AppState};
 
 use super::{AvailableTag, Create};
 
@@ -160,6 +162,9 @@ async fn start_form(
 #[derive(Debug, Deserialize)]
 struct CreateActivity {
     name: String,
+
+    #[serde(default, rename = "tags[]")]
+    tags: Vec<sqlx::types::Uuid>,
 }
 
 async fn start(
@@ -167,10 +172,11 @@ async fn start(
     Extension(user_id): Extension<String>,
     Form(create_activity): Form<CreateActivity>,
 ) -> Result<Redirect, crate::errors::AppError> {
-    crate::activity::create(
-        state.db,
+    info!("tags: {:?}", create_activity.tags);
+    let activity_id = crate::activity::create(
+        &state.db,
         Create {
-            user_id,
+            user_id: user_id.clone(),
             name: create_activity.name,
             start_time: Utc::now(),
             end_time: None,
@@ -178,6 +184,19 @@ async fn start(
         },
     )
     .await?;
+
+    match crate::activity::associate_tags(
+        &state.db,
+        user_id.clone(),
+        create_activity.tags,
+        activity_id,
+    )
+    .await
+    {
+        Ok(()) => (),
+        Err(e) => error!("associate tags failed: {e}"),
+    };
+
     Ok(Redirect::to("/app"))
 }
 
