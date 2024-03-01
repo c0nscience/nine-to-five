@@ -169,7 +169,7 @@ async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<Avai
 }
 
 async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uuid>, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
-    if tags.len() == 0 {
+    if tags.is_empty() {
         return Ok(());
     }
     let mut query_builder = QueryBuilder::<Postgres>::new("INSERT INTO activities_tags (activity_id, tag_id) VALUES ");
