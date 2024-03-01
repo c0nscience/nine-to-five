@@ -190,3 +190,15 @@ async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uu
     query.execute(db).await?;
     Ok(())
 }
+
+async fn create_tag(db: &sqlx::Pool<Postgres>, user_id: String, name: String) -> anyhow::Result<()>{
+    if name.is_empty() {
+        return Ok(());
+    }
+
+    sqlx::query!(r#"
+            INSERT INTO tags(user_id, name)
+            VALUES ($1, $2)"#,user_id, name).execute(db).await?;
+    
+    Ok(())
+}
