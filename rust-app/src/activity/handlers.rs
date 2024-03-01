@@ -10,7 +10,6 @@ use axum::{
 use axum_extra::extract::Form;
 use chrono::prelude::*;
 use serde::Deserialize;
-use tracing::{error, info};
 
 use crate::states::AppState;
 
@@ -22,6 +21,7 @@ pub fn router(state: crate::states::AppState) -> Router<AppState> {
         .route("/start", get(start_form))
         .route("/start", post(start))
         .route("/:id/stop", post(stop))
+        .route("/tags", post(add_tag))
         .route(
             "/",
             get(|| async {
@@ -47,7 +47,6 @@ struct ActivityTemplData {
 }
 
 pub struct TagTemplData {
-    // id: sqlx::types::Uuid,
     name: String,
 }
 
@@ -283,4 +282,27 @@ async fn stop(
         prev,
         next: end,
     })
+}
+
+#[derive(Template)]
+#[template(path = "activities/tag_option_list.html")]
+struct AvailableTagsTemplate {
+    available_tags: Vec<AvailableTag>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AddTagForm {
+    #[serde(rename = "tags-search")]
+    name: String,
+}
+
+async fn add_tag(
+    State(state): State<crate::states::AppState>,
+    Extension(user_id): Extension<String>,
+    Form(new_tag): Form<AddTagForm>,
+) -> Result<impl IntoResponse, crate::errors::AppError> {
+    crate::activity::create_tag(&state.db, user_id.clone(), new_tag.name).await?;
+    let available_tags = crate::activity::available_tags(&state.db, user_id.clone()).await?;
+
+    Ok(AvailableTagsTemplate { available_tags })
 }
