@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM activities_tags \n            USING activities\n            WHERE activity_id = activities.id AND activities.id = $1 AND activities.user_id = $2\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1c828df47b092ae88c9083eb61e5d60ee0277d22eadb38a2f03e5864f51b53cb"
+}

@@ -161,7 +161,7 @@ async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<Avai
     let result = sqlx::query_as!(
         AvailableTag, 
         r#"
-            SELECT id, name FROM tags where user_id = $1
+            SELECT id, name FROM tags WHERE user_id = $1 ORDER BY name
         "#,
         user_id).fetch_all(db).await?;
 
@@ -191,7 +191,7 @@ async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uu
     Ok(())
 }
 
-async fn create_tag(db: &sqlx::Pool<Postgres>, user_id: String, name: String) -> anyhow::Result<()>{
+async fn create_tag(db: &PgPool, user_id: String, name: String) -> anyhow::Result<()>{
     if name.is_empty() {
         return Ok(());
     }
@@ -199,6 +199,21 @@ async fn create_tag(db: &sqlx::Pool<Postgres>, user_id: String, name: String) ->
     sqlx::query!(r#"
             INSERT INTO tags(user_id, name)
             VALUES ($1, $2)"#,user_id, name).execute(db).await?;
+    
+    Ok(())
+}
+
+async fn delete(db: &PgPool, user_id: String, id: sqlx::types::Uuid) -> anyhow::Result<()>{
+    sqlx::query!(r#"
+        DELETE FROM activities_tags 
+            USING activities
+            WHERE activity_id = activities.id AND activities.id = $1 AND activities.user_id = $2
+    "#, id, user_id).execute(db).await?;
+
+    sqlx::query!(r#"
+        DELETE FROM activities
+            WHERE user_id = $1 AND id = $2
+    "#, user_id, id).execute(db).await?;
     
     Ok(())
 }

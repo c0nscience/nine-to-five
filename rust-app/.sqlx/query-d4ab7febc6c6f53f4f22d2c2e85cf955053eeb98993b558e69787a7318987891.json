@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, name FROM tags where user_id = $1\n        ",
+  "query": "\n            SELECT id, name FROM tags WHERE user_id = $1 ORDER BY name\n        ",
   "describe": {
     "columns": [
       {
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "3015ba7407d700d35c9d6b0b52e64290ed8c471308bcbdaa6d63faa8f477145b"
+  "hash": "d4ab7febc6c6f53f4f22d2c2e85cf955053eeb98993b558e69787a7318987891"
 }

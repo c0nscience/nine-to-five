@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, Query, State},
     middleware,
     response::{IntoResponse, Redirect},
-    routing::{get, post},
+    routing::{delete, get, post},
     Extension, Router,
 };
 
@@ -20,7 +20,8 @@ pub fn router(state: crate::states::AppState) -> Router<AppState> {
         .route("/:date", get(list))
         .route("/start", get(start_form))
         .route("/start", post(start))
-        .route("/:id/stop", post(stop))
+        .route("/activity/:id", delete(delete_activity))
+        .route("/activity/:id/stop", post(stop))
         .route("/tags", post(add_tag))
         .route(
             "/",
@@ -194,7 +195,7 @@ async fn start(
 }
 
 #[derive(Debug, Deserialize)]
-struct StopQuery {
+struct DateQuery {
     date: String,
 }
 
@@ -202,86 +203,91 @@ async fn stop(
     Path(id): Path<String>,
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
-    Query(query): Query<StopQuery>,
+    Query(query): Query<DateQuery>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
     crate::activity::stop(&state.db, user_id.clone(), id.clone()).await?;
-
-    let start = query.date.parse::<NaiveDate>()?;
-    let Some(end) = start.succ_opt() else {
-        return Err(crate::errors::AppError::InternalError);
-    };
-    let Some(prev) = start.pred_opt() else {
-        return Err(crate::errors::AppError::InternalError);
-    };
-    let date = if Utc::now().date_naive() == start {
-        "Today".to_string()
-    } else {
-        start.format("%a, %b %d %Y").to_string()
-    };
-    let activities = crate::activity::in_range(&state.db, user_id.clone(), start, end).await?;
-    let activities = activities
-        .iter()
-        .filter(|a| a.end_time.is_some())
-        .map(|a| {
-            let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
-            let duration_iso = format!("{duration}");
-            let mintues = (duration.num_seconds() / 60) % 60;
-            let hours = (duration.num_seconds() / 60) / 60;
-            let duration = format!("{hours}h {mintues}m");
-            ActivityTemplData {
-                id: a.id,
-                name: a.name.clone(),
-                // start_time: a.start_time,
-                // end_time: a.end_time,
-                duration,
-                duration_iso,
-                tags: a
-                    .tags
-                    .iter()
-                    .map(|t| TagTemplData {
-                        // id: t.id,
-                        // user_id: t.user_id.clone(),
-                        name: t.name.clone(),
-                    })
-                    .collect(),
-            }
-        })
-        .collect();
-
-    let running = crate::activity::running(&state.db, user_id.clone())
-        .await?
-        .map(|a| {
-            let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
-            let duration_iso = format!("{duration}");
-            let mintues = (duration.num_seconds() / 60) % 60;
-            let hours = (duration.num_seconds() / 60) / 60;
-            let duration = format!("{hours}h {mintues}m");
-            ActivityTemplData {
-                id: a.id,
-                name: a.name.clone(),
-                // start_time: a.start_time,
-                // end_time: a.end_time,
-                duration,
-                duration_iso,
-                tags: a
-                    .tags
-                    .iter()
-                    .map(|t| TagTemplData {
-                        // id: t.id,
-                        // user_id: t.user_id.clone(),
-                        name: t.name.clone(),
-                    })
-                    .collect(),
-            }
-        });
-    Ok(ActivitiesTemplate {
-        activities,
-        running,
-        date,
-        curr: start,
-        prev,
-        next: end,
-    })
+    return list(
+        Path(query.date),
+        State(state.to_owned()),
+        Extension(user_id.to_owned()),
+    )
+    .await;
+    // let start = query.date.parse::<NaiveDate>()?;
+    // let Some(end) = start.succ_opt() else {
+    //     return Err(crate::errors::AppError::InternalError);
+    // };
+    // let Some(prev) = start.pred_opt() else {
+    //     return Err(crate::errors::AppError::InternalError);
+    // };
+    // let date = if Utc::now().date_naive() == start {
+    //     "Today".to_string()
+    // } else {
+    //     start.format("%a, %b %d %Y").to_string()
+    // };
+    // let activities = crate::activity::in_range(&state.db, user_id.clone(), start, end).await?;
+    // let activities = activities
+    //     .iter()
+    //     .filter(|a| a.end_time.is_some())
+    //     .map(|a| {
+    //         let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
+    //         let duration_iso = format!("{duration}");
+    //         let mintues = (duration.num_seconds() / 60) % 60;
+    //         let hours = (duration.num_seconds() / 60) / 60;
+    //         let duration = format!("{hours}h {mintues}m");
+    //         ActivityTemplData {
+    //             id: a.id,
+    //             name: a.name.clone(),
+    //             // start_time: a.start_time,
+    //             // end_time: a.end_time,
+    //             duration,
+    //             duration_iso,
+    //             tags: a
+    //                 .tags
+    //                 .iter()
+    //                 .map(|t| TagTemplData {
+    //                     // id: t.id,
+    //                     // user_id: t.user_id.clone(),
+    //                     name: t.name.clone(),
+    //                 })
+    //                 .collect(),
+    //         }
+    //     })
+    //     .collect();
+    //
+    // let running = crate::activity::running(&state.db, user_id.clone())
+    //     .await?
+    //     .map(|a| {
+    //         let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
+    //         let duration_iso = format!("{duration}");
+    //         let mintues = (duration.num_seconds() / 60) % 60;
+    //         let hours = (duration.num_seconds() / 60) / 60;
+    //         let duration = format!("{hours}h {mintues}m");
+    //         ActivityTemplData {
+    //             id: a.id,
+    //             name: a.name.clone(),
+    //             // start_time: a.start_time,
+    //             // end_time: a.end_time,
+    //             duration,
+    //             duration_iso,
+    //             tags: a
+    //                 .tags
+    //                 .iter()
+    //                 .map(|t| TagTemplData {
+    //                     // id: t.id,
+    //                     // user_id: t.user_id.clone(),
+    //                     name: t.name.clone(),
+    //                 })
+    //                 .collect(),
+    //         }
+    //     });
+    // Ok(ActivitiesTemplate {
+    //     activities,
+    //     running,
+    //     date,
+    //     curr: start,
+    //     prev,
+    //     next: end,
+    // })
 }
 
 #[derive(Template)]
@@ -305,4 +311,19 @@ async fn add_tag(
     let available_tags = crate::activity::available_tags(&state.db, user_id.clone()).await?;
 
     Ok(AvailableTagsTemplate { available_tags })
+}
+
+async fn delete_activity(
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<crate::states::AppState>,
+    Extension(user_id): Extension<String>,
+    Query(query): Query<DateQuery>,
+) -> Result<impl IntoResponse, crate::errors::AppError> {
+    crate::activity::delete(&state.db, user_id.to_owned(), id).await?;
+    return list(
+        Path(query.date),
+        State(state.to_owned()),
+        Extension(user_id.to_owned()),
+    )
+    .await;
 }
