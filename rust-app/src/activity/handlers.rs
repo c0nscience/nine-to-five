@@ -206,12 +206,12 @@ async fn stop(
     Query(query): Query<DateQuery>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
     crate::activity::stop(&state.db, user_id.clone(), id.clone()).await?;
-    return list(
+    list(
         Path(query.date),
-        State(state.to_owned()),
-        Extension(user_id.to_owned()),
+        State(state.clone()),
+        Extension(user_id.clone()),
     )
-    .await;
+    .await
     // let start = query.date.parse::<NaiveDate>()?;
     // let Some(end) = start.succ_opt() else {
     //     return Err(crate::errors::AppError::InternalError);
@@ -319,11 +319,11 @@ async fn delete_activity(
     Extension(user_id): Extension<String>,
     Query(query): Query<DateQuery>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
-    crate::activity::delete(&state.db, user_id.to_owned(), id).await?;
-    return list(
+    crate::activity::delete(&state.db, user_id.clone(), id).await?;
+    list(
         Path(query.date),
-        State(state.to_owned()),
-        Extension(user_id.to_owned()),
+        State(state.clone()),
+        Extension(user_id.clone()),
     )
-    .await;
+    .await
 }
