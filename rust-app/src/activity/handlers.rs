@@ -40,7 +40,7 @@ pub fn router(state: crate::states::AppState) -> Router<AppState> {
 struct ActivityTemplData {
     id: sqlx::types::Uuid,
     name: String,
-    // start_time: chrono::DateTime<chrono::Utc>,
+    start_time: i64,
     // end_time: Option<chrono::DateTime<chrono::Utc>>,
     duration: String,
     duration_iso: String,
@@ -89,10 +89,11 @@ async fn list(
             let mintues = (duration.num_seconds() / 60) % 60;
             let hours = (duration.num_seconds() / 60) / 60;
             let duration = format!("{hours}h {mintues}m");
+            let start_time = a.start_time.timestamp_millis();
             ActivityTemplData {
                 id: a.id,
                 name: a.name.clone(),
-                // start_time: a.start_time,
+                start_time,
                 // end_time: a.end_time,
                 duration,
                 duration_iso,
@@ -117,10 +118,11 @@ async fn list(
             let mintues = (duration.num_seconds() / 60) % 60;
             let hours = (duration.num_seconds() / 60) / 60;
             let duration = format!("{hours}h {mintues}m");
+            let start_time = a.start_time.timestamp_millis();
             ActivityTemplData {
                 id: a.id,
                 name: a.name.clone(),
-                // start_time: a.start_time,
+                start_time,
                 // end_time: a.end_time,
                 duration,
                 duration_iso,
@@ -212,82 +214,6 @@ async fn stop(
         Extension(user_id.clone()),
     )
     .await
-    // let start = query.date.parse::<NaiveDate>()?;
-    // let Some(end) = start.succ_opt() else {
-    //     return Err(crate::errors::AppError::InternalError);
-    // };
-    // let Some(prev) = start.pred_opt() else {
-    //     return Err(crate::errors::AppError::InternalError);
-    // };
-    // let date = if Utc::now().date_naive() == start {
-    //     "Today".to_string()
-    // } else {
-    //     start.format("%a, %b %d %Y").to_string()
-    // };
-    // let activities = crate::activity::in_range(&state.db, user_id.clone(), start, end).await?;
-    // let activities = activities
-    //     .iter()
-    //     .filter(|a| a.end_time.is_some())
-    //     .map(|a| {
-    //         let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
-    //         let duration_iso = format!("{duration}");
-    //         let mintues = (duration.num_seconds() / 60) % 60;
-    //         let hours = (duration.num_seconds() / 60) / 60;
-    //         let duration = format!("{hours}h {mintues}m");
-    //         ActivityTemplData {
-    //             id: a.id,
-    //             name: a.name.clone(),
-    //             // start_time: a.start_time,
-    //             // end_time: a.end_time,
-    //             duration,
-    //             duration_iso,
-    //             tags: a
-    //                 .tags
-    //                 .iter()
-    //                 .map(|t| TagTemplData {
-    //                     // id: t.id,
-    //                     // user_id: t.user_id.clone(),
-    //                     name: t.name.clone(),
-    //                 })
-    //                 .collect(),
-    //         }
-    //     })
-    //     .collect();
-    //
-    // let running = crate::activity::running(&state.db, user_id.clone())
-    //     .await?
-    //     .map(|a| {
-    //         let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
-    //         let duration_iso = format!("{duration}");
-    //         let mintues = (duration.num_seconds() / 60) % 60;
-    //         let hours = (duration.num_seconds() / 60) / 60;
-    //         let duration = format!("{hours}h {mintues}m");
-    //         ActivityTemplData {
-    //             id: a.id,
-    //             name: a.name.clone(),
-    //             // start_time: a.start_time,
-    //             // end_time: a.end_time,
-    //             duration,
-    //             duration_iso,
-    //             tags: a
-    //                 .tags
-    //                 .iter()
-    //                 .map(|t| TagTemplData {
-    //                     // id: t.id,
-    //                     // user_id: t.user_id.clone(),
-    //                     name: t.name.clone(),
-    //                 })
-    //                 .collect(),
-    //         }
-    //     });
-    // Ok(ActivitiesTemplate {
-    //     activities,
-    //     running,
-    //     date,
-    //     curr: start,
-    //     prev,
-    //     next: end,
-    // })
 }
 
 #[derive(Template)]
