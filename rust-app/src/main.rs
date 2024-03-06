@@ -93,10 +93,10 @@ async fn main() -> anyhow::Result<()> {
             "/app",
             nine_to_five::activity::handlers::router(state.clone()),
         )
-        .layer(SessionLayer::new(session_store))
-        .route("/", get(index))
         .route("/login", get(nine_to_five::auth::login))
         .route("/signup", get(nine_to_five::auth::signup))
+        .layer(SessionLayer::new(session_store))
+        .route("/", get(index))
         .route("/health", get(health))
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
