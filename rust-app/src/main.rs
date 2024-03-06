@@ -98,10 +98,10 @@ async fn main() -> anyhow::Result<()> {
         .layer(SessionLayer::new(session_store))
         .route("/", get(index))
         .route("/health", get(health))
-        .layer(CompressionLayer::new())
-        .layer(TraceLayer::new_for_http())
         .nest_service("/assets", ServeDir::new("assets"))
         .nest_service("/favicon.ico", ServeFile::new("assets/favicon.ico"))
+        .layer(CompressionLayer::new())
+        .layer(TraceLayer::new_for_http())
         .with_state(state.clone());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
