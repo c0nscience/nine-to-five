@@ -17,6 +17,7 @@ use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::{ServeDir, ServeFile};
+use tower_http::trace::TraceLayer;
 
 use tracing::{info, Level};
 
@@ -98,6 +99,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/signup", get(nine_to_five::auth::signup))
         .route("/health", get(health))
         .layer(CompressionLayer::new())
+        .layer(TraceLayer::new_for_http())
         .nest_service("/assets", ServeDir::new("assets"))
         .nest_service("/favicon.ico", ServeFile::new("assets/favicon.ico"))
         .with_state(state.clone());
