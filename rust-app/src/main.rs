@@ -17,15 +17,12 @@ use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::{ServeDir, ServeFile};
-use tower_http::trace::TraceLayer;
 
-use tracing::{info, Level};
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt()
-        .with_max_level(Level::DEBUG)
-        .init();
+    tracing_subscriber::fmt().init();
 
     let production = dotenvy::var("ENV").unwrap_or_else(|_| "dev".to_string());
     let app_url = dotenvy::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
@@ -101,7 +98,6 @@ async fn main() -> anyhow::Result<()> {
         .nest_service("/assets", ServeDir::new("assets"))
         .nest_service("/favicon.ico", ServeFile::new("assets/favicon.ico"))
         .layer(CompressionLayer::new())
-        .layer(TraceLayer::new_for_http())
         .with_state(state.clone());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
