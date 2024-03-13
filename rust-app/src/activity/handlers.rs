@@ -15,12 +15,17 @@ use crate::states::AppState;
 
 use super::{AvailableTag, Create};
 
+const FORM_DATE_TIME_FORMAT: &str = "%Y-%m-%dT%H:%M";
+
 pub fn router(state: crate::states::AppState) -> Router<AppState> {
     Router::new()
         .route("/:date", get(list))
         .route("/start", get(start_form))
         .route("/start", post(start))
-        .route("/activity/:id", delete(delete_activity))
+        .route(
+            "/activity/:id",
+            delete(delete_activity).get(edit_form).post(update_activity),
+        )
         .route("/activity/:id/stop", post(stop))
         .route("/tags", post(add_tag))
         .route(
@@ -252,4 +257,102 @@ async fn delete_activity(
         Extension(user_id.clone()),
     )
     .await
+}
+
+trait WithContains {
+    fn contains(arr: &[crate::activity::Tag], id: &sqlx::types::Uuid) -> bool;
+}
+
+#[derive(Template)]
+#[template(path = "activities/edit_form.html")]
+struct EditFormTemplate {
+    activity: EditFormData,
+    available_tags: Vec<crate::activity::AvailableTag>,
+    redirect_to: String,
+}
+
+impl WithContains for EditFormTemplate {
+    fn contains(arr: &[crate::activity::Tag], id: &sqlx::types::Uuid) -> bool {
+        arr.iter().any(|e| e.id == *id)
+    }
+}
+
+#[derive(Debug)]
+struct EditFormData {
+    id: sqlx::types::Uuid,
+    name: String,
+    start_time: String,
+    end_time: Option<String>,
+    tags: Vec<crate::activity::Tag>,
+}
+
+async fn edit_form(
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<crate::states::AppState>,
+    Extension(user_id): Extension<String>,
+    Query(query): Query<DateQuery>,
+) -> Result<impl IntoResponse, crate::errors::AppError> {
+    let Some(activity) = crate::activity::get(&state.db, user_id.clone(), id).await? else {
+        return Err(crate::errors::AppError::NotFound);
+    };
+    let available_tags = crate::activity::available_tags(&state.db, user_id).await?;
+    let start = activity.start_time.format(FORM_DATE_TIME_FORMAT);
+    let end = activity
+        .end_time
+        .map(|d| d.format(FORM_DATE_TIME_FORMAT).to_string());
+    let activity = EditFormData {
+        id: activity.id,
+        name: activity.name,
+        start_time: start.to_string(),
+        end_time: end,
+        tags: activity.tags,
+    };
+
+    Ok(EditFormTemplate {
+        activity,
+        available_tags,
+        redirect_to: query.date,
+    })
+}
+
+#[derive(Debug, Deserialize)]
+struct UpdateActivity {
+    name: String,
+    start_time: String,
+    end_time: Option<String>,
+
+    #[serde(default)]
+    tags: Vec<sqlx::types::Uuid>,
+}
+
+async fn update_activity(
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<crate::states::AppState>,
+    Extension(user_id): Extension<String>,
+    Query(query): Query<DateQuery>,
+    Form(updated_activity): Form<UpdateActivity>,
+) -> Result<Redirect, crate::errors::AppError> {
+    let start_time =
+        NaiveDateTime::parse_from_str(updated_activity.start_time.as_str(), FORM_DATE_TIME_FORMAT)?
+            .and_utc();
+    let end_time = updated_activity
+        .end_time
+        .and_then(|e| NaiveDateTime::parse_from_str(e.as_str(), FORM_DATE_TIME_FORMAT).ok())
+        .map(|d| d.and_utc());
+    crate::activity::update(
+        &state.db,
+        user_id.clone(),
+        crate::activity::UpdateActivity {
+            id,
+            name: updated_activity.name,
+            start_time,
+            end_time,
+        },
+    )
+    .await?;
+
+    crate::activity::delete_associate_tags(&state.db, user_id.clone(), id).await?;
+    crate::activity::associate_tags(&state.db, user_id.clone(), updated_activity.tags, id).await?;
+
+    Ok(Redirect::to(format!("/app/{}", query.date).as_str()))
 }

@@ -191,6 +191,15 @@ async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uu
     Ok(())
 }
 
+async fn delete_associate_tags(db: &PgPool,user_id: String, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
+    sqlx::query!(r#"
+        DELETE FROM activities_tags 
+            USING activities
+            WHERE activity_id = activities.id AND activities.id = $1 AND activities.user_id = $2
+    "#, activity_id, user_id).execute(db).await?;
+    Ok(())
+}
+
 async fn create_tag(db: &PgPool, user_id: String, name: String) -> anyhow::Result<()>{
     if name.is_empty() {
         return Ok(());
@@ -217,3 +226,54 @@ async fn delete(db: &PgPool, user_id: String, id: sqlx::types::Uuid) -> anyhow::
     
     Ok(())
 }
+
+#[derive(Debug)]
+pub struct Activity{
+    id: sqlx::types::Uuid,
+    name: String,
+    start_time: chrono::DateTime<chrono::Utc>,
+    end_time: Option<chrono::DateTime<chrono::Utc>>,
+    tags: Vec<Tag>,
+}
+
+async fn get(db: &PgPool, user_id: String, id: sqlx::types::Uuid) -> anyhow::Result<Option<Activity>>{
+    let result = sqlx::query_as!(
+        Activity,
+        r#"
+        SELECT 
+            activities.id, activities.name, activities.start_time, activities.end_time,
+            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<Tag>"
+        FROM activities
+        LEFT JOIN activities_tags
+            ON activities.id = activities_tags.activity_id
+        LEFT JOIN tags
+            ON activities_tags.tag_id = tags.id
+        WHERE activities.user_id = $1 AND activities.id = $2
+        GROUP BY activities.id
+        "#,
+        user_id,
+        id
+    )
+    .fetch_optional(db)
+    .await?;
+
+    Ok(result)
+}
+
+#[derive(Debug)]
+pub struct UpdateActivity{
+    id: sqlx::types::Uuid,
+    name: String,
+    start_time: chrono::DateTime<chrono::Utc>,
+    end_time: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+async fn update(db: &sqlx::Pool<Postgres>, user_id: String, updated_activity: UpdateActivity) -> anyhow::Result<()> {
+   sqlx::query!(r#"
+        UPDATE activities SET name = $1, start_time = $2, end_time = $3
+            WHERE user_id = $4 AND id = $5
+   "#, updated_activity.name, updated_activity.start_time, updated_activity.end_time, user_id, updated_activity.id).execute(db).await?;
+    Ok(())
+}
+
+

@@ -26,7 +26,7 @@
   <div class="mx-auto max-w-7xl h-screen sm:px-12">
     <div class="overflow-y-auto mx-auto max-w-lg min-h-full">
       {% if activities.len() > 0 || running.is_some() %}
-      <ul role="list" class="divide-y divide-white/5 mb-32">
+      <ul role="list" class="divide-y divide-white/5 mb-14 ">
         {% for activity in activities %}
         <li class="py-4 px-10 lg:px-0">
           <div class="flex items-center gap-x-3">
@@ -50,12 +50,9 @@
                 class="absolute right-0 z-10 mt-2 w-28 origin-bottom-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
                 role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                 <div class="py-2" role="none">
-                  <!-- <button hx-post="/app/activity/{{ activity.id }}/stop?date={{ curr }}" hx-select="main" -->
-                  <!--   hx-target="main" hx-swap="outerHTML" type="button" -->
-                  <!--   class="text-white w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900" -->
-                  <!--   role="menuitem" tabindex="-1" id="menu-item-0">Stop</button> -->
-                  <!-- <a href="#" class="text-white block px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900" -->
-                  <!--   role="menuitem" tabindex="-1" id="menu-item-1">Edit</a> -->
+                  <a href="/app/activity/{{ activity.id }}?date={{ curr }}"
+                    class="text-white block px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900" role="menuitem"
+                    tabindex="-1" id="menu-item-1">Edit</a>
                   <button hx-delete="/app/activity/{{ activity.id }}?date={{ curr }}" id="del-btn-{{ activity.id }}"
                     hx-select="main" hx-target="main" hx-swap="outerHTML" hx-trigger="confirmed" onClick="Swal.fire({
                        title: 'Confirm', 
@@ -112,69 +109,7 @@
       <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
         {% match running %}
         {% when Some with (running) %}
-        <div class="py-4 px-10 lg:px-0">
-          <div class="flex items-center gap-x-3">
-            <h3 class="flex-auto text-lg font-semibold leading-6 text-white">{{ running.name }}</h3>
-            <!-- well how can we run a timer and let it update the duration? -->
-            <time _="
-                      init repeat forever
-                        call format(@x-start-time) then put it into my.innerHTML
-                        wait 20s
-                      end
-                    " datetime="{{ running.duration_iso }}" x-start-time="{{ running.start_time }}"
-              class="flex-none text-sm text-gray-500">
-              {{ running.duration }}
-            </time>
-
-            <div class="relative inline-block text-left">
-              <button type="button"
-                class="flex items-center rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                aria-expanded="true" aria-haspopup="true" _="on click toggle .hidden on the next <div[role=menu]/>">
-                <span class="sr-only">Open options</span>
-                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path
-                    d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                </svg>
-              </button>
-
-              <div
-                class="absolute right-0 bottom-12 z-10 mt-2 w-28 origin-bottom-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
-                role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
-                <div class="py-2" role="none">
-                  <button hx-post="/app/activity/{{ running.id }}/stop?date={{ curr }}" hx-select="main"
-                    hx-target="main" hx-swap="outerHTML" type="button"
-                    class="text-white w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900"
-                    role="menuitem" tabindex="-1" id="menu-item-0">Stop</button>
-                  <!-- <a href="#" class="text-white block px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900" -->
-                  <!--   role="menuitem" tabindex="-1" id="menu-item-1">Edit</a> -->
-                  <button hx-delete="/app/activity/{{ running.id }}?date={{ curr }}" id="running-del-btn"
-                    hx-select="main" hx-target="main" hx-swap="outerHTML" hx-trigger="confirmed" onClick="Swal.fire({
-                       title: 'Confirm', 
-                       text: 'Do you really want to continue?', 
-                       icon: 'warning', 
-                       showCancelButton: true, 
-                       focusCancel: true,
-                     })
-                     .then(function(result){
-                       if(result.isConfirmed) {
-                         htmx.trigger('#running-del-btn', 'confirmed' );
-                       }
-                     })" class="text-white w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900"
-                    role="menuitem" tabindex="-1" id="menu-item-2">Delete</button>
-                </div>
-              </div>
-            </div>
-
-          </div>
-          <div class="mt-3 truncate text-sm text-gray-500">
-            {% for tag in running.tags %}
-            <span
-              class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20">
-              {{ tag.name }}
-            </span>
-            {% endfor %}
-          </div>
-        </div>
+        {% include "activities/running.html" %}
         {% when None %}
         <div class="flex items-center justify-center py-4 px-10 lg:px-0">
           <a href="/app/start"
@@ -199,7 +134,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
               </svg>
             </a>
-            <div class="text-gray-300 text-md font-semibold min-w-36 text-center">{{ date }}</div>
+            <a href="/app" class="text-gray-300 text-md font-semibold min-w-36 text-center">{{ date }}</a>
             <a href="/app/{{ next }}"
               class="rounded-md px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
               <svg fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-6 h-6 text-white">
