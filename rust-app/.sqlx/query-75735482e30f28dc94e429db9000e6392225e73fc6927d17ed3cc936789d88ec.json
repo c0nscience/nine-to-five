@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE activities SET name = $1, start_time = $2, end_time = $3\n            WHERE user_id = $4 AND id = $5\n   ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "75735482e30f28dc94e429db9000e6392225e73fc6927d17ed3cc936789d88ec"
+}

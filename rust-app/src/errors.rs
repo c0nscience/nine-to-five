@@ -7,6 +7,9 @@ pub enum AppError {
     #[error("unauthorized")]
     Unauthorized,
 
+    #[error("not found")]
+    NotFound,
+
     #[error("internal server error")]
     InternalError,
 
@@ -38,11 +41,12 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         use AppError::{
-            Anyhow, Chrono, HttpRequestError, InternalError, JwtError, OAuthError, Sqlx,
+            Anyhow, Chrono, HttpRequestError, InternalError, JwtError, NotFound, OAuthError, Sqlx,
             Unauthorized,
         };
 
         match self {
+            NotFound => (StatusCode::NOT_FOUND).into_response(),
             Unauthorized | JwtError(_) | OAuthError(_) => {
                 (StatusCode::UNAUTHORIZED).into_response()
             }
