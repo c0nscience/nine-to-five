@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Nine to Five{% endblock %}
+
+{% block head %}
+<link rel="manifest" href="/assets/manifest.json">
+<link href="/assets/css/output.css" rel="stylesheet">
+<script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
+<script src="https://unpkg.com/hyperscript.org@0.9.12/dist/_hyperscript.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="mx-auto max-w-lg h-screen px-12 grid items-center">
+    <form action="/app/activity/{{ activity.id }}?date={{ redirect_to }}" method="post">
+      <div class="border-b border-white/10 pb-12">
+        <div class="grid grid-cols-1 gap-x-6 gap-y-8">
+          <div class="">
+            <label for="name" class="block text-sm font-medium leading-6 text-white">Name</label>
+            <div class="mt-2">
+              <div
+                class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                <input type="text" name="name" id="name" autocomplete="off" value="{{ activity.name }}"
+                  class="flex-1 border-0 bg-transparent py-1.5 pl-1 text-white focus:ring-0 sm:text-sm sm:leading-6">
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-0">
+            <div class="">
+              <label for="start" class="block text-sm font-medium leading-6 text-white">Start</label>
+              <div class="mt-2">
+                <div
+                  class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                  <input type="datetime-local" name="start_time" id="start" autocomplete="off"
+                    value="{{ activity.start_time }}"
+                    class="flex-1 border-0 bg-transparent py-1.5 pl-1 text-white focus:ring-0 sm:text-sm sm:leading-6">
+                </div>
+              </div>
+            </div>
+            {% match activity.end_time %}
+            {% when Some with (end_time) %}
+            <div class="">
+              <label for="end" class="block text-sm font-medium leading-6 text-white">End</label>
+              <div class="mt-2">
+                <div
+                  class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                  <input type="datetime-local" name="end_time" id="end" autocomplete="off" value="{{ end_time }}"
+                    class="flex-1 border-0 bg-transparent py-1.5 pl-1 text-white focus:ring-0 sm:text-sm sm:leading-6">
+                </div>
+              </div>
+            </div>
+            {% when None %}
+            {% endmatch %}
+          </div>
+          <div class="">
+            <label for="tags" class="block text-sm font-medium leading-6 text-white">Tags</label>
+            <div class="relative mt-2 grid grid-cols-1 gap-2">
+              <div class="flex rounded-md">
+                <div class="relative w-full focus-within:z-10">
+                  <input _="
+                              on keyup
+                                if the event's key is 'Escape'
+                                  set my value to ''
+                                  trigger keyup
+                                else
+                                  show <option/> in #tags when its textContent contains my value
+                            " type="text" name="tags-search" id="tags-search"
+                    class="block w-full rounded-none bg-white/5 rounded-l-md border-0 py-1.5 text-white ring-1 ring-inset ring-white/10 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
+                    placeholder="Search or add tags">
+                </div>
+                <button _="
+                          on click toggle @disabled until htmx:afterOnLoad
+                            then set value of #tags-search to ''
+                        " hx-post="/app/tags" hx-include="[id='tags-search']" hx-target="#tags" type="button"
+                  class="relative bg-indigo-500 -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/10 hover:bg-indigo-400">
+                  Add
+                </button>
+              </div>
+              <select class="rounded-md w-full bg-white/5 ring-1 ring-inset ring-white/10 text-white border-0"
+                name="tags" id="tags" autocomplete="off" multiple>
+                {% include "tag_option_list_with_selection.html" %}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end gap-x-6">
+        <button type="button" onclick="history.back()"
+          class="text-sm font-semibold leading-6 text-white">Cancel</button>
+        <button type="submit"
+          class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">Save</button>
+      </div>
+    </form>
+
+  </div>
+</main>
+{% endblock %}
