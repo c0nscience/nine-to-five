@@ -238,7 +238,10 @@ async fn add_tag(
     Extension(user_id): Extension<String>,
     Form(new_tag): Form<AddTagForm>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
-    crate::activity::create_tag(&state.db, user_id.clone(), new_tag.name).await?;
+    let name = new_tag.name.trim();
+    if !crate::activity::tag_exists(&state.db, user_id.clone(), name.to_string()).await? {
+        crate::activity::create_tag(&state.db, user_id.clone(), name.to_string()).await?;
+    };
     let available_tags = crate::activity::available_tags(&state.db, user_id.clone()).await?;
 
     Ok(AvailableTagsTemplate { available_tags })
