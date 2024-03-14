@@ -276,4 +276,11 @@ async fn update(db: &sqlx::Pool<Postgres>, user_id: String, updated_activity: Up
     Ok(())
 }
 
+async fn tag_exists(db: &sqlx::Pool<Postgres>, user_id: String, name: String) -> anyhow::Result<bool> {
+    let exists = sqlx::query!(r#"
+        SELECT EXISTS(SELECT 1 FROM tags WHERE name = $2 AND user_id = $1)
+    "#, user_id, name).fetch_one(db).await?.exists.unwrap_or_default();
+    Ok(exists)
+}
+
 
