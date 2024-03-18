@@ -12,7 +12,6 @@ use chrono::{prelude::*, LocalResult};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
-use tracing::info;
 use urlencoding::decode;
 
 use crate::states::AppState;
@@ -161,9 +160,24 @@ async fn list(
 fn format_duration(start: DateTime<Utc>, end: Option<DateTime<Utc>>) -> (String, String) {
     let duration = end.unwrap_or_else(Utc::now) - start;
     let duration_iso = format!("{duration}");
-    let minutes = (duration.num_seconds() / 60) % 60;
-    let hours = (duration.num_seconds() / 60) / 60;
-    (format!("{hours}h {minutes}m"), duration_iso)
+    let is_negative = duration.num_seconds() < 0;
+    let seconds = duration.num_seconds().abs();
+    let minutes = (seconds / 60) % 60;
+    let hours = (seconds / 60) / 60;
+
+    let duration = if hours.abs() > 0 {
+        format!("{hours}h {minutes}m")
+    } else {
+        format!("{minutes}m")
+    };
+
+    let duration = if is_negative {
+        format!("-{duration}")
+    } else {
+        duration
+    };
+
+    (duration, duration_iso)
 }
 
 fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, crate::errors::AppError> {
@@ -499,7 +513,7 @@ mod tests {
         let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 5, 0).unwrap();
         let (duration, _) = format_duration(start, Some(end));
-        assert_eq!("0h 5m", duration);
+        assert_eq!("5m", duration);
     }
 
     #[test]
@@ -507,6 +521,22 @@ mod tests {
         let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 5, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
         let (duration, _) = format_duration(start, Some(end));
-        assert_eq!("0h -5m", duration);
+        assert_eq!("-5m", duration);
+    }
+
+    #[test]
+    fn test_format_duration_with_long_duration() {
+        let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2024, 3, 18, 11, 5, 0).unwrap();
+        let (duration, _) = format_duration(start, Some(end));
+        assert_eq!("1h 5m", duration);
+    }
+
+    #[test]
+    fn test_format_duration_with_negative_long_duration() {
+        let start = Utc.with_ymd_and_hms(2024, 3, 18, 11, 5, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
+        let (duration, _) = format_duration(start, Some(end));
+        assert_eq!("-1h 5m", duration);
     }
 }
