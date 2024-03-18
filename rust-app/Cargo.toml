@@ -5,6 +5,8 @@ edition = "2021"
 publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+doctest = false
 
 [dependencies]
 askama = { version = "0.12", features = ["with-axum"] }

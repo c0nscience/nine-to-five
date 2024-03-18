@@ -1,12 +1,12 @@
 use core::fmt;
 
-use anyhow::anyhow;
-use chrono::{prelude::*, LocalResult};
+
+use chrono::{prelude::*};
 use sqlx::prelude::*;
 use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
-use tracing::info;
+
 
 pub mod handlers;
 
@@ -123,13 +123,13 @@ pub async fn running(db: &PgPool, user_id: String) -> anyhow::Result<Option<Runn
 }
 
 #[allow(clippy::missing_panics_doc)]
-pub async fn stop(db: &PgPool, user_id: String, id: String) -> anyhow::Result<()> {
+pub async fn stop(db: &PgPool, user_id: String, id: String, end: DateTime<Utc>) -> anyhow::Result<()> {
     let id = sqlx::types::Uuid::parse_str(id.as_str())?;
     sqlx::query!(
         r#"
             UPDATE activities SET end_time = $1 WHERE activities.id = $2 AND activities.user_id = $3
         "#,
-        Utc::now(),
+        end,
         id,
         user_id)
         .execute(db).await?;
