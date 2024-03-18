@@ -13,9 +13,19 @@
 <script type="text/javascript">
   function format(timestamp) {
     const start = new Date(parseInt(timestamp));
-    const durr = Date.now() - start;
-    const min = Math.floor(((durr / 1000) / 60) % 60);
-    const hour = Math.floor(((durr / 1000) / 60) / 60);
+    let durr = Date.now() - start;
+    durr = Math.floor(durr / 1000);
+    const min = Math.floor((durr / 60) % 60);
+    let hour = (durr / 60) / 60;
+    if (hour < 0 && hour > -1) {
+      hour = Math.abs(0)
+    }
+    if (hour > 0) {
+      hour = Math.floor(hour);
+    } else {
+      hour = Math.ceil(hour)
+    }
+
     return `${hour}h ${min}m`;
   }
 </script>
