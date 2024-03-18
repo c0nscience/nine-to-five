@@ -7,9 +7,12 @@ use axum::{
     Extension, Router,
 };
 
-use axum_extra::extract::Form;
-use chrono::prelude::*;
+use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
+use chrono::{prelude::*, LocalResult};
+
+use chrono_tz::Tz;
 use serde::Deserialize;
+use urlencoding::decode;
 
 use crate::states::AppState;
 
@@ -71,20 +74,30 @@ async fn list(
     Path(date): Path<String>,
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
+    let timezone = parse_timezone(cookie)?;
+
     let start = date.parse::<NaiveDate>()?;
     let Some(end) = start.succ_opt() else {
         return Err(crate::errors::AppError::InternalError);
     };
+
     let Some(prev) = start.pred_opt() else {
         return Err(crate::errors::AppError::InternalError);
     };
-    let date = if Utc::now().date_naive() == start {
+
+    let now = Utc::now().with_timezone(&timezone).date_naive();
+    let date = if now == start {
         "Today".to_string()
     } else {
         start.format("%a, %b %d %Y").to_string()
     };
-    let activities = crate::activity::in_range(&state.db, user_id.clone(), start, end).await?;
+
+    let from = to_utc(start, timezone)?;
+    let to = to_utc(end, timezone)?;
+
+    let activities = crate::activity::in_range(&state.db, user_id.clone(), from, to).await?;
     let activities = activities
         .iter()
         .filter(|a| a.end_time.is_some())
@@ -142,6 +155,7 @@ async fn list(
                     .collect(),
             }
         });
+
     Ok(ActivitiesTemplate {
         activities,
         running,
@@ -150,6 +164,17 @@ async fn list(
         prev,
         next: end,
     })
+}
+
+fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, crate::errors::AppError> {
+    let Some(nd) = nd.and_hms_opt(0, 0, 0) else {
+        return Err(crate::errors::AppError::InternalError);
+    };
+    let LocalResult::Single(dt) = tz.from_local_datetime(&nd) else {
+        return Err(crate::errors::AppError::InternalError);
+    };
+
+    Ok(dt.to_utc())
 }
 
 #[derive(Template)]
@@ -179,12 +204,13 @@ async fn start(
     Extension(user_id): Extension<String>,
     Form(create_activity): Form<CreateActivity>,
 ) -> Result<Redirect, crate::errors::AppError> {
+    let start = Utc::now();
     let activity_id = crate::activity::create(
         &state.db,
         Create {
             user_id: user_id.clone(),
             name: create_activity.name,
-            start_time: Utc::now(),
+            start_time: start,
             end_time: None,
         },
     )
@@ -211,12 +237,14 @@ async fn stop(
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
     Query(query): Query<DateQuery>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
     crate::activity::stop(&state.db, user_id.clone(), id.clone()).await?;
     list(
         Path(query.date),
         State(state.clone()),
         Extension(user_id.clone()),
+        TypedHeader(cookie.clone()),
     )
     .await
 }
@@ -252,12 +280,14 @@ async fn delete_activity(
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
     Query(query): Query<DateQuery>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
     crate::activity::delete(&state.db, user_id.clone(), id).await?;
     list(
         Path(query.date),
         State(state.clone()),
         Extension(user_id.clone()),
+        TypedHeader(cookie.clone()),
     )
     .await
 }
@@ -293,16 +323,26 @@ async fn edit_form(
     Path(id): Path<sqlx::types::Uuid>,
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
     Query(query): Query<DateQuery>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
+    let timezone = parse_timezone(cookie)?;
+
     let Some(activity) = crate::activity::get(&state.db, user_id.clone(), id).await? else {
         return Err(crate::errors::AppError::NotFound);
     };
+
     let available_tags = crate::activity::available_tags(&state.db, user_id).await?;
-    let start = activity.start_time.format(FORM_DATE_TIME_FORMAT);
-    let end = activity
-        .end_time
-        .map(|d| d.format(FORM_DATE_TIME_FORMAT).to_string());
+
+    let start = activity
+        .start_time
+        .with_timezone(&timezone)
+        .format(FORM_DATE_TIME_FORMAT);
+    let end = activity.end_time.map(|d| {
+        d.with_timezone(&timezone)
+            .format(FORM_DATE_TIME_FORMAT)
+            .to_string()
+    });
     let activity = EditFormData {
         id: activity.id,
         name: activity.name,
@@ -332,16 +372,32 @@ async fn update_activity(
     Path(id): Path<sqlx::types::Uuid>,
     State(state): State<crate::states::AppState>,
     Extension(user_id): Extension<String>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
     Query(query): Query<DateQuery>,
     Form(updated_activity): Form<UpdateActivity>,
 ) -> Result<Redirect, crate::errors::AppError> {
-    let start_time =
+    let timezone = parse_timezone(cookie)?;
+
+    let LocalResult::Single(start_time) =
         NaiveDateTime::parse_from_str(updated_activity.start_time.as_str(), FORM_DATE_TIME_FORMAT)?
-            .and_utc();
+            .and_local_timezone(timezone)
+            .map(|d| d.to_utc())
+    else {
+        return Err(crate::errors::AppError::InternalError);
+    };
+
     let end_time = updated_activity
         .end_time
         .and_then(|e| NaiveDateTime::parse_from_str(e.as_str(), FORM_DATE_TIME_FORMAT).ok())
-        .map(|d| d.and_utc());
+        .map(|d| d.and_local_timezone(timezone))
+        .and_then(|d| {
+            let LocalResult::Single(d) = d else {
+                return None;
+            };
+            Some(d)
+        })
+        .map(|d| d.to_utc());
+
     crate::activity::update(
         &state.db,
         user_id.clone(),
@@ -358,4 +414,12 @@ async fn update_activity(
     crate::activity::associate_tags(&state.db, user_id.clone(), updated_activity.tags, id).await?;
 
     Ok(Redirect::to(format!("/app/{}", query.date).as_str()))
+}
+
+fn parse_timezone(cookie: Cookie) -> Result<Tz, crate::errors::AppError> {
+    cookie
+        .get("timezone")
+        .and_then(|d| decode(d).ok())
+        .and_then(|d| d.parse::<Tz>().ok())
+        .ok_or(crate::errors::AppError::InternalError)
 }

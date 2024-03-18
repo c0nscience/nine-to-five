@@ -6,6 +6,7 @@ use sqlx::prelude::*;
 use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
+use tracing::info;
 
 pub mod handlers;
 
@@ -35,12 +36,9 @@ impl fmt::Display for Tag {
 pub async fn in_range(
     db: &PgPool,
     user_id: String,
-    from: chrono::NaiveDate,
-    to: chrono::NaiveDate,
+    from: chrono::DateTime<Utc>,
+    to: chrono::DateTime<Utc>,
 ) -> Result<Vec<Range>, crate::errors::AppError> {
-    let from = to_utc(from)?;
-    let to = to_utc(to)?;
-
     let result = sqlx::query_as!(
         Range,
         r#"
@@ -66,19 +64,6 @@ pub async fn in_range(
     Ok(result)
 }
 
-fn to_utc(nd: chrono::NaiveDate) -> anyhow::Result<chrono::DateTime<Utc>> {
-    let Some(nd) = nd.and_hms_opt(0, 0, 0) else {
-        return Err(anyhow!("could not add midnight time to naive date"));
-    };
-
-    let LocalResult::Single(dt) = Utc.from_local_datetime(&nd) else {
-        return Err(anyhow!(
-            "could not create date time in utc from naive date time"
-        ));
-    };
-
-    Ok(dt)
-}
 
 pub struct Create {
     user_id: String,
