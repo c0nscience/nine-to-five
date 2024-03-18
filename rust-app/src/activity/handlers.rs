@@ -12,6 +12,7 @@ use chrono::{prelude::*, LocalResult};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
+use tracing::info;
 use urlencoding::decode;
 
 use crate::states::AppState;
@@ -48,8 +49,15 @@ pub fn router(state: crate::states::AppState) -> Router<AppState> {
 struct ActivityTemplData {
     id: sqlx::types::Uuid,
     name: String,
+    duration: String,
+    duration_iso: String,
+    tags: Vec<TagTemplData>,
+}
+
+struct RunningActivityTemplData {
+    id: sqlx::types::Uuid,
+    name: String,
     start_time: i64,
-    // end_time: Option<chrono::DateTime<chrono::Utc>>,
     duration: String,
     duration_iso: String,
     tags: Vec<TagTemplData>,
@@ -63,7 +71,7 @@ pub struct TagTemplData {
 #[template(path = "activities.html")]
 struct ActivitiesTemplate {
     activities: Vec<ActivityTemplData>,
-    running: Option<ActivityTemplData>,
+    running: Option<RunningActivityTemplData>,
     date: String,
     curr: chrono::NaiveDate,
     prev: chrono::NaiveDate,
@@ -102,25 +110,16 @@ async fn list(
         .iter()
         .filter(|a| a.end_time.is_some())
         .map(|a| {
-            let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
-            let duration_iso = format!("{duration}");
-            let mintues = (duration.num_seconds() / 60) % 60;
-            let hours = (duration.num_seconds() / 60) / 60;
-            let duration = format!("{hours}h {mintues}m");
-            let start_time = a.start_time.timestamp_millis();
+            let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
             ActivityTemplData {
                 id: a.id,
                 name: a.name.clone(),
-                start_time,
-                // end_time: a.end_time,
                 duration,
                 duration_iso,
                 tags: a
                     .tags
                     .iter()
                     .map(|t| TagTemplData {
-                        // id: t.id,
-                        // user_id: t.user_id.clone(),
                         name: t.name.clone(),
                     })
                     .collect(),
@@ -131,25 +130,18 @@ async fn list(
     let running = crate::activity::running(&state.db, user_id.clone())
         .await?
         .map(|a| {
-            let duration = a.end_time.unwrap_or_else(Utc::now) - a.start_time;
-            let duration_iso = format!("{duration}");
-            let mintues = (duration.num_seconds() / 60) % 60;
-            let hours = (duration.num_seconds() / 60) / 60;
-            let duration = format!("{hours}h {mintues}m");
+            let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
             let start_time = a.start_time.timestamp_millis();
-            ActivityTemplData {
+            RunningActivityTemplData {
                 id: a.id,
                 name: a.name.clone(),
                 start_time,
-                // end_time: a.end_time,
                 duration,
                 duration_iso,
                 tags: a
                     .tags
                     .iter()
                     .map(|t| TagTemplData {
-                        // id: t.id,
-                        // user_id: t.user_id.clone(),
                         name: t.name.clone(),
                     })
                     .collect(),
@@ -164,6 +156,14 @@ async fn list(
         prev,
         next: end,
     })
+}
+
+fn format_duration(start: DateTime<Utc>, end: Option<DateTime<Utc>>) -> (String, String) {
+    let duration = end.unwrap_or_else(Utc::now) - start;
+    let duration_iso = format!("{duration}");
+    let minutes = (duration.num_seconds() / 60) % 60;
+    let hours = (duration.num_seconds() / 60) / 60;
+    (format!("{hours}h {minutes}m"), duration_iso)
 }
 
 fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, crate::errors::AppError> {
@@ -210,7 +210,7 @@ async fn start(
         Create {
             user_id: user_id.clone(),
             name: create_activity.name,
-            start_time: start,
+            start_time: start.adjust().unwrap_or(start),
             end_time: None,
         },
     )
@@ -239,7 +239,15 @@ async fn stop(
     Query(query): Query<DateQuery>,
     TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
-    crate::activity::stop(&state.db, user_id.clone(), id.clone()).await?;
+    let now = Utc::now();
+    crate::activity::stop(
+        &state.db,
+        user_id.clone(),
+        id.clone(),
+        now.adjust().unwrap_or(now),
+    )
+    .await?;
+
     list(
         Path(query.date),
         State(state.clone()),
@@ -422,4 +430,83 @@ fn parse_timezone(cookie: Cookie) -> Result<Tz, crate::errors::AppError> {
         .and_then(|d| decode(d).ok())
         .and_then(|d| d.parse::<Tz>().ok())
         .ok_or(crate::errors::AppError::InternalError)
+}
+
+trait Adjustable
+where
+    Self: Sized,
+{
+    fn adjust(self) -> Option<Self>;
+}
+
+const ACCURACY: i32 = 5;
+impl Adjustable for DateTime<Utc> {
+    fn adjust(self) -> Option<Self> {
+        let minute = self.minute() as i32;
+        let remainder = minute % ACCURACY;
+        let adjust_by = if remainder < 3 {
+            -remainder
+        } else {
+            ACCURACY - remainder
+        };
+        self.with_minute((minute + adjust_by) as u32)
+            .and_then(|d| d.with_second(0))
+            .and_then(|d| d.with_nanosecond(0))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_adjust_to_accuracy_down() {
+        assert_eq!(
+            Utc.with_ymd_and_hms(2024, 3, 18, 10, 10, 0).unwrap(),
+            Utc.with_ymd_and_hms(2024, 3, 18, 10, 12, 0)
+                .unwrap()
+                .adjust()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn test_adjust_to_accuracy_up() {
+        assert_eq!(
+            Utc.with_ymd_and_hms(2024, 3, 18, 10, 15, 0).unwrap(),
+            Utc.with_ymd_and_hms(2024, 3, 18, 10, 13, 0)
+                .unwrap()
+                .adjust()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn test_adjust_truncates_to_minutes() {
+        assert_eq!(
+            Utc.with_ymd_and_hms(2024, 3, 18, 10, 15, 0).unwrap(),
+            Utc.with_ymd_and_hms(2024, 3, 18, 10, 13, 42)
+                .unwrap()
+                .with_nanosecond(133_723_948)
+                .unwrap()
+                .adjust()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn test_format_duration() {
+        let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 5, 0).unwrap();
+        let (duration, _) = format_duration(start, Some(end));
+        assert_eq!("0h 5m", duration);
+    }
+
+    #[test]
+    fn test_format_duration_with_negative_duration() {
+        let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 5, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
+        let (duration, _) = format_duration(start, Some(end));
+        assert_eq!("0h -5m", duration);
+    }
 }
