@@ -12,7 +12,12 @@ askama_axum = "0.4.0"
 
 axum = "0.7"
 axum-macros = "0.4.1"
-axum-extra = { version = "0.9.2", features = ["cookie-private", "form"] }
+axum-extra = { version = "0.9.2", features = [
+  "cookie",
+  "cookie-private",
+  "form",
+  "typed-header",
+] }
 axum_session = { version = "0.12.4", default-features = false, features = [
   "postgres-native",
   "key-store",
@@ -43,3 +48,5 @@ thiserror = "1.0.57"
 jsonwebtoken = "9.2.0"
 reqwest = { version = "0.11.24", features = ["json"] }
 percent-encoding = "2.3.1"
+chrono-tz = "0.8.6"
+urlencoding = "2.1.3"
