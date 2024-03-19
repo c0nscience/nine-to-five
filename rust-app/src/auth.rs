@@ -18,12 +18,13 @@ use oauth2::{
 };
 use serde::Deserialize;
 
+use crate::{errors, states};
 use tracing::error;
 
 #[allow(clippy::unused_async)]
 pub async fn login(
-    State(state): State<crate::states::AppState>,
-) -> Result<impl IntoResponse, crate::errors::AppError> {
+    State(state): State<states::AppState>,
+) -> Result<impl IntoResponse, errors::AppError> {
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (auth_url, csrf_token) = state
@@ -42,7 +43,7 @@ pub async fn login(
         );
     } else {
         error!("could not lock the verifiers store in login handler");
-        return Err(crate::errors::AppError::InternalError);
+        return Err(errors::AppError::InternalError);
     };
 
     Ok(Redirect::temporary(auth_url.as_str()))
@@ -50,8 +51,8 @@ pub async fn login(
 
 #[allow(clippy::unused_async)]
 pub async fn signup(
-    State(state): State<crate::states::AppState>,
-) -> Result<impl IntoResponse, crate::errors::AppError> {
+    State(state): State<states::AppState>,
+) -> Result<impl IntoResponse, errors::AppError> {
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (auth_url, csrf_token) = state
@@ -71,7 +72,7 @@ pub async fn signup(
         );
     } else {
         error!("could not lock the verifiers store in login handler");
-        return Err(crate::errors::AppError::InternalError);
+        return Err(errors::AppError::InternalError);
     };
 
     Ok(Redirect::temporary(auth_url.as_str()))
@@ -110,18 +111,18 @@ struct Claims {
 #[debug_handler]
 pub async fn callback(
     session: SessionPgSession,
-    State(state): State<crate::states::AppState>,
+    State(state): State<states::AppState>,
     Query(code_response): Query<CodeResponse>,
-) -> Result<impl IntoResponse, crate::errors::AppError> {
+) -> Result<impl IntoResponse, errors::AppError> {
     let pkce_verifier = match state.verifiers.lock() {
         Ok(mut verifiers) => {
             let verifier = verifiers.remove(&code_response.state);
             match verifier {
                 Some(v) => v,
-                None => return Err(crate::errors::AppError::Unauthorized),
+                None => return Err(errors::AppError::Unauthorized),
             }
         }
-        Err(_) => return Err(crate::errors::AppError::InternalError),
+        Err(_) => return Err(errors::AppError::InternalError),
     };
 
     let pkce_verifier = PkceCodeVerifier::new(pkce_verifier);
@@ -135,7 +136,7 @@ pub async fn callback(
 
     let header = decode_header(token.access_token().secret())?;
     let Some(kid) = header.kid else {
-        return Err(crate::errors::AppError::InternalError);
+        return Err(errors::AppError::InternalError);
     };
 
     if let Some(j) = state.jwk_set.find(&kid) {
@@ -145,7 +146,7 @@ pub async fn callback(
                     .context("could not create deconding key")?;
 
                 let Some(key_algorithm) = j.common.key_algorithm else {
-                    return Err(crate::errors::AppError::InternalError);
+                    return Err(errors::AppError::InternalError);
                 };
 
                 let mut validation = Validation::new(
@@ -178,10 +179,10 @@ pub async fn callback(
 
 pub async fn check_authorized(
     session: SessionPgSession,
-    State(_state): State<crate::states::AppState>,
+    State(_state): State<states::AppState>,
     mut req: Request,
     next: Next,
-) -> Result<Response, crate::errors::AppError> {
+) -> Result<Response, errors::AppError> {
     let Some(user_id) = session.get::<String>("id") else {
         return Ok(Redirect::to("/login").into_response());
     };
