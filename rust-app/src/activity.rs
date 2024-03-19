@@ -7,7 +7,7 @@ use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
 
-
+use crate::errors;
 pub mod handlers;
 
 pub struct Range {
@@ -38,7 +38,7 @@ pub async fn in_range(
     user_id: String,
     from: chrono::DateTime<Utc>,
     to: chrono::DateTime<Utc>,
-) -> Result<Vec<Range>, crate::errors::AppError> {
+) -> Result<Vec<Range>, errors::AppError> {
     let result = sqlx::query_as!(
         Range,
         r#"
