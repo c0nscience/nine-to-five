@@ -83,7 +83,7 @@ async fn list(
     Extension(user_id): Extension<String>,
     TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
-    let timezone = parse_timezone(cookie)?;
+    let timezone = parse_timezone(&cookie)?;
 
     let start = date.parse::<NaiveDate>()?;
     let Some(end) = start.succ_opt() else {
@@ -230,13 +230,7 @@ async fn start(
     )
     .await?;
 
-    crate::activity::associate_tags(
-        &state.db,
-        user_id.clone(),
-        create_activity.tags,
-        activity_id,
-    )
-    .await?;
+    crate::activity::associate_tags(&state.db, create_activity.tags, activity_id).await?;
 
     Ok(Redirect::to("/app"))
 }
@@ -348,7 +342,7 @@ async fn edit_form(
     TypedHeader(cookie): TypedHeader<Cookie>,
     Query(query): Query<DateQuery>,
 ) -> Result<impl IntoResponse, crate::errors::AppError> {
-    let timezone = parse_timezone(cookie)?;
+    let timezone = parse_timezone(&cookie)?;
 
     let Some(activity) = crate::activity::get(&state.db, user_id.clone(), id).await? else {
         return Err(crate::errors::AppError::NotFound);
@@ -398,7 +392,7 @@ async fn update_activity(
     Query(query): Query<DateQuery>,
     Form(updated_activity): Form<UpdateActivity>,
 ) -> Result<Redirect, crate::errors::AppError> {
-    let timezone = parse_timezone(cookie)?;
+    let timezone = parse_timezone(&cookie)?;
 
     let LocalResult::Single(start_time) =
         NaiveDateTime::parse_from_str(updated_activity.start_time.as_str(), FORM_DATE_TIME_FORMAT)?
@@ -423,7 +417,7 @@ async fn update_activity(
     crate::activity::update(
         &state.db,
         user_id.clone(),
-        crate::activity::UpdateActivity {
+        crate::activity::Update {
             id,
             name: updated_activity.name,
             start_time,
@@ -433,12 +427,12 @@ async fn update_activity(
     .await?;
 
     crate::activity::delete_associate_tags(&state.db, user_id.clone(), id).await?;
-    crate::activity::associate_tags(&state.db, user_id.clone(), updated_activity.tags, id).await?;
+    crate::activity::associate_tags(&state.db, updated_activity.tags, id).await?;
 
     Ok(Redirect::to(format!("/app/{}", query.date).as_str()))
 }
 
-fn parse_timezone(cookie: Cookie) -> Result<Tz, crate::errors::AppError> {
+fn parse_timezone(cookie: &Cookie) -> Result<Tz, crate::errors::AppError> {
     cookie
         .get("timezone")
         .and_then(|d| decode(d).ok())
@@ -456,14 +450,16 @@ where
 const ACCURACY: i32 = 5;
 impl Adjustable for DateTime<Utc> {
     fn adjust(self) -> Option<Self> {
-        let minute = self.minute() as i32;
-        let remainder = minute % ACCURACY;
-        let adjust_by = if remainder < 3 {
+        let minute: i32 = self.minute().try_into().ok()?;
+        let remainder: i32 = minute % ACCURACY;
+        let adjust_by: i32 = if remainder < 3 {
             -remainder
         } else {
             ACCURACY - remainder
         };
-        self.with_minute((minute + adjust_by) as u32)
+        let result = minute + adjust_by;
+        let result = result.try_into().ok()?;
+        self.with_minute(result)
             .and_then(|d| d.with_second(0))
             .and_then(|d| d.with_nanosecond(0))
     }
@@ -474,38 +470,41 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_adjust_to_accuracy_down() {
+    fn test_adjust_to_accuracy_down() -> Result<(), String> {
         assert_eq!(
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 10, 0).unwrap(),
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 12, 0)
                 .unwrap()
                 .adjust()
-                .unwrap()
+                .ok_or("could not adjust the time")?
         );
+        Ok(())
     }
 
     #[test]
-    fn test_adjust_to_accuracy_up() {
+    fn test_adjust_to_accuracy_up() -> Result<(), String> {
         assert_eq!(
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 15, 0).unwrap(),
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 13, 0)
                 .unwrap()
                 .adjust()
-                .unwrap()
+                .ok_or("could not adjust the time")?
         );
+        Ok(())
     }
 
     #[test]
-    fn test_adjust_truncates_to_minutes() {
+    fn test_adjust_truncates_to_minutes() -> Result<(), String> {
         assert_eq!(
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 15, 0).unwrap(),
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 13, 42)
                 .unwrap()
                 .with_nanosecond(133_723_948)
-                .unwrap()
+                .ok_or("could not add nano seconds to the time")?
                 .adjust()
-                .unwrap()
+                .ok_or("could not adjust the time")?
         );
+        Ok(())
     }
 
     #[test]
