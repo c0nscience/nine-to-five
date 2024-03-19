@@ -77,13 +77,28 @@
                 class="absolute right-0 z-10 mt-2 w-28 origin-bottom-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
                 role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                 <div class="py-2" role="none">
+                  <button hx-post="/app/activity/{{ activity.id }}/continue?date={{ curr }}"
+                    id="cont-btn-{{ activity.id }}" hx-select="main" hx-target="main" hx-swap="outerHTML"
+                    hx-trigger="confirmed" onClick="Swal.fire({
+                       title: 'Confirm', 
+                       text: 'Do you really want to continue?', 
+                       icon: 'warning', 
+                       showCancelButton: true, 
+                       focusCancel: true,
+                     })
+                     .then(function(result){
+                       if(result.isConfirmed) {
+                         htmx.trigger('#cont-btn-{{ activity.id }}', 'confirmed' );
+                       }
+                     })" class="text-white w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900"
+                    role="menuitem" tabindex="-1" id="menu-item-2">Continue</button>
                   <a href="/app/activity/{{ activity.id }}?date={{ curr }}"
                     class="text-white block px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900" role="menuitem"
                     tabindex="-1" id="menu-item-1">Edit</a>
                   <button hx-delete="/app/activity/{{ activity.id }}?date={{ curr }}" id="del-btn-{{ activity.id }}"
                     hx-select="main" hx-target="main" hx-swap="outerHTML" hx-trigger="confirmed" onClick="Swal.fire({
                        title: 'Confirm', 
-                       text: 'Do you really want to continue?', 
+                       text: 'Do you really want to delete?', 
                        icon: 'warning', 
                        showCancelButton: true, 
                        focusCancel: true,

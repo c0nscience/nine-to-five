@@ -12,6 +12,7 @@ use chrono::{prelude::*, LocalResult};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
+use tracing::info;
 use urlencoding::decode;
 
 use crate::{activity, auth, errors, states};
@@ -29,16 +30,10 @@ pub fn router(state: states::AppState) -> Router<states::AppState> {
             "/activity/:id",
             delete(delete_activity).get(edit_form).post(update_activity),
         )
+        .route("/activity/:id/continue", post(continue_activity))
         .route("/activity/:id/stop", post(stop))
         .route("/tags", post(add_tag))
-        .route(
-            "/",
-            get(|| async {
-                let now = Utc::now();
-                let now = now.format("%Y-%m-%d");
-                Redirect::temporary(format!("/app/{now}").as_str())
-            }),
-        )
+        .route("/", get(today))
         .route_layer(middleware::from_fn_with_state(
             state,
             auth::check_authorized,
@@ -191,6 +186,14 @@ fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, errors
     Ok(dt.to_utc())
 }
 
+async fn today(TypedHeader(cookie): TypedHeader<Cookie>) -> Result<Redirect, errors::AppError> {
+    let timezone = parse_timezone(&cookie)?;
+    let now = Utc::now().with_timezone(&timezone).date_naive();
+    let now = now.format("%Y-%m-%d");
+
+    Ok(Redirect::temporary(format!("/app/{now}").as_str()))
+}
+
 #[derive(Template)]
 #[template(path = "activities/start_form.html")]
 struct StartForm {
@@ -248,13 +251,8 @@ async fn stop(
     TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, errors::AppError> {
     let now = Utc::now();
-    activity::stop(
-        &state.db,
-        user_id.clone(),
-        id.clone(),
-        now.adjust().unwrap_or(now),
-    )
-    .await?;
+    let now = now.adjust().unwrap_or(now);
+    activity::stop(&state.db, user_id.clone(), id.clone(), now).await?;
 
     list(
         Path(query.date),
@@ -440,6 +438,56 @@ fn parse_timezone(cookie: &Cookie) -> Result<Tz, errors::AppError> {
         .ok_or(errors::AppError::InternalError)
 }
 
+async fn continue_activity(
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<states::AppState>,
+    Extension(user_id): Extension<String>,
+    Query(query): Query<DateQuery>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
+) -> Result<impl IntoResponse, errors::AppError> {
+    let now = Utc::now();
+    let now = now.adjust().unwrap_or(now);
+    if let Some(running) = activity::running(&state.db, user_id.clone()).await? {
+        activity::stop(&state.db, user_id.clone(), running.id.to_string(), now).await?;
+    }
+
+    let Some(activity_to_continue) = activity::get(&state.db, user_id.clone(), id).await? else {
+        return list(
+            Path(query.date),
+            State(state.clone()),
+            Extension(user_id.clone()),
+            TypedHeader(cookie.clone()),
+        )
+        .await;
+    };
+
+    let new_id = activity::create(
+        &state.db,
+        Create {
+            user_id: user_id.clone(),
+            name: activity_to_continue.name,
+            start_time: now,
+            end_time: None,
+        },
+    )
+    .await?;
+
+    activity::associate_tags(
+        &state.db,
+        activity_to_continue.tags.iter().map(|t| t.id).collect(),
+        new_id,
+    )
+    .await?;
+
+    list(
+        Path(query.date),
+        State(state.clone()),
+        Extension(user_id.clone()),
+        TypedHeader(cookie.clone()),
+    )
+    .await
+}
+
 trait Adjustable
 where
     Self: Sized,
@@ -459,6 +507,7 @@ impl Adjustable for DateTime<Utc> {
         };
         let result = minute + adjust_by;
         let result = result.try_into().ok()?;
+        info!("Adjusting time from {minute} to {result}");
         self.with_minute(result)
             .and_then(|d| d.with_second(0))
             .and_then(|d| d.with_nanosecond(0))
