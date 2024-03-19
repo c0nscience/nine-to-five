@@ -91,7 +91,13 @@
                          htmx.trigger('#cont-btn-{{ activity.id }}', 'confirmed' );
                        }
                      })" class="text-white w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900"
-                    role="menuitem" tabindex="-1" id="menu-item-2">Continue</button>
+                    role="menuitem" tabindex="-1" id="menu-item-2">
+                    {% if running.is_some() %}
+                    Switch
+                    {% else %}
+                    Continue
+                    {% endif %}
+                  </button>
                   <a href="/app/activity/{{ activity.id }}?date={{ curr }}"
                     class="text-white block px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900" role="menuitem"
                     tabindex="-1" id="menu-item-1">Edit</a>
