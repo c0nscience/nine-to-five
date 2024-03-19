@@ -33,7 +33,7 @@ impl fmt::Display for Tag {
 }
 
 #[allow(clippy::missing_panics_doc)]
-pub async fn in_range(
+async fn in_range(
     db: &PgPool,
     user_id: String,
     from: chrono::DateTime<Utc>,
