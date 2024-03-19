@@ -1,7 +1,7 @@
 use core::fmt;
 
 
-use chrono::{prelude::*};
+use chrono::prelude::*;
 use sqlx::prelude::*;
 use sqlx::PgPool;
 use sqlx::Postgres;
@@ -153,7 +153,7 @@ async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<Avai
     Ok(result)
 }
 
-async fn associate_tags(db: &PgPool, _user_id: String, tags: Vec<sqlx::types::Uuid>, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
+async fn associate_tags(db: &PgPool, tags: Vec<sqlx::types::Uuid>, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
     if tags.is_empty() {
         return Ok(());
     }
@@ -246,14 +246,14 @@ async fn get(db: &PgPool, user_id: String, id: sqlx::types::Uuid) -> anyhow::Res
 }
 
 #[derive(Debug)]
-pub struct UpdateActivity{
+pub struct Update{
     id: sqlx::types::Uuid,
     name: String,
     start_time: chrono::DateTime<chrono::Utc>,
     end_time: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-async fn update(db: &sqlx::Pool<Postgres>, user_id: String, updated_activity: UpdateActivity) -> anyhow::Result<()> {
+async fn update(db: &sqlx::Pool<Postgres>, user_id: String, updated_activity: Update) -> anyhow::Result<()> {
    sqlx::query!(r#"
         UPDATE activities SET name = $1, start_time = $2, end_time = $3
             WHERE user_id = $4 AND id = $5

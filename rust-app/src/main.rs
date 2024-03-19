@@ -1,3 +1,4 @@
+#![allow(clippy::missing_errors_doc)]
 use std::collections::HashMap;
 
 use std::sync::{Arc, Mutex};
@@ -12,13 +13,18 @@ use axum_session::{Key, SessionConfig, SessionLayer, SessionPgPool, SessionStore
 use chrono::Duration;
 use jsonwebtoken::jwk;
 
-use nine_to_five::states::OAuthConfig;
 use sqlx::postgres::PgPoolOptions;
+use states::OAuthConfig;
 use std::net::SocketAddr;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::{ServeDir, ServeFile};
 
 use tracing::info;
+
+pub mod activity;
+pub mod auth;
+pub mod errors;
+pub mod states;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -68,15 +74,14 @@ async fn main() -> anyhow::Result<()> {
         .await
         .context("could not create session store")?;
 
-    let oauth_client =
-        nine_to_five::auth::build_oauth_client(&app_url, client_id, client_secret, &idp_domain)
-            .context("could not create oauth client")?;
+    let oauth_client = auth::build_oauth_client(&app_url, client_id, client_secret, &idp_domain)
+        .context("could not create oauth client")?;
 
     let oauth_config = OAuthConfig {
         audience,
         idp_domain,
     };
-    let state = nine_to_five::states::AppState {
+    let state = states::AppState {
         db,
         jwk_set,
         oauth_client,
@@ -85,13 +90,10 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let app = Router::new()
-        .route("/callback", get(nine_to_five::auth::callback))
-        .nest(
-            "/app",
-            nine_to_five::activity::handlers::router(state.clone()),
-        )
-        .route("/login", get(nine_to_five::auth::login))
-        .route("/signup", get(nine_to_five::auth::signup))
+        .route("/callback", get(auth::callback))
+        .nest("/app", activity::handlers::router(state.clone()))
+        .route("/login", get(auth::login))
+        .route("/signup", get(auth::signup))
         .layer(SessionLayer::new(session_store))
         .route("/", get(index))
         .route("/health", get(health))
