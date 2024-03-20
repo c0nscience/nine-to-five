@@ -153,7 +153,7 @@ async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<Avai
     Ok(result)
 }
 
-async fn associate_tags(db: &PgPool, tags: Vec<sqlx::types::Uuid>, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
+async fn associate_tags(db: &PgPool, tags: &Vec<sqlx::types::Uuid>, activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
     if tags.is_empty() {
         return Ok(());
     }
