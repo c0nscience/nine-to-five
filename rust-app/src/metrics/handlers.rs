@@ -1,22 +1,22 @@
-use anyhow::anyhow;
+
 use askama::Template;
 use axum::{
-    extract::{Path, Query, State},
+    extract::{State},
     middleware,
-    response::{IntoResponse, Redirect},
-    routing::{delete, get, post},
+    response::{IntoResponse},
+    routing::{get},
     Extension, Router,
 };
 
-use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
-use chrono::{prelude::*, LocalResult};
 
-use chrono_tz::Tz;
-use serde::Deserialize;
+
+
+
+
 use tracing::info;
-use urlencoding::decode;
 
-use crate::{activity, auth, errors, states};
+
+use crate::{auth, errors, states};
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
@@ -32,7 +32,7 @@ pub fn router(state: states::AppState) -> Router<states::AppState> {
 struct MetricsTemplate {}
 
 async fn list(
-    State(state): State<states::AppState>,
+    State(_state): State<states::AppState>,
     Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
     info!("user_id: {}", user_id);
