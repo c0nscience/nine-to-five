@@ -209,8 +209,24 @@ async fn start_form(
 }
 
 #[derive(Debug, Deserialize)]
+enum StartOption {
+    #[serde(rename = "normal")]
+    Normal,
+
+    #[serde(rename = "with-start")]
+    WithStart,
+
+    #[serde(rename = "repeating")]
+    Repeating,
+}
+
+#[derive(Debug, Deserialize)]
 struct CreateActivity {
     name: String,
+
+    start_option: StartOption,
+
+    start_time: Option<String>,
 
     #[serde(default)]
     tags: Vec<sqlx::types::Uuid>,
@@ -219,9 +235,28 @@ struct CreateActivity {
 async fn start(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
     Form(create_activity): Form<CreateActivity>,
 ) -> Result<Redirect, errors::AppError> {
-    let start = Utc::now();
+    info!("Creating activity: {create_activity:?}");
+    let mut start = Utc::now();
+
+    match create_activity.start_option {
+        StartOption::WithStart => {
+            if let Some(start_time) = create_activity.start_time {
+                let LocalResult::Single(start_time) =
+                    NaiveDateTime::parse_from_str(start_time.as_str(), FORM_DATE_TIME_FORMAT)?
+                        .and_local_timezone(parse_timezone(&cookie)?)
+                        .map(|d| d.to_utc())
+                else {
+                    return Err(errors::AppError::InternalError);
+                };
+                start = start_time;
+            }
+        }
+        _ => {}
+    };
+
     let activity_id = activity::create(
         &state.db,
         Create {
