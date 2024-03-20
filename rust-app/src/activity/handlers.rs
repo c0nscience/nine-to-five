@@ -21,6 +21,7 @@ use crate::{activity, auth, errors, states};
 use super::{update, AvailableTag, Create};
 
 const FORM_DATE_TIME_FORMAT: &str = "%Y-%m-%dT%H:%M";
+const FORM_TIME_FORMAT: &str = "%H:%M";
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
@@ -244,14 +245,13 @@ async fn start(
     TypedHeader(cookie): TypedHeader<Cookie>,
     Form(create_activity): Form<CreateActivity>,
 ) -> Result<Redirect, errors::AppError> {
-    info!("Creating activity: {create_activity:?}");
     let timezone = parse_timezone(&cookie)?;
     let mut start = Utc::now();
 
     match create_activity.start_option {
         StartOption::WithStart => {
             if let Some(start_time) = create_activity.start_time {
-                let start_time = NaiveTime::parse_from_str(start_time.as_str(), "%H:%M")?;
+                let start_time = NaiveTime::parse_from_str(start_time.as_str(), FORM_TIME_FORMAT)?;
                 let start_time = parse_time(start_time, start.date_naive(), timezone)?;
                 start = start_time;
             }
@@ -261,13 +261,13 @@ async fn start(
                 .start_time
                 .as_ref()
                 .ok_or(anyhow!("start_time is required for repeating activities"))
-                .and_then(|s| Ok(NaiveTime::parse_from_str(s, "%H:%M")?))?;
+                .and_then(|s| Ok(NaiveTime::parse_from_str(s, FORM_TIME_FORMAT)?))?;
 
             let end_time = create_activity
                 .end_time
                 .as_ref()
                 .ok_or(anyhow!("end_time is required for repeating activities"))
-                .and_then(|s| Ok(NaiveTime::parse_from_str(s, "%H:%M")?))?;
+                .and_then(|s| Ok(NaiveTime::parse_from_str(s, FORM_TIME_FORMAT)?))?;
 
             let from = create_activity
                 .from
@@ -287,7 +287,6 @@ async fn start(
                 let start_time = parse_time(start_time, date, timezone)?;
                 let end_time = parse_time(end_time, date, timezone)?;
 
-                info!("Creating activity for {date} from {start_time} to {end_time}");
                 let activity = Create {
                     user_id: user_id.clone(),
                     name: create_activity.name.clone(),
