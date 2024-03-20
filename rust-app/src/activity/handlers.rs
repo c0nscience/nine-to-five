@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use askama::Template;
 use axum::{
     extract::{Path, Query, State},
@@ -229,7 +230,9 @@ struct CreateActivity {
     end_time: Option<String>,
     from: Option<String>,
     to: Option<String>,
-    days: Option<Vec<chrono::Weekday>>,
+
+    #[serde(default)]
+    days: Vec<chrono::Weekday>,
 
     #[serde(default)]
     tags: Vec<sqlx::types::Uuid>,
@@ -254,28 +257,33 @@ async fn start(
             }
         }
         StartOption::Repeating => {
-            let Some(start_time) = create_activity.start_time else {
-                return Err(errors::AppError::InternalError);
-            };
-            let start_time = NaiveTime::parse_from_str(start_time.as_str(), "%H:%M")?;
+            let start_time = create_activity
+                .start_time
+                .as_ref()
+                .ok_or(anyhow!("start_time is required for repeating activities"))
+                .and_then(|s| Ok(NaiveTime::parse_from_str(s, "%H:%M")?))?;
 
-            let Some(end_time) = create_activity.end_time else {
-                return Err(errors::AppError::InternalError);
-            };
-            let end_time = NaiveTime::parse_from_str(end_time.as_str(), "%H:%M")?;
+            let end_time = create_activity
+                .end_time
+                .as_ref()
+                .ok_or(anyhow!("end_time is required for repeating activities"))
+                .and_then(|s| Ok(NaiveTime::parse_from_str(s, "%H:%M")?))?;
 
-            let Some(from) = create_activity
+            let from = create_activity
                 .from
                 .and_then(|d| d.parse::<NaiveDate>().ok())
-            else {
-                return Err(errors::AppError::InternalError);
-            };
+                .ok_or(anyhow!("from is required for repeating activities"))?;
 
-            let Some(to) = create_activity.to.and_then(|d| d.parse::<NaiveDate>().ok()) else {
-                return Err(errors::AppError::InternalError);
-            };
+            let to = create_activity
+                .to
+                .and_then(|d| d.parse::<NaiveDate>().ok())
+                .ok_or(anyhow!("to is required for repeating activities"))?;
 
-            for date in from.iter_days().take_while(|d| d <= &to) {
+            for date in from
+                .iter_days()
+                .take_while(|d| d <= &to)
+                .filter(|d| create_activity.days.contains(&d.weekday()))
+            {
                 let start_time = parse_time(start_time, date, timezone)?;
                 let end_time = parse_time(end_time, date, timezone)?;
 
