@@ -225,8 +225,11 @@ struct CreateActivity {
     name: String,
 
     start_option: StartOption,
-
     start_time: Option<String>,
+    end_time: Option<String>,
+    from: Option<String>,
+    to: Option<String>,
+    days: Option<Vec<chrono::Weekday>>,
 
     #[serde(default)]
     tags: Vec<sqlx::types::Uuid>,
@@ -239,38 +242,89 @@ async fn start(
     Form(create_activity): Form<CreateActivity>,
 ) -> Result<Redirect, errors::AppError> {
     info!("Creating activity: {create_activity:?}");
+    let timezone = parse_timezone(&cookie)?;
     let mut start = Utc::now();
 
     match create_activity.start_option {
         StartOption::WithStart => {
             if let Some(start_time) = create_activity.start_time {
-                let LocalResult::Single(start_time) =
-                    NaiveDateTime::parse_from_str(start_time.as_str(), FORM_DATE_TIME_FORMAT)?
-                        .and_local_timezone(parse_timezone(&cookie)?)
-                        .map(|d| d.to_utc())
-                else {
-                    return Err(errors::AppError::InternalError);
-                };
+                let start_time = NaiveTime::parse_from_str(start_time.as_str(), "%H:%M")?;
+                let start_time = parse_time(start_time, start.date_naive(), timezone)?;
                 start = start_time;
+            }
+        }
+        StartOption::Repeating => {
+            let Some(start_time) = create_activity.start_time else {
+                return Err(errors::AppError::InternalError);
+            };
+            let start_time = NaiveTime::parse_from_str(start_time.as_str(), "%H:%M")?;
+
+            let Some(end_time) = create_activity.end_time else {
+                return Err(errors::AppError::InternalError);
+            };
+            let end_time = NaiveTime::parse_from_str(end_time.as_str(), "%H:%M")?;
+
+            let Some(from) = create_activity
+                .from
+                .and_then(|d| d.parse::<NaiveDate>().ok())
+            else {
+                return Err(errors::AppError::InternalError);
+            };
+
+            let Some(to) = create_activity.to.and_then(|d| d.parse::<NaiveDate>().ok()) else {
+                return Err(errors::AppError::InternalError);
+            };
+
+            for date in from.iter_days().take_while(|d| d <= &to) {
+                let start_time = parse_time(start_time, date, timezone)?;
+                let end_time = parse_time(end_time, date, timezone)?;
+
+                info!("Creating activity for {date} from {start_time} to {end_time}");
+                let activity = Create {
+                    user_id: user_id.clone(),
+                    name: create_activity.name.clone(),
+                    start_time,
+                    end_time: Some(end_time),
+                };
+                let activity_id = activity::create(&state.db, activity).await?;
+
+                activity::associate_tags(&state.db, &create_activity.tags, activity_id).await?;
             }
         }
         _ => {}
     };
 
-    let activity_id = activity::create(
-        &state.db,
-        Create {
-            user_id: user_id.clone(),
-            name: create_activity.name,
-            start_time: start.adjust().unwrap_or(start),
-            end_time: None,
-        },
-    )
-    .await?;
+    if !matches!(create_activity.start_option, StartOption::Repeating) {
+        let activity_id = activity::create(
+            &state.db,
+            Create {
+                user_id: user_id.clone(),
+                name: create_activity.name,
+                start_time: start.adjust().unwrap_or(start),
+                end_time: None,
+            },
+        )
+        .await?;
 
-    activity::associate_tags(&state.db, create_activity.tags, activity_id).await?;
+        activity::associate_tags(&state.db, &create_activity.tags, activity_id).await?;
+    }
 
     Ok(Redirect::to("/app"))
+}
+
+fn parse_time(
+    nt: NaiveTime,
+    nd: NaiveDate,
+    timezone: Tz,
+) -> Result<DateTime<Utc>, errors::AppError> {
+    let LocalResult::Single(nd) = nd
+        .and_time(nt)
+        .and_local_timezone(timezone)
+        .map(|d| d.to_utc())
+    else {
+        return Err(errors::AppError::InternalError);
+    };
+    Ok(nd)
 }
 
 #[derive(Debug, Deserialize)]
@@ -460,7 +514,7 @@ async fn update_activity(
     .await?;
 
     activity::delete_associate_tags(&state.db, user_id.clone(), id).await?;
-    activity::associate_tags(&state.db, updated_activity.tags, id).await?;
+    activity::associate_tags(&state.db, &updated_activity.tags, id).await?;
 
     Ok(Redirect::to(format!("/app/{}", query.date).as_str()))
 }
@@ -509,7 +563,7 @@ async fn continue_activity(
 
     activity::associate_tags(
         &state.db,
-        activity_to_continue.tags.iter().map(|t| t.id).collect(),
+        &activity_to_continue.tags.iter().map(|t| t.id).collect(),
         new_id,
     )
     .await?;
