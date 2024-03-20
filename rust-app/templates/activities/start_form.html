@@ -56,8 +56,28 @@
               </select>
             </div>
           </div>
+          <!--
 
-          <div>
+-->
+          <div _="
+              on change from <input[type=radio][name=start_option]/>
+                if the event's target's value is 'normal'
+                  hide #time-wrapper
+                  hide #range-wrapper
+                  hide #weekdays-wrapper
+                else if the event's target's value is 'with-start'
+                  show #time-wrapper
+                  show #start-field
+                  hide #end-field
+                  hide #range-wrapper
+                  hide #weekdays-wrapper
+                else if the event's target's value is 'repeating'
+                  show #time-wrapper
+                  show #start-field
+                  show #end-field
+                  show #range-wrapper
+                  show #weekdays-wrapper
+            ">
             <label class="text-base font-semibold text-white">Start options</label>
             <fieldset class="mt-4">
               <legend class="sr-only">Additional starting method</legend>
@@ -65,21 +85,21 @@
                 <div class="flex items-center">
                   <input id="normal" value="normal" name="start_option" type="radio" checked
                     class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600">
-                  <label for="email" class="ml-3 block text-sm font-medium leading-6 text-white">
+                  <label for="normal" class="ml-3 block text-sm font-medium leading-6 text-white">
                     normal
                   </label>
                 </div>
                 <div class="flex items-center">
                   <input id="with-start" value="with-start" name="start_option" type="radio"
                     class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600">
-                  <label for="email" class="ml-3 block text-sm font-medium leading-6 text-white">
+                  <label for="with-start" class="ml-3 block text-sm font-medium leading-6 text-white">
                     with custom start
                   </label>
                 </div>
                 <div class="flex items-center">
                   <input id="repeating" value="repeating" name="start_option" type="radio"
                     class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600">
-                  <label for="sms" class="ml-3 block text-sm font-medium leading-6 text-white">
+                  <label for="repeating" class="ml-3 block text-sm font-medium leading-6 text-white">
                     repeating
                   </label>
                 </div>
@@ -87,8 +107,8 @@
             </fieldset>
           </div>
 
-          <div class="grid grid-rows-1 grid-flow-col gap-4">
-            <div class="">
+          <div id="time-wrapper" class="grid grid-rows-1 grid-flow-col gap-4" style="display: none;">
+            <div id="start-field">
               <label for="start" class="block text-sm font-medium leading-6 text-white">Start</label>
               <div class="mt-2">
                 <div
@@ -99,7 +119,7 @@
               </div>
             </div>
 
-            <div class="">
+            <div id="end-field">
               <label for="end" class="block text-sm font-medium leading-6 text-white">End</label>
               <div class="mt-2">
                 <div
@@ -111,7 +131,7 @@
             </div>
           </div>
 
-          <div class="grid grid-rows-1 grid-flow-col gap-4">
+          <div id="range-wrapper" class="grid grid-rows-1 grid-flow-col gap-4" style="display: none;">
             <div class="">
               <label for="end" class="block text-sm font-medium leading-6 text-white">From</label>
               <div class="mt-2">
@@ -135,7 +155,7 @@
             </div>
           </div>
 
-          <div>
+          <div id="weekdays-wrapper" style="display: none;">
             <label class="text-base font-semibold text-white">Weekdays</label>
             <fieldset>
               <div class="mt-2 grid grid-cols-7">
