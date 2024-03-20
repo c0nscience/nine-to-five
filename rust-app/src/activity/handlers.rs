@@ -80,7 +80,7 @@ async fn list(
     Extension(user_id): Extension<String>,
     TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let timezone = parse_timezone(&cookie)?;
+    let timezone = parse_timezone(&cookie);
 
     let start = date.parse::<NaiveDate>()?;
     let Some(end) = start.succ_opt() else {
@@ -189,7 +189,7 @@ fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, errors
 }
 
 async fn today(TypedHeader(cookie): TypedHeader<Cookie>) -> Result<Redirect, errors::AppError> {
-    let timezone = parse_timezone(&cookie)?;
+    let timezone = parse_timezone(&cookie);
     let now = Utc::now().with_timezone(&timezone).date_naive();
     let now = now.format("%Y-%m-%d");
 
@@ -245,7 +245,7 @@ async fn start(
     TypedHeader(cookie): TypedHeader<Cookie>,
     Form(create_activity): Form<CreateActivity>,
 ) -> Result<Redirect, errors::AppError> {
-    let timezone = parse_timezone(&cookie)?;
+    let timezone = parse_timezone(&cookie);
     let mut start = Utc::now();
 
     match create_activity.start_option {
@@ -260,24 +260,24 @@ async fn start(
             let start_time = create_activity
                 .start_time
                 .as_ref()
-                .ok_or(anyhow!("start_time is required for repeating activities"))
+                .ok_or_else(|| anyhow!("start_time is required for repeating activities"))
                 .and_then(|s| Ok(NaiveTime::parse_from_str(s, FORM_TIME_FORMAT)?))?;
 
             let end_time = create_activity
                 .end_time
                 .as_ref()
-                .ok_or(anyhow!("end_time is required for repeating activities"))
+                .ok_or_else(|| anyhow!("end_time is required for repeating activities"))
                 .and_then(|s| Ok(NaiveTime::parse_from_str(s, FORM_TIME_FORMAT)?))?;
 
             let from = create_activity
                 .from
                 .and_then(|d| d.parse::<NaiveDate>().ok())
-                .ok_or(anyhow!("from is required for repeating activities"))?;
+                .ok_or_else(|| anyhow!("from is required for repeating activities"))?;
 
             let to = create_activity
                 .to
                 .and_then(|d| d.parse::<NaiveDate>().ok())
-                .ok_or(anyhow!("to is required for repeating activities"))?;
+                .ok_or_else(|| anyhow!("to is required for repeating activities"))?;
 
             for date in from
                 .iter_days()
@@ -298,7 +298,7 @@ async fn start(
                 activity::associate_tags(&state.db, &create_activity.tags, activity_id).await?;
             }
         }
-        _ => {}
+        StartOption::Normal => {}
     };
 
     if !matches!(create_activity.start_option, StartOption::Repeating) {
@@ -436,7 +436,7 @@ async fn edit_form(
     TypedHeader(cookie): TypedHeader<Cookie>,
     Query(query): Query<DateQuery>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let timezone = parse_timezone(&cookie)?;
+    let timezone = parse_timezone(&cookie);
 
     let Some(activity) = activity::get(&state.db, user_id.clone(), id).await? else {
         return Err(errors::AppError::NotFound);
@@ -486,7 +486,7 @@ async fn update_activity(
     Query(query): Query<DateQuery>,
     Form(updated_activity): Form<UpdateActivity>,
 ) -> Result<Redirect, errors::AppError> {
-    let timezone = parse_timezone(&cookie)?;
+    let timezone = parse_timezone(&cookie);
 
     let LocalResult::Single(start_time) =
         NaiveDateTime::parse_from_str(updated_activity.start_time.as_str(), FORM_DATE_TIME_FORMAT)?
@@ -526,12 +526,12 @@ async fn update_activity(
     Ok(Redirect::to(format!("/app/{}", query.date).as_str()))
 }
 
-fn parse_timezone(cookie: &Cookie) -> Result<Tz, errors::AppError> {
+fn parse_timezone(cookie: &Cookie) -> Tz {
     cookie
         .get("timezone")
         .and_then(|d| decode(d).ok())
         .and_then(|d| d.parse::<Tz>().ok())
-        .ok_or(errors::AppError::InternalError)
+        .unwrap_or(Tz::Europe__Berlin)
 }
 
 async fn continue_activity(
@@ -570,7 +570,11 @@ async fn continue_activity(
 
     activity::associate_tags(
         &state.db,
-        &activity_to_continue.tags.iter().map(|t| t.id).collect(),
+        &activity_to_continue
+            .tags
+            .iter()
+            .map(|t| t.id)
+            .collect::<Vec<sqlx::types::Uuid>>(),
         new_id,
     )
     .await?;
