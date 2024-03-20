@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Nine to Five{% endblock %}
+
+{% block head %}
+<link rel="manifest" href="/assets/manifest.json">
+<link href="/assets/css/output.css" rel="stylesheet">
+<script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
+<script src="https://unpkg.com/hyperscript.org@0.9.12/dist/_hyperscript.min.js"></script>
+<script src="https://unpkg.com/sweetalert2@11.10.6/dist/sweetalert2.all.min.js"></script>
+<script src="https://unpkg.com/@floating-ui/core@1.6.0/dist/floating-ui.core.umd.min.js"></script>
+<script src="https://unpkg.com/@floating-ui/dom@1.6.3/dist/floating-ui.dom.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<main>
+  <div class="mx-auto max-w-lg">
+    <div class="bg-gray-900 py-10">
+      <div class="px-4 sm:px-6 lg:px-8">
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-base font-semibold leading-6 text-white">Metrics</h1>
+            <p class="mt-2 text-sm text-gray-300">
+              Here you can manage your metrics.
+            </p>
+          </div>
+          <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <button type="button"
+              class="block rounded-md bg-indigo-500 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+              Add Metric
+            </button>
+          </div>
+        </div>
+        <div class="mt-8 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <table class="min-w-full divide-y divide-gray-700">
+                <thead>
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0">Name
+                    </th>
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+                      <span class="sr-only">Edit</span>
+                    </th>
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+                      <span class="sr-only">Delete</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
+                      ACME Corp 30h
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
+                      ACME Corp 35h
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
+                      Tinkering
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
+                      Game Dev
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
+        <div class="flex h-12 mx-auto max-w-lg items-start justify-between px-2">
+          <button class="rounded-md px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock %}

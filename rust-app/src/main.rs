@@ -24,6 +24,7 @@ use tracing::info;
 pub mod activity;
 pub mod auth;
 pub mod errors;
+pub mod metrics;
 pub mod states;
 
 #[tokio::main]
@@ -92,6 +93,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/callback", get(auth::callback))
         .nest("/app", activity::handlers::router(state.clone()))
+        .nest("/app/metrics", metrics::handlers::router(state.clone()))
         .route("/login", get(auth::login))
         .route("/signup", get(auth::signup))
         .layer(SessionLayer::new(session_store))
