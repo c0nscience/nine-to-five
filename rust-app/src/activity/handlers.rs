@@ -18,7 +18,10 @@ use urlencoding::decode;
 
 use crate::{activity, auth, errors, states};
 
-use super::{update, AvailableTag, Create};
+use super::{
+    associate_tags, available_tags, create, create_tag, delete_associate_tags, in_range, running,
+    tag_exists, update, AvailableTag, Create, Tag, Update,
+};
 
 const FORM_DATE_TIME_FORMAT: &str = "%Y-%m-%dT%H:%M";
 const FORM_TIME_FORMAT: &str = "%H:%M";
@@ -26,8 +29,7 @@ const FORM_TIME_FORMAT: &str = "%H:%M";
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
         .route("/:date", get(list))
-        .route("/start", get(start_form))
-        .route("/start", post(start))
+        .route("/start", get(start_form).post(start))
         .route(
             "/activity/:id",
             delete(delete_activity).get(edit_form).post(update_activity),
@@ -101,7 +103,7 @@ async fn list(
     let from = to_utc(start, timezone)?;
     let to = to_utc(end, timezone)?;
 
-    let activities = activity::in_range(&state.db, user_id.clone(), from, to).await?;
+    let activities = in_range(&state.db, user_id.clone(), from, to).await?;
     let activities = activities
         .iter()
         .filter(|a| a.end_time.is_some())
@@ -123,26 +125,24 @@ async fn list(
         })
         .collect();
 
-    let running = activity::running(&state.db, user_id.clone())
-        .await?
-        .map(|a| {
-            let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
-            let start_time = a.start_time.timestamp_millis();
-            RunningActivityTemplData {
-                id: a.id,
-                name: a.name.clone(),
-                start_time,
-                duration,
-                duration_iso,
-                tags: a
-                    .tags
-                    .iter()
-                    .map(|t| TagTemplData {
-                        name: t.name.clone(),
-                    })
-                    .collect(),
-            }
-        });
+    let running = running(&state.db, user_id.clone()).await?.map(|a| {
+        let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
+        let start_time = a.start_time.timestamp_millis();
+        RunningActivityTemplData {
+            id: a.id,
+            name: a.name.clone(),
+            start_time,
+            duration,
+            duration_iso,
+            tags: a
+                .tags
+                .iter()
+                .map(|t| TagTemplData {
+                    name: t.name.clone(),
+                })
+                .collect(),
+        }
+    });
 
     Ok(ActivitiesTemplate {
         activities,
@@ -206,7 +206,7 @@ async fn start_form(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let available_tags = activity::available_tags(&state.db, user_id).await?;
+    let available_tags = available_tags(&state.db, user_id).await?;
     Ok(StartForm { available_tags })
 }
 
@@ -293,16 +293,16 @@ async fn start(
                     start_time,
                     end_time: Some(end_time),
                 };
-                let activity_id = activity::create(&state.db, activity).await?;
+                let activity_id = create(&state.db, activity).await?;
 
-                activity::associate_tags(&state.db, &create_activity.tags, activity_id).await?;
+                associate_tags(&state.db, &create_activity.tags, activity_id).await?;
             }
         }
         StartOption::Normal => {}
     };
 
     if !matches!(create_activity.start_option, StartOption::Repeating) {
-        let activity_id = activity::create(
+        let activity_id = create(
             &state.db,
             Create {
                 user_id: user_id.clone(),
@@ -313,7 +313,7 @@ async fn start(
         )
         .await?;
 
-        activity::associate_tags(&state.db, &create_activity.tags, activity_id).await?;
+        associate_tags(&state.db, &create_activity.tags, activity_id).await?;
     }
 
     Ok(Redirect::to("/app"))
@@ -377,10 +377,10 @@ async fn add_tag(
     Form(new_tag): Form<AddTagForm>,
 ) -> Result<impl IntoResponse, errors::AppError> {
     let name = new_tag.name.trim();
-    if !activity::tag_exists(&state.db, user_id.clone(), name.to_string()).await? {
-        activity::create_tag(&state.db, user_id.clone(), name.to_string()).await?;
+    if !tag_exists(&state.db, user_id.clone(), name.to_string()).await? {
+        create_tag(&state.db, user_id.clone(), name.to_string()).await?;
     };
-    let available_tags = activity::available_tags(&state.db, user_id.clone()).await?;
+    let available_tags = available_tags(&state.db, user_id.clone()).await?;
 
     Ok(AvailableTagsTemplate { available_tags })
 }
@@ -403,19 +403,19 @@ async fn delete_activity(
 }
 
 trait WithContains {
-    fn contains(arr: &[activity::Tag], id: &sqlx::types::Uuid) -> bool;
+    fn contains(arr: &[Tag], id: &sqlx::types::Uuid) -> bool;
 }
 
 #[derive(Template)]
 #[template(path = "activities/edit_form.html")]
 struct EditFormTemplate {
     activity: EditFormData,
-    available_tags: Vec<activity::AvailableTag>,
+    available_tags: Vec<AvailableTag>,
     redirect_to: String,
 }
 
 impl WithContains for EditFormTemplate {
-    fn contains(arr: &[activity::Tag], id: &sqlx::types::Uuid) -> bool {
+    fn contains(arr: &[Tag], id: &sqlx::types::Uuid) -> bool {
         arr.iter().any(|e| e.id == *id)
     }
 }
@@ -426,7 +426,7 @@ struct EditFormData {
     name: String,
     start_time: String,
     end_time: Option<String>,
-    tags: Vec<activity::Tag>,
+    tags: Vec<Tag>,
 }
 
 async fn edit_form(
@@ -442,7 +442,7 @@ async fn edit_form(
         return Err(errors::AppError::NotFound);
     };
 
-    let available_tags = activity::available_tags(&state.db, user_id).await?;
+    let available_tags = available_tags(&state.db, user_id).await?;
 
     let start = activity
         .start_time
@@ -511,7 +511,7 @@ async fn update_activity(
     update(
         &state.db,
         user_id.clone(),
-        activity::Update {
+        Update {
             id,
             name: updated_activity.name,
             start_time,
@@ -520,8 +520,8 @@ async fn update_activity(
     )
     .await?;
 
-    activity::delete_associate_tags(&state.db, user_id.clone(), id).await?;
-    activity::associate_tags(&state.db, &updated_activity.tags, id).await?;
+    delete_associate_tags(&state.db, user_id.clone(), id).await?;
+    associate_tags(&state.db, &updated_activity.tags, id).await?;
 
     Ok(Redirect::to(format!("/app/{}", query.date).as_str()))
 }
@@ -543,7 +543,7 @@ async fn continue_activity(
 ) -> Result<impl IntoResponse, errors::AppError> {
     let now = Utc::now();
     let now = now.adjust().unwrap_or(now);
-    if let Some(running) = activity::running(&state.db, user_id.clone()).await? {
+    if let Some(running) = running(&state.db, user_id.clone()).await? {
         activity::stop(&state.db, user_id.clone(), running.id.to_string(), now).await?;
     }
 
@@ -557,7 +557,7 @@ async fn continue_activity(
         .await;
     };
 
-    let new_id = activity::create(
+    let new_id = create(
         &state.db,
         Create {
             user_id: user_id.clone(),
@@ -568,7 +568,7 @@ async fn continue_activity(
     )
     .await?;
 
-    activity::associate_tags(
+    associate_tags(
         &state.db,
         &activity_to_continue
             .tags

@@ -155,6 +155,14 @@
       {% endif %}
 
       <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
+        <div class="hidden mx-auto max-w-lg" id="menu">
+          <div class="space-y-1 px-2 pb-3 pt-2">
+            <a href="#" class="bg-gray-900 text-white block rounded-md px-3 py-2 text-base font-medium"
+              aria-current="page">Activities</a>
+            <a href="/app/metrics"
+              class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium">Metrics</a>
+          </div>
+        </div>
         {% match running %}
         {% when Some with (running) %}
         {% include "activities/running.html" %}
@@ -170,9 +178,19 @@
         </div>
         {% endmatch %}
         <div class="flex h-12 mx-auto max-w-lg items-center justify-between px-2">
-          <button class="rounded-md px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
-            <svg fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-6 h-6 text-white">
+          <button _="
+              on click
+                toggle .hidden on #menu
+                toggle .hidden on #menu-icon
+                toggle .hidden on #close-icon
+            " class="rounded-md px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
+            <svg id="menu-icon" fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor"
+              class="w-6 h-6 text-white">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <svg id="close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
           <div class="flex space-x-4 h-12 items-center">

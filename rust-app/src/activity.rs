@@ -72,7 +72,6 @@ pub struct Create {
     end_time: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-#[allow(clippy::missing_panics_doc)]
 pub async fn create(db: &PgPool, activity_to_create: Create) -> anyhow::Result<sqlx::types::Uuid> {
     let result = sqlx::query!(
         r#"
@@ -99,7 +98,6 @@ pub struct Running {
     tags: Vec<Tag>,
 }
 
-#[allow(clippy::missing_panics_doc)]
 pub async fn running(db: &PgPool, user_id: String) -> anyhow::Result<Option<Running>> {
     let result = sqlx::query_as!(
         Running, 
@@ -122,7 +120,6 @@ pub async fn running(db: &PgPool, user_id: String) -> anyhow::Result<Option<Runn
     Ok(result)
 }
 
-#[allow(clippy::missing_panics_doc)]
 pub async fn stop(db: &PgPool, user_id: String, id: String, end: DateTime<Utc>) -> anyhow::Result<()> {
     let id = sqlx::types::Uuid::parse_str(id.as_str())?;
     sqlx::query!(
@@ -138,11 +135,11 @@ pub async fn stop(db: &PgPool, user_id: String, id: String, end: DateTime<Utc>) 
 
 #[derive(Debug)]
 pub struct AvailableTag {
-    id: sqlx::types::Uuid,
-    name: String
+    pub id: sqlx::types::Uuid,
+    pub name: String
 }
 
-async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<AvailableTag>> {
+pub async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<AvailableTag>> {
     let result = sqlx::query_as!(
         AvailableTag, 
         r#"
