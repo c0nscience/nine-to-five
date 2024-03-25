@@ -49,9 +49,10 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-800">
+                  {% for metric in metrics %}
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                      ACME Corp 30h
+                      <a href="/app/metrics/{{ metric.id }}" class="hover:text-indigo-300">{{ metric.name }}</a>
                     </td>
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                       <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
@@ -60,42 +61,8 @@
                       <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
                     </td>
                   </tr>
+                  {% endfor %}
 
-                  <tr>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                      ACME Corp 35h
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                      Tinkering
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                      Game Dev
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
