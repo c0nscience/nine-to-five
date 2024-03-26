@@ -9,8 +9,9 @@ use axum::{
 
 use axum_extra::extract::Form;
 use serde::Deserialize;
+use tracing::info;
 
-use super::{create, list_all, ListMetric, Metric};
+use super::{create, get_by_metric, list_all, ListMetric, Metric};
 use crate::{activity, auth, errors, states};
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
@@ -85,9 +86,11 @@ async fn create_metric(
 struct DetailTemplate {}
 
 async fn detail(
-    Path(_id): Path<String>,
-    State(_state): State<states::AppState>,
-    Extension(_user_id): Extension<String>,
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<states::AppState>,
+    Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
+    let activities = get_by_metric(&state.db, user_id.clone(), id).await?;
+    info!("activities: {:#?}", activities);
     Ok(DetailTemplate {})
 }
