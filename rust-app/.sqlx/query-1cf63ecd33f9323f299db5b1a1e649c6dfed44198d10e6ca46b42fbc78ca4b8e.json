@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT a.start_time, a.end_time\n            FROM activities a\n                     JOIN activities_tags at ON a.id = at.activity_id\n                     JOIN tags ot ON at.tag_id = ot.id\n            WHERE a.user_id = $1\n            GROUP BY a.id, a.start_time\n            HAVING array_agg(ot.id) @> (SELECT array_agg(t.id)\n                                        FROM metrics m\n                                                 JOIN metrics_tags mt ON m.id = mt.metric_id\n                                                 JOIN tags t ON mt.tag_id = t.id\n                                        WHERE m.user_id = $1\n                                          AND m.id = $2\n                                          AND mt.metric_id = $2)\n            ORDER BY a.start_time;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "start_time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "end_time",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "1cf63ecd33f9323f299db5b1a1e649c6dfed44198d10e6ca46b42fbc78ca4b8e"
+}

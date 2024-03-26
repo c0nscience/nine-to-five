@@ -1,3 +1,4 @@
+use chrono::Utc;
 use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
@@ -71,4 +72,38 @@ async fn list_all(db: &PgPool, user_id: String) -> anyhow::Result<Vec<ListMetric
     .await?;
 
     Ok(metrics)
+}
+
+async fn get_by_metric(
+    db: &PgPool,
+    user_id: String,
+    id: sqlx::types::Uuid,
+) -> anyhow::Result<Vec<(chrono::DateTime<Utc>, chrono::DateTime<Utc>)>> {
+    let result: Vec<_> = sqlx::query!(
+        r#"
+            SELECT a.start_time, a.end_time
+            FROM activities a
+                     JOIN activities_tags at ON a.id = at.activity_id
+                     JOIN tags ot ON at.tag_id = ot.id
+            WHERE a.user_id = $1
+            GROUP BY a.id, a.start_time
+            HAVING array_agg(ot.id) @> (SELECT array_agg(t.id)
+                                        FROM metrics m
+                                                 JOIN metrics_tags mt ON m.id = mt.metric_id
+                                                 JOIN tags t ON mt.tag_id = t.id
+                                        WHERE m.user_id = $1
+                                          AND m.id = $2
+                                          AND mt.metric_id = $2)
+            ORDER BY a.start_time;
+        "#,
+        user_id,
+        id
+    )
+    .fetch_all(db)
+    .await?
+    .iter()
+    .map(|row| (row.start_time, row.end_time.unwrap_or_else(|| Utc::now())))
+    .collect();
+
+    Ok(result)
 }
