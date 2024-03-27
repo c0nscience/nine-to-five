@@ -11,7 +11,7 @@ use axum_extra::extract::Form;
 use serde::Deserialize;
 use tracing::info;
 
-use super::{create, get_by_metric, list_all, ListMetric, Metric};
+use super::{create, get_by_metric, list_all, ListMetric, Metric, MetricType};
 use crate::{activity, auth, errors, states};
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
@@ -57,6 +57,8 @@ async fn new_form(
 #[derive(Debug, Deserialize)]
 struct CreateMetric {
     name: String,
+    metric_type: MetricType,
+    hours_per_week: Option<i16>,
 
     #[serde(default)]
     tags: Vec<sqlx::types::Uuid>,
@@ -67,6 +69,8 @@ impl From<CreateMetric> for Metric {
         Self {
             name: val.name,
             tags: val.tags,
+            metric_type: val.metric_type,
+            hours_per_week: val.hours_per_week,
         }
     }
 }
