@@ -13,16 +13,20 @@ use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
 use chrono::Datelike;
 use chrono_tz::Tz;
 use serde::Deserialize;
-use tracing::info;
 use urlencoding::decode;
 
-use super::{create, get_by_tags, list_all, ListMetric, Metric, MetricType};
+use super::{
+    associate_tags, create, delete, delete_associate_tags, get_by_tags, get_config, list_all,
+    update, ListMetric, Metric, MetricType, Update,
+};
 use crate::{activity, auth, errors, metrics, states};
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
         .route("/", get(list).post(create_metric))
         .route("/:id", get(detail))
+        .route("/:id/edit", get(edit_form).post(update_metric))
+        .route("/:id/delete", get(delete_metric))
         .route("/new", get(new_form))
         .route_layer(middleware::from_fn_with_state(
             state,
@@ -99,7 +103,7 @@ struct DetailTemplate {
     data_points: Vec<DataPoint>,
 }
 
-const DEFAULT_HOURS_PER_WEEK: i16 = 0;
+const DEFAULT_HOURS_PER_WEEK: i16 = 40;
 
 struct DataPoint {
     date: chrono::NaiveDate,
@@ -113,7 +117,7 @@ async fn detail(
     TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, errors::AppError> {
     let timezone = parse_timezone(&cookie);
-    let Some(config) = metrics::get(&state.db, user_id.clone(), id).await? else {
+    let Some(config) = get_config(&state.db, user_id.clone(), id).await? else {
         return Err(errors::AppError::NotFound);
     };
 
@@ -137,11 +141,21 @@ async fn detail(
                 .map(|(start, end)| *end - start)
                 .fold(chrono::Duration::zero(), |acc, d| acc + d);
 
-            let hours_per_week = config.hours_per_week.unwrap_or(DEFAULT_HOURS_PER_WEEK);
-            let over_time = duration - chrono::Duration::hours(hours_per_week.into());
-            total_time += over_time;
-            if date < current_week {
-                total_time_until_last_week += over_time;
+            match config.metric_type {
+                MetricType::Sum => {
+                    total_time += duration;
+                    if date < current_week {
+                        total_time_until_last_week += duration;
+                    }
+                }
+                MetricType::Overtime => {
+                    let hours_per_week = config.hours_per_week.unwrap_or(DEFAULT_HOURS_PER_WEEK);
+                    let over_time = duration - chrono::Duration::hours(hours_per_week.into());
+                    total_time += over_time;
+                    if date < current_week {
+                        total_time_until_last_week += over_time;
+                    }
+                }
             }
 
             acc.push(DataPoint { date, duration });
@@ -188,6 +202,101 @@ fn parse_timezone(cookie: &Cookie) -> Tz {
         .and_then(|d| d.parse::<Tz>().ok())
         .unwrap_or(Tz::Europe__Berlin)
 }
+
+trait WithContains {
+    fn contains(arr: &[activity::Tag], id: &sqlx::types::Uuid) -> bool;
+}
+
+#[derive(Template)]
+#[template(path = "metrics/edit_form.html")]
+struct EditFormTemplate {
+    metric: EditFormData,
+    available_tags: Vec<activity::AvailableTag>,
+}
+
+impl WithContains for EditFormTemplate {
+    fn contains(arr: &[activity::Tag], id: &sqlx::types::Uuid) -> bool {
+        arr.iter().any(|e| e.id == *id)
+    }
+}
+
+#[derive(Debug)]
+struct EditFormData {
+    id: sqlx::types::Uuid,
+    name: String,
+    metric_type: MetricType,
+    hours_per_week: Option<i16>,
+    tags: Vec<activity::Tag>,
+}
+
+async fn edit_form(
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<states::AppState>,
+    Extension(user_id): Extension<String>,
+) -> Result<impl IntoResponse, errors::AppError> {
+    let Some(metric) = metrics::get(&state.db, user_id.clone(), id).await? else {
+        return Err(errors::AppError::NotFound);
+    };
+
+    let available_tags = activity::available_tags(&state.db, user_id).await?;
+
+    let metric = EditFormData {
+        id: metric.id,
+        name: metric.name,
+        metric_type: metric.metric_type,
+        hours_per_week: metric.hours_per_week,
+        tags: metric.tags,
+    };
+
+    Ok(EditFormTemplate {
+        metric,
+        available_tags,
+    })
+}
+
+#[derive(Debug, Deserialize)]
+struct UpdateMetric {
+    name: String,
+    metric_type: MetricType,
+    hours_per_week: Option<i16>,
+
+    #[serde(default)]
+    tags: Vec<sqlx::types::Uuid>,
+}
+
+async fn update_metric(
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<states::AppState>,
+    Extension(user_id): Extension<String>,
+    Form(updated_metric): Form<UpdateMetric>,
+) -> Result<Redirect, errors::AppError> {
+    update(
+        &state.db,
+        user_id.clone(),
+        Update {
+            id,
+            name: updated_metric.name,
+            metric_type: updated_metric.metric_type,
+            hours_per_week: updated_metric.hours_per_week,
+        },
+    )
+    .await?;
+
+    delete_associate_tags(&state.db, user_id.clone(), id).await?;
+    associate_tags(&state.db, &updated_metric.tags, id).await?;
+
+    Ok(Redirect::to("/app/metrics"))
+}
+
+async fn delete_metric(
+    Path(id): Path<sqlx::types::Uuid>,
+    State(state): State<states::AppState>,
+    Extension(user_id): Extension<String>,
+) -> Result<Redirect, errors::AppError> {
+    delete(&state.db, user_id.clone(), id).await?;
+    Ok(Redirect::to("/app/metrics"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
