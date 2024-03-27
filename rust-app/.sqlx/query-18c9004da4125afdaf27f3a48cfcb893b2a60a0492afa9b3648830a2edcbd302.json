@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM metrics_tags \n            USING metrics \n            WHERE metric_id = metrics.id AND metrics.id = $1 AND metrics.user_id = $2\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "18c9004da4125afdaf27f3a48cfcb893b2a60a0492afa9b3648830a2edcbd302"
+}

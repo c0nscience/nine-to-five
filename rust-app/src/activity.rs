@@ -21,7 +21,7 @@ pub struct Range {
 #[derive(Type, Debug)]
 #[sqlx(type_name = "tags")]
 pub struct Tag {
-    id: sqlx::types::Uuid,
+    pub id: sqlx::types::Uuid,
     user_id: String,
     name: String,
 }

@@ -55,10 +55,24 @@
                       <a href="/app/metrics/{{ metric.id }}" class="hover:text-indigo-300">{{ metric.name }}</a>
                     </td>
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Edit</a>
+                      <a href="/app/metrics/{{ metric.id }}/edit" class="text-indigo-400 hover:text-indigo-300">Edit</a>
                     </td>
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                      <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a>
+                      <!-- <a href="#" class="text-indigo-400 hover:text-indigo-300">Delete</a> -->
+                      <button onClick="Swal.fire({
+                       title: 'Confirm', 
+                       text: 'Do you really want to delete?', 
+                       icon: 'warning', 
+                       showCancelButton: true, 
+                       focusCancel: true,
+                     })
+                     .then(function(result){
+                       if(result.isConfirmed) {
+                         window.location.href = '/app/metrics/{{ metric.id }}/delete';
+                       }
+                     })" class="text-indigo-400 hover:text-indigo-300" role="menuitem" tabindex="-1">
+                        Delete
+                      </button>
                     </td>
                   </tr>
                   {% endfor %}

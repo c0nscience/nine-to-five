@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE metrics SET name = $1, metric_type = $2, hours_per_week = $3\n            WHERE user_id = $4 AND id = $5\n   ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        {
+          "Custom": {
+            "name": "metric_type",
+            "kind": {
+              "Enum": [
+                "sum",
+                "overtime"
+              ]
+            }
+          }
+        },
+        "Int2",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cd84ce7f0850e898426f346f4b360373dc80fd0130f6cb9e44d0b642ec8c9654"
+}
