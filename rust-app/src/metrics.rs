@@ -90,10 +90,10 @@ async fn list_all(db: &PgPool, user_id: String) -> anyhow::Result<Vec<ListMetric
 // NOTE: does the inner join makes sense?
 // should we limit the result of the metric to one?
 // it can technically only every return one or none ... right?
-async fn get_by_metric(
+async fn get_by_tags(
     db: &PgPool,
     user_id: String,
-    id: sqlx::types::Uuid,
+    tags: &Vec<sqlx::types::Uuid>,
 ) -> anyhow::Result<Vec<(chrono::DateTime<Utc>, chrono::DateTime<Utc>)>> {
     let result: Vec<_> = sqlx::query!(
         r#"
@@ -103,22 +103,52 @@ async fn get_by_metric(
                      JOIN tags ot ON at.tag_id = ot.id
             WHERE a.user_id = $1
             GROUP BY a.id, a.start_time
-            HAVING array_agg(ot.id) @> (SELECT array_agg(t.id)
-                                        FROM metrics m
-                                                 JOIN metrics_tags mt ON m.id = mt.metric_id
-                                                 JOIN tags t ON mt.tag_id = t.id
-                                        WHERE m.user_id = $1
-                                          AND m.id = $2)
+            HAVING array_agg(ot.id) @> $2
             ORDER BY a.start_time;
         "#,
         user_id,
-        id
+        tags
     )
     .fetch_all(db)
     .await?
     .iter()
     .map(|row| (row.start_time, row.end_time.unwrap_or_else(|| Utc::now())))
     .collect();
+
+    Ok(result)
+}
+
+#[derive(Debug)]
+struct MetricConfig {
+    metric_type: MetricType,
+    hours_per_week: Option<i16>,
+    tags: Vec<sqlx::types::Uuid>,
+}
+
+async fn get(
+    db: &PgPool,
+    user_id: String,
+    id: sqlx::types::Uuid,
+) -> anyhow::Result<Option<MetricConfig>> {
+    let result = sqlx::query_as!(
+        MetricConfig,
+        r#"
+        SELECT 
+            metrics.metric_type as "metric_type: MetricType", metrics.hours_per_week,
+            COALESCE(array_agg((tags.id)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<sqlx::types::Uuid>"
+        FROM metrics
+        LEFT JOIN metrics_tags
+            ON metrics.id = metrics_tags.metric_id
+        LEFT JOIN tags
+            ON metrics_tags.tag_id = tags.id
+        WHERE metrics.user_id = $1 AND metrics.id = $2
+        GROUP BY metrics.id
+        "#,
+        user_id,
+        id,
+    )
+    .fetch_optional(db)
+    .await?;
 
     Ok(result)
 }

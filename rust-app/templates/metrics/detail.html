@@ -11,6 +11,50 @@
 
 {% block content %}
 <main>
-  <h1 class="text-3xl font-bold text-white">Detailed View</h1>
+  <div class="mx-auto max-w-lg">
+    <div class="bg-gray-900 py-10">
+      <div class="my-8 px-4 sm:mt-0 sm:mb-8 sm:px-6 lg:px-8">
+
+        <h1 class="text-3xl font-bold text-white">Detailed View</h1>
+        {% match metric_type %}
+        {% when OverTime %}
+        <div class="text-white font-bold">Total over time until last week: {{ total_time_until_last_week }}</div>
+        <div class="text-white font-bold">Total over time: {{ total_time }}</div>
+        {% when Sum %}
+        <div class="text-white font-bold">Total time until last week: {{ total_time_until_last_week }}</div>
+        <div class="text-white font-bold">Total time: {{ total_time }}</div>
+        {% endmatch %}
+      </div>
+      <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
+        <div class="hidden mx-auto max-w-lg" id="menu">
+          <div class="space-y-1 px-2 pb-3 pt-2">
+            <a href="/app"
+              class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium"
+              aria-current="page">Activities</a>
+            <a href="/app/metrics"
+              class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium"
+              aria-current="page">Metrics</a>
+          </div>
+        </div>
+        <div class="flex h-12 mx-auto max-w-lg items-center justify-between px-2">
+          <button _="
+              on click
+                toggle .hidden on #menu
+                toggle .hidden on #menu-icon
+                toggle .hidden on #close-icon
+            " class="rounded-md px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
+            <svg id="menu-icon" fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor"
+              class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <svg id="close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 {% endblock %}
