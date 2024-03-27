@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT a.start_time, a.end_time\n            FROM activities a\n                     JOIN activities_tags at ON a.id = at.activity_id\n                     JOIN tags ot ON at.tag_id = ot.id\n            WHERE a.user_id = $1\n            GROUP BY a.id, a.start_time\n            HAVING array_agg(ot.id) @> $2\n            ORDER BY a.start_time;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "start_time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "end_time",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "3a54bec0ae5f4cb316176e6f7244f7b070a6dcbd6141ee087e75c9d1ebb903f2"
+}
