@@ -1,13 +1,24 @@
 use chrono::Utc;
+use serde::Deserialize;
+use sqlx::prelude::*;
 use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
 
 pub mod handlers;
 
+#[derive(Type, Debug, Deserialize)]
+#[sqlx(type_name = "metric_type", rename_all = "lowercase")]
+enum MetricType {
+    Sum,
+    Overtime,
+}
+
 #[derive(Debug)]
 struct Metric {
     name: String,
+    metric_type: MetricType,
+    hours_per_week: Option<i16>,
     tags: Vec<sqlx::types::Uuid>,
 }
 
@@ -22,12 +33,14 @@ async fn create(db: &PgPool, user_id: String, metric: Metric) -> anyhow::Result<
 
     let result = sqlx::query!(
         r#"
-            INSERT INTO metrics(user_id, name)
-            VALUES ($1, $2)
+            INSERT INTO metrics(user_id, name, metric_type, hours_per_week)
+            VALUES ($1, $2, $3, $4)
             RETURNING id
         "#,
         user_id,
-        metric.name
+        metric.name,
+        metric.metric_type as MetricType,
+        metric.hours_per_week,
     )
     .fetch_one(db)
     .await?;
@@ -74,6 +87,9 @@ async fn list_all(db: &PgPool, user_id: String) -> anyhow::Result<Vec<ListMetric
     Ok(metrics)
 }
 
+// NOTE: does the inner join makes sense?
+// should we limit the result of the metric to one?
+// it can technically only every return one or none ... right?
 async fn get_by_metric(
     db: &PgPool,
     user_id: String,
@@ -92,8 +108,7 @@ async fn get_by_metric(
                                                  JOIN metrics_tags mt ON m.id = mt.metric_id
                                                  JOIN tags t ON mt.tag_id = t.id
                                         WHERE m.user_id = $1
-                                          AND m.id = $2
-                                          AND mt.metric_id = $2)
+                                          AND m.id = $2)
             ORDER BY a.start_time;
         "#,
         user_id,
