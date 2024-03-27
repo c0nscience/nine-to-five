@@ -17,10 +17,10 @@
 
         <h1 class="text-3xl font-bold text-white">Detailed View</h1>
         {% match metric_type %}
-        {% when OverTime %}
+        {% when metrics::MetricType::Overtime %}
         <div class="text-white font-bold">Total over time until last week: {{ total_time_until_last_week }}</div>
         <div class="text-white font-bold">Total over time: {{ total_time }}</div>
-        {% when Sum %}
+        {% when metrics::MetricType::Sum %}
         <div class="text-white font-bold">Total time until last week: {{ total_time_until_last_week }}</div>
         <div class="text-white font-bold">Total time: {{ total_time }}</div>
         {% endmatch %}

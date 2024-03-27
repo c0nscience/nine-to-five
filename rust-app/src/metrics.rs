@@ -5,6 +5,8 @@ use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
 
+use crate::activity;
+
 pub mod handlers;
 
 #[derive(Type, Debug, Deserialize)]
@@ -125,7 +127,7 @@ struct MetricConfig {
     tags: Vec<sqlx::types::Uuid>,
 }
 
-async fn get(
+async fn get_config(
     db: &PgPool,
     user_id: String,
     id: sqlx::types::Uuid,
@@ -151,4 +153,144 @@ async fn get(
     .await?;
 
     Ok(result)
+}
+
+#[derive(Debug)]
+struct MetricEdit {
+    id: sqlx::types::Uuid,
+    name: String,
+    metric_type: MetricType,
+    hours_per_week: Option<i16>,
+    tags: Vec<activity::Tag>,
+}
+
+async fn get(
+    db: &PgPool,
+    user_id: String,
+    id: sqlx::types::Uuid,
+) -> anyhow::Result<Option<MetricEdit>> {
+    let result = sqlx::query_as!(
+        MetricEdit,
+        r#"
+        SELECT 
+            metrics.id, metrics.name, metrics.metric_type as "metric_type: MetricType", metrics.hours_per_week,
+            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<activity::Tag>"
+        FROM metrics
+        LEFT JOIN metrics_tags
+            ON metrics.id = metrics_tags.metric_id
+        LEFT JOIN tags
+            ON metrics_tags.tag_id = tags.id
+        WHERE metrics.user_id = $1 AND metrics.id = $2
+        GROUP BY metrics.id
+        "#,
+        user_id,
+        id,
+    )
+    .fetch_optional(db)
+    .await?;
+
+    Ok(result)
+}
+
+#[derive(Debug)]
+struct Update {
+    id: sqlx::types::Uuid,
+    name: String,
+    metric_type: MetricType,
+    hours_per_week: Option<i16>,
+}
+
+async fn update(
+    db: &sqlx::Pool<Postgres>,
+    user_id: String,
+    updated_metric: Update,
+) -> anyhow::Result<()> {
+    sqlx::query!(
+        r#"
+        UPDATE metrics SET name = $1, metric_type = $2, hours_per_week = $3
+            WHERE user_id = $4 AND id = $5
+   "#,
+        updated_metric.name,
+        updated_metric.metric_type as MetricType,
+        updated_metric.hours_per_week,
+        user_id,
+        updated_metric.id
+    )
+    .execute(db)
+    .await?;
+    Ok(())
+}
+
+async fn associate_tags(
+    db: &PgPool,
+    tags: &[sqlx::types::Uuid],
+    metric_id: sqlx::types::Uuid,
+) -> anyhow::Result<()> {
+    if tags.is_empty() {
+        return Ok(());
+    }
+    let mut query_builder =
+        QueryBuilder::<Postgres>::new("INSERT INTO metrics_tags (metric_id, tag_id) VALUES ");
+
+    for (idx, tag_id) in tags.iter().enumerate() {
+        query_builder.push("(");
+        query_builder.push_bind(metric_id);
+        query_builder.push(",");
+        query_builder.push_bind(tag_id);
+        query_builder.push(")");
+
+        if idx < tags.len() - 1 {
+            query_builder.push(",");
+        }
+    }
+
+    let query = query_builder.build();
+    query.execute(db).await?;
+    Ok(())
+}
+
+async fn delete_associate_tags(
+    db: &PgPool,
+    user_id: String,
+    metric_id: sqlx::types::Uuid,
+) -> anyhow::Result<()> {
+    sqlx::query!(
+        r#"
+        DELETE FROM metrics_tags 
+            USING metrics 
+            WHERE metric_id = metrics.id AND metrics.id = $1 AND metrics.user_id = $2
+    "#,
+        metric_id,
+        user_id
+    )
+    .execute(db)
+    .await?;
+    Ok(())
+}
+
+async fn delete(db: &PgPool, user_id: String, id: sqlx::types::Uuid) -> anyhow::Result<()> {
+    sqlx::query!(
+        r#"
+        DELETE FROM metrics_tags 
+            USING metrics
+            WHERE metric_id = metrics.id AND metrics.id = $1 AND metrics.user_id = $2
+    "#,
+        id,
+        user_id
+    )
+    .execute(db)
+    .await?;
+
+    sqlx::query!(
+        r#"
+        DELETE FROM metrics
+            WHERE user_id = $1 AND id = $2
+    "#,
+        user_id,
+        id
+    )
+    .execute(db)
+    .await?;
+
+    Ok(())
 }

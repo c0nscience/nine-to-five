@@ -1,0 +1,57 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT \n            metrics.id, metrics.name, metrics.metric_type as \"metric_type: MetricType\", metrics.hours_per_week,\n            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS \"tags!: Vec<activity::Tag>\"\n        FROM metrics\n        LEFT JOIN metrics_tags\n            ON metrics.id = metrics_tags.metric_id\n        LEFT JOIN tags\n            ON metrics_tags.tag_id = tags.id\n        WHERE metrics.user_id = $1 AND metrics.id = $2\n        GROUP BY metrics.id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "metric_type: MetricType",
+        "type_info": {
+          "Custom": {
+            "name": "metric_type",
+            "kind": {
+              "Enum": [
+                "sum",
+                "overtime"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "hours_per_week",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 4,
+        "name": "tags!: Vec<activity::Tag>",
+        "type_info": "RecordArray"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "88bb4155da7c7ea29f960d4099bdb87aeb94829e1f1832593bd7bc0b58729c14"
+}

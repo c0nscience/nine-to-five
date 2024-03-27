@@ -1,0 +1,7 @@
+{% for tag in available_tags %}
+{% if Self::contains(metric.tags, tag.id) %}
+<option value="{{ tag.id }}" selected>{{ tag.name }}</option>
+{% else %}
+<option value="{{ tag.id }}">{{ tag.name }}</option>
+{% endif %}
+{% endfor %}
