@@ -1,7 +1,11 @@
+CREATE TYPE metric_type AS ENUM ('sum', 'overtime');
+
 CREATE TABLE metrics(
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id TEXT NOT NULL,
-  name TEXT NOT NULL
+  name TEXT NOT NULL,
+  hours_per_week SMALLINT,
+  metric_type metric_type NOT NULL
 );
 
 CREATE TABLE metrics_tags(
