@@ -1,4 +1,4 @@
-CREATE TYPE metric_type AS ENUM ('sum', 'overtime');
+CREATE TYPE metric_type AS ENUM ('sum', 'overtime', 'count');
 
 CREATE TABLE metrics(
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
