@@ -23,6 +23,7 @@
         {% when metrics::MetricType::Sum %}
         <div class="text-white font-bold">Total time until last week: {{ total_time_until_last_week }}</div>
         <div class="text-white font-bold">Total time: {{ total_time }}</div>
+        {% when metrics::MetricType::Count %}
         {% endmatch %}
       </div>
       <div class="fixed bottom-0 left-0 right-0 bg-gray-900">

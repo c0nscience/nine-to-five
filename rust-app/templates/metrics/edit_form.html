@@ -35,9 +35,15 @@
                 {% when metrics::MetricType::Sum %}
                 <option value="Sum" class="text-black" selected>Sum</option>
                 <option value="Overtime" class="text-black">Overtime</option>
+                <!-- <option value="Count" class="text-black">Count</option> -->
                 {% when metrics::MetricType::Overtime %}
                 <option value="Sum" class="text-black">Sum</option>
                 <option value="Overtime" class="text-black" selected>Overtime</option>
+                <!-- <option value="Count" class="text-black">Count</option> -->
+                {% when metrics::MetricType::Count %}
+                <option value="Sum" class="text-black">Sum</option>
+                <option value="Overtime" class="text-black">Overtime</option>
+                <!-- <option value="Count" class="text-black" selected>Count</option> -->
                 {% endmatch %}
               </select>
             </div>

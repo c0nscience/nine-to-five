@@ -156,6 +156,7 @@ async fn detail(
                         total_time_until_last_week += over_time;
                     }
                 }
+                MetricType::Count => {}
             }
 
             acc.push(DataPoint { date, duration });

@@ -14,6 +14,7 @@ pub mod handlers;
 enum MetricType {
     Sum,
     Overtime,
+    Count,
 }
 
 #[derive(Debug)]
