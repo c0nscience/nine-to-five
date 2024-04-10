@@ -41,7 +41,6 @@ async fn main() -> anyhow::Result<()> {
     let cookie_key = dotenvy::var("COOKIE_KEY").context("cookie key not provided")?;
     let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
     let audience = dotenvy::var("OAUTH_AUDIENCE").context("audience not provided")?;
-
     let database_url =
         dotenvy::var("DATABASE_URL").context("no postgres connection url provided")?;
 
@@ -65,10 +64,13 @@ async fn main() -> anyhow::Result<()> {
     let session_config = SessionConfig::default()
         .with_table_name("sessions")
         .with_key(Key::from(cookie_key.as_bytes()))
-        .with_database_key(Key::from(database_key.as_bytes()))
+        // .with_database_key(Key::from(database_key.as_bytes()))
         .with_http_only(true)
         .with_secure(secure)
         .with_ip_and_user_agent(true)
+        .with_hashed_ip(false)
+        .with_hashed_forward(true)
+        .with_hashed_xforward(true)
         .with_lifetime(Duration::days(31))
         .with_max_age(Some(Duration::days(31)));
     let session_store = SessionStore::<SessionPgPool>::new(Some(db.clone().into()), session_config)
