@@ -124,10 +124,12 @@ async fn detail(
     let current_week = start_of_week(chrono::Utc::now().with_timezone(&timezone).date_naive());
     let mut total_time = chrono::Duration::hours(0);
     let mut total_time_until_last_week = chrono::Duration::hours(0);
-    let data_points = get_by_tags(&state.db, user_id.clone(), &config.tags)
+    let mut data_points = get_by_tags(&state.db, user_id.clone(), &config.tags)
         .await?
         .iter()
         .fold(HashMap::new(), |mut acc, date_tpl| {
+            // TODO: hmm this map destroys the order hence
+            // the calculation is quite possibly wrong
             let date = date_tpl.0;
             let date = date.with_timezone(&timezone).date_naive();
             let date = start_of_week(date);
@@ -162,6 +164,8 @@ async fn detail(
             acc.push(DataPoint { date, duration });
             acc
         });
+
+    data_points.sort_by_key(|d| d.date);
 
     Ok(DetailTemplate {
         metric_type: config.metric_type,
