@@ -607,7 +607,6 @@ impl Adjustable for DateTime<Utc> {
         };
         let result = minute + adjust_by;
         let result = result.try_into().ok()?;
-        info!("Adjusting time from {minute} to {result}");
         self.with_minute(result)
             .and_then(|d| d.with_second(0))
             .and_then(|d| d.with_nanosecond(0))
