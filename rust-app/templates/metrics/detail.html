@@ -7,6 +7,8 @@
 <link href="/assets/css/output.css" rel="stylesheet" />
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/theme/dark.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -14,17 +16,40 @@
   <div class="mx-auto max-w-lg">
     <div class="bg-gray-900 py-10">
       <div class="my-8 px-4 sm:mt-0 sm:mb-8 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 gap-px bg-white/5">
+          {% match metric_type %}
+          {% when metrics::MetricType::Overtime %}
+          <div class="bg-gray-900 px-4 py-6 sm:px-6 lg:px-8">
+            <p class="text-sm font-medium leading-6 text-gray-400">Over Time (Last Week)</p>
+            <p class="mt-2 flex items-baseline gap-x-2">
+              <span class="text-4xl font-semibold tracking-tight text-white">{{ total_time_until_last_week }}</span>
+            </p>
+          </div>
+          <div class="bg-gray-900 px-4 py-6 sm:px-6 lg:px-8">
+            <p class="text-sm font-medium leading-6 text-gray-400">Over Time</p>
+            <p class="mt-2 flex items-baseline gap-x-2">
+              <span class="text-4xl font-semibold tracking-tight text-white">{{ total_time }}</span>
+            </p>
+          </div>
+          {% when metrics::MetricType::Sum %}
+          <div class="bg-gray-900 px-4 py-6 sm:px-6 lg:px-8">
+            <p class="text-sm font-medium leading-6 text-gray-400">Total Time (Last Week)</p>
+            <p class="mt-2 flex items-baseline gap-x-2">
+              <span class="text-4xl font-semibold tracking-tight text-white">{{ total_time_until_last_week }}</span>
+            </p>
+          </div>
+          <div class="bg-gray-900 px-4 py-6 sm:px-6 lg:px-8">
+            <p class="text-sm font-medium leading-6 text-gray-400">Total Time</p>
+            <p class="mt-2 flex items-baseline gap-x-2">
+              <span class="text-4xl font-semibold tracking-tight text-white">{{ total_time }}</span>
+            </p>
+          </div>
+          {% when metrics::MetricType::Count %}
+          {% endmatch %}
+        </div>
+        <div id="chart-container" class="mt-8 h-80">
 
-        <h1 class="text-3xl font-bold text-white">Detailed View</h1>
-        {% match metric_type %}
-        {% when metrics::MetricType::Overtime %}
-        <div class="text-white font-bold">Total over time until last week: {{ total_time_until_last_week }}</div>
-        <div class="text-white font-bold">Total over time: {{ total_time }}</div>
-        {% when metrics::MetricType::Sum %}
-        <div class="text-white font-bold">Total time until last week: {{ total_time_until_last_week }}</div>
-        <div class="text-white font-bold">Total time: {{ total_time }}</div>
-        {% when metrics::MetricType::Count %}
-        {% endmatch %}
+        </div>
       </div>
       <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
         <div class="hidden mx-auto max-w-lg" id="menu">
@@ -58,4 +83,55 @@
     </div>
   </div>
 </main>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  var myChart = echarts.init(document.getElementById('chart-container'), 'dark');
+  var option;
+
+  option = {
+    xAxis: {
+      type: 'category',
+      data: [
+        {% for dp in data_points %}
+        '{{ dp.date }}',
+        {% endfor %}
+      ],
+    },
+  yAxis: {
+    type: 'value'
+  },
+  series: [
+    {
+      data: [
+        {% for dp in data_points %}
+        {{dp.duration.num_minutes() / 60}},
+    {% endfor %}
+  ],
+    type: 'line'
+    }
+  ],
+  toolbox: {
+    right: 10,
+      feature: {
+      dataZoom: {
+        yAxisIndex: 'none'
+      },
+      restore: { },
+      saveAsImage: { }
+    }
+  },
+  dataZoom: [
+    {
+      startValue: '{{ data_points[data_points.len()-5].date }}',
+    },
+    {
+      type: 'inside',
+    }
+  ]
+  };
+
+  option && myChart.setOption(option);
+</script>
 {% endblock %}
