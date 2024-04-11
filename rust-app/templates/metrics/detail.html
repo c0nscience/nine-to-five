@@ -91,46 +91,62 @@
   var option;
 
   option = {
+    grid: {
+      bottom: 90,
+    },
     backgroundColor: 'rgba(0, 0, 0, 0)',
     xAxis: {
+      name: 'Week',
       type: 'category',
-      data: [
-        {% for dp in data_points %}
-        '{{ dp.date }}',
-        {% endfor %}
-      ],
-    },
-  yAxis: {
-    type: 'value'
-  },
-  series: [
-    {
-      data: [
-        {% for dp in data_points %}
-        {{dp.duration.num_minutes() / 60}},
-    {% endfor %}
-  ],
-    type: 'line'
-    }
-  ],
-  toolbox: {
-    right: 10,
-      feature: {
-      dataZoom: {
-        yAxisIndex: 'none'
+      axisTick: {
+        alignWithLabel: true
       },
-      restore: { },
-      saveAsImage: { }
-    }
-  },
-  dataZoom: [
-    {
-      startValue: '{{ data_points[data_points.len()-5].date }}',
+      axisLabel: {
+        rotate: 30,
+      },
     },
-    {
-      type: 'inside',
-    }
-  ]
+    yAxis: {
+      name: 'Hours',
+      type: 'value',
+      min: function (value) {
+        return value.min - 2;
+      },
+      max: function (value) {
+        return value.max + 2;
+      }
+    },
+    series: [
+      {
+        data: [ 
+          {% for dp in data_points %}
+            ['{{dp.date}}', {{dp.duration.num_minutes() / 60}}],
+          {% endfor %}
+        ],
+        type: 'line'
+      }
+    ],
+    toolbox: {
+      right: 10,
+      feature: {
+        dataZoom: {
+          yAxisIndex: 'none'
+        },
+        restore: {},
+        saveAsImage: {}
+      }
+    },
+    dataZoom: [
+      {
+        {% if data_points.len() < 5 %}
+        startValue: '{{ data_points[0].date }}',
+        {% else %}
+        startValue: '{{ data_points[data_points.len()-5].date }}',
+        {% endif %}
+      },
+      {
+        type: 'inside',
+      }
+    ]
   };
 
   option && myChart.setOption(option);
