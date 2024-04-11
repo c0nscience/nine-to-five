@@ -1,4 +1,3 @@
-#![allow(clippy::missing_errors_doc)]
 use std::collections::HashMap;
 
 use std::sync::{Arc, Mutex};
@@ -64,7 +63,7 @@ async fn main() -> anyhow::Result<()> {
     let session_config = SessionConfig::default()
         .with_table_name("sessions")
         .with_key(Key::from(cookie_key.as_bytes()))
-        // .with_database_key(Key::from(database_key.as_bytes()))
+        .with_database_key(Key::from(database_key.as_bytes()))
         .with_http_only(true)
         .with_secure(secure)
         .with_ip_and_user_agent(true)

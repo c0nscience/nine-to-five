@@ -6,7 +6,7 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Redirect, Response},
 };
-use axum_macros::debug_handler;
+
 use axum_session::SessionPgSession;
 
 use jsonwebtoken::jwk::AlgorithmParameters;
@@ -22,6 +22,7 @@ use crate::{errors, states};
 use tracing::error;
 
 #[allow(clippy::unused_async)]
+#[allow(clippy::missing_errors_doc)]
 pub async fn login(
     State(state): State<states::AppState>,
 ) -> Result<impl IntoResponse, errors::AppError> {
@@ -50,6 +51,7 @@ pub async fn login(
 }
 
 #[allow(clippy::unused_async)]
+#[allow(clippy::missing_errors_doc)]
 pub async fn signup(
     State(state): State<states::AppState>,
 ) -> Result<impl IntoResponse, errors::AppError> {
@@ -78,6 +80,7 @@ pub async fn signup(
     Ok(Redirect::temporary(auth_url.as_str()))
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub fn build_oauth_client(
     app_url: &str,
     client_id: String,
@@ -108,7 +111,7 @@ struct Claims {
     sub: String,
 }
 
-#[debug_handler]
+#[allow(clippy::missing_errors_doc)]
 pub async fn callback(
     session: SessionPgSession,
     State(state): State<states::AppState>,
@@ -177,6 +180,7 @@ pub async fn callback(
     Ok(Redirect::temporary("/app"))
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn check_authorized(
     session: SessionPgSession,
     State(_state): State<states::AppState>,

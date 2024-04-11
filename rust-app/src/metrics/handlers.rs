@@ -116,6 +116,11 @@ async fn detail(
     Extension(user_id): Extension<String>,
     TypedHeader(cookie): TypedHeader<Cookie>,
 ) -> Result<impl IntoResponse, errors::AppError> {
+    type ActivityDuration = (
+        chrono::prelude::DateTime<chrono::prelude::Utc>,
+        chrono::prelude::DateTime<chrono::prelude::Utc>,
+    );
+
     let timezone = parse_timezone(&cookie);
     let Some(config) = get_config(&state.db, user_id.clone(), id).await? else {
         return Err(errors::AppError::NotFound);
@@ -124,46 +129,61 @@ async fn detail(
     let current_week = start_of_week(chrono::Utc::now().with_timezone(&timezone).date_naive());
     let mut total_time = chrono::Duration::hours(0);
     let mut total_time_until_last_week = chrono::Duration::hours(0);
-    let mut data_points = get_by_tags(&state.db, user_id.clone(), &config.tags)
-        .await?
-        .iter()
-        .fold(HashMap::new(), |mut acc, date_tpl| {
-            // TODO: hmm this map destroys the order hence
-            // the calculation is quite possibly wrong
-            let date = date_tpl.0;
-            let date = date.with_timezone(&timezone).date_naive();
-            let date = start_of_week(date);
-            acc.entry(date).or_insert_with(Vec::new).push(date_tpl);
-            acc
-        })
-        .into_iter()
-        .fold(Vec::new(), |mut acc, (date, activities)| {
-            let duration = activities
-                .iter()
-                .map(|(start, end)| *end - start)
-                .fold(chrono::Duration::zero(), |acc, d| acc + d);
 
-            match config.metric_type {
-                MetricType::Sum => {
-                    total_time += duration;
-                    if date < current_week {
-                        total_time_until_last_week += duration;
-                    }
-                }
-                MetricType::Overtime => {
-                    let hours_per_week = config.hours_per_week.unwrap_or(DEFAULT_HOURS_PER_WEEK);
-                    let over_time = duration - chrono::Duration::hours(hours_per_week.into());
-                    total_time += over_time;
-                    if date < current_week {
-                        total_time_until_last_week += over_time;
-                    }
-                }
-                MetricType::Count => {}
-            }
+    let activities_by_tag = get_by_tags(&state.db, user_id.clone(), &config.tags).await?;
+    let mut activities_by_week: Vec<(chrono::prelude::NaiveDate, Vec<&ActivityDuration>)> =
+        activities_by_tag
+            .iter()
+            .fold(
+                HashMap::new(),
+                |mut acc: HashMap<chrono::prelude::NaiveDate, Vec<&ActivityDuration>>, date_tpl| {
+                    let date = date_tpl.0;
+                    let date = date.with_timezone(&timezone).date_naive();
+                    let date = start_of_week(date);
+                    acc.entry(date).or_default().push(date_tpl);
+                    acc
+                },
+            )
+            .into_iter()
+            .collect();
 
-            acc.push(DataPoint { date, duration });
-            acc
-        });
+    activities_by_week.sort_by_key(|d| d.0);
+
+    // NOTE: I think we should iterate over the actual days or weeks between the first and last
+    // activitie.
+    // this way we would generate gaps in the data points ... which we are here actually
+    // generating
+    let mut data_points =
+        activities_by_week
+            .into_iter()
+            .fold(Vec::new(), |mut acc, (date, activities)| {
+                let duration = activities
+                    .iter()
+                    .map(|(start, end)| *end - *start)
+                    .fold(chrono::Duration::zero(), |acc, d| acc + d);
+
+                match config.metric_type {
+                    MetricType::Sum => {
+                        total_time += duration;
+                        if date < current_week {
+                            total_time_until_last_week += duration;
+                        }
+                    }
+                    MetricType::Overtime => {
+                        let hours_per_week =
+                            config.hours_per_week.unwrap_or(DEFAULT_HOURS_PER_WEEK);
+                        let over_time = duration - chrono::Duration::hours(hours_per_week.into());
+                        total_time += over_time;
+                        if date < current_week {
+                            total_time_until_last_week += over_time;
+                        }
+                    }
+                    MetricType::Count => {}
+                }
+
+                acc.push(DataPoint { date, duration });
+                acc
+            });
 
     data_points.sort_by_key(|d| d.date);
 
@@ -187,17 +207,15 @@ fn format_duration(duration: chrono::Duration) -> String {
         format!("{minutes}m")
     };
 
-    let duration = if is_negative {
+    if is_negative {
         format!("-{duration}")
     } else {
         duration
-    };
-
-    duration
+    }
 }
 
 fn start_of_week(date: chrono::NaiveDate) -> chrono::NaiveDate {
-    date - chrono::Duration::days(date.weekday().num_days_from_monday() as i64)
+    date - chrono::Duration::days(i64::from(date.weekday().num_days_from_monday()))
 }
 
 fn parse_timezone(cookie: &Cookie) -> Tz {
@@ -308,8 +326,8 @@ mod tests {
 
     #[test]
     fn test_should_set_date_to_beginning_of_the_week() -> Result<(), String> {
-        let date = chrono::NaiveDate::from_ymd_opt(2021, 1, 1).unwrap();
-        let expected = chrono::NaiveDate::from_ymd_opt(2020, 12, 28).unwrap();
+        let date = chrono::NaiveDate::from_ymd_opt(2021, 1, 1).ok_or("Invalid date")?;
+        let expected = chrono::NaiveDate::from_ymd_opt(2020, 12, 28).ok_or("Invalid date")?;
 
         assert_eq!(start_of_week(date), expected);
         Ok(())

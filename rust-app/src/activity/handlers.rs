@@ -13,7 +13,7 @@ use chrono::{prelude::*, LocalResult};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
-use tracing::info;
+
 use urlencoding::decode;
 
 use crate::{activity, auth, errors, states};

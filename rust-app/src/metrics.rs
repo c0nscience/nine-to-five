@@ -18,6 +18,7 @@ enum MetricType {
 }
 
 #[derive(Debug)]
+#[allow(clippy::struct_field_names)]
 struct Metric {
     name: String,
     metric_type: MetricType,
@@ -115,7 +116,7 @@ async fn get_by_tags(
     .fetch_all(db)
     .await?
     .iter()
-    .map(|row| (row.start_time, row.end_time.unwrap_or_else(|| Utc::now())))
+    .map(|row| (row.start_time, row.end_time.unwrap_or_else(Utc::now)))
     .collect();
 
     Ok(result)
