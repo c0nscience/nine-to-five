@@ -10,9 +10,10 @@ use axum::{
 };
 
 use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
-use chrono::Datelike;
+use chrono::{Datelike, NaiveDate};
 use chrono_tz::Tz;
 use serde::Deserialize;
+use tracing::info;
 use urlencoding::decode;
 
 use super::{
@@ -121,42 +122,60 @@ async fn detail(
         chrono::prelude::DateTime<chrono::prelude::Utc>,
     );
 
+    let mt_full_start = std::time::SystemTime::now();
+
     let timezone = parse_timezone(&cookie);
+
+    let mt_start = std::time::SystemTime::now();
     let Some(config) = get_config(&state.db, user_id.clone(), id).await? else {
         return Err(errors::AppError::NotFound);
+    };
+    if let Ok(mt_elapsed) = mt_start.elapsed() {
+        info!("get config took: {}", mt_elapsed.as_micros());
     };
 
     let current_week = start_of_week(chrono::Utc::now().with_timezone(&timezone).date_naive());
     let mut total_time = chrono::Duration::hours(0);
     let mut total_time_until_last_week = chrono::Duration::hours(0);
 
+    let mt_start = std::time::SystemTime::now();
     let activities_by_tag = get_by_tags(&state.db, user_id.clone(), &config.tags).await?;
-    let mut activities_by_week: Vec<(chrono::prelude::NaiveDate, Vec<&ActivityDuration>)> =
-        activities_by_tag
-            .iter()
-            .fold(
-                HashMap::new(),
-                |mut acc: HashMap<chrono::prelude::NaiveDate, Vec<&ActivityDuration>>, date_tpl| {
-                    let date = date_tpl.0;
-                    let date = date.with_timezone(&timezone).date_naive();
-                    let date = start_of_week(date);
-                    acc.entry(date).or_default().push(date_tpl);
-                    acc
-                },
-            )
-            .into_iter()
-            .collect();
+    if let Ok(mt_elapsed) = mt_start.elapsed() {
+        info!("fetching all activities took: {}", mt_elapsed.as_micros());
+    };
 
-    activities_by_week.sort_by_key(|d| d.0);
+    let mt_start = std::time::SystemTime::now();
+    let mut start = chrono::NaiveDate::MAX;
+    let mut end = chrono::NaiveDate::MIN;
+    let activities_by_week = activities_by_tag.iter().fold(
+        HashMap::new(),
+        |mut acc: HashMap<NaiveDate, Vec<&ActivityDuration>>, date_tpl| {
+            let date = date_tpl.0;
+            let date = date.with_timezone(&timezone).date_naive();
+            let date = start_of_week(date);
+            start = start.min(date);
+            end = end.max(date);
+            acc.entry(date).or_default().push(date_tpl);
+            acc
+        },
+    );
+    if let Ok(mt_elapsed) = mt_start.elapsed() {
+        info!("sort into by_week took: {}", mt_elapsed.as_micros());
+    };
 
-    // NOTE: I think we should iterate over the actual days or weeks between the first and last
-    // activitie.
-    // this way we would generate gaps in the data points ... which we are here actually
-    // generating
+    let mt_start = std::time::SystemTime::now();
     let mut data_points =
-        activities_by_week
-            .into_iter()
-            .fold(Vec::new(), |mut acc, (date, activities)| {
+        start
+            .iter_weeks()
+            .take_while(|d| *d <= end)
+            .fold(Vec::new(), |mut acc, date| {
+                let Some(activities) = activities_by_week.get(&date) else {
+                    acc.push(DataPoint {
+                        date,
+                        duration: chrono::Duration::zero(),
+                    });
+                    return acc;
+                };
                 let duration = activities
                     .iter()
                     .map(|(start, end)| *end - *start)
@@ -185,8 +204,24 @@ async fn detail(
                 acc
             });
 
+    if let Ok(mt_elapsed) = mt_start.elapsed() {
+        info!(
+            "sort aggregating each week took: {}",
+            mt_elapsed.as_micros()
+        );
+    };
+
     data_points.sort_by_key(|d| d.date);
 
+    let Ok(mt_elapsed) = mt_start.elapsed() else {
+        return Err(errors::AppError::InternalError);
+    };
+
+    info!("final sort took: {}", mt_elapsed.as_micros());
+
+    if let Ok(mt_elapsed) = mt_full_start.elapsed() {
+        info!("full funcion took: {}", mt_elapsed.as_micros());
+    }
     Ok(DetailTemplate {
         metric_type: config.metric_type,
         total_time: format_duration(total_time),
