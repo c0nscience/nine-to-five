@@ -7,8 +7,11 @@
 <link href="/assets/css/output.css" rel="stylesheet" />
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/theme/dark.js"></script>
+
+{% if data_points.len() > 0 %}
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/theme/dark.js"></script>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -47,9 +50,9 @@
           {% when metrics::MetricType::Count %}
           {% endmatch %}
         </div>
-        <div id="chart-container" class="mt-8 h-80">
-
-        </div>
+        {% if data_points.len() > 0 %}
+          <div id="chart-container" class="mt-8 h-80"></div>
+        {% endif %}
       </div>
       <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
         <div class="hidden mx-auto max-w-lg" id="menu">
@@ -86,6 +89,7 @@
 {% endblock %}
 
 {% block scripts %}
+{% if data_points.len() > 0 %}
 <script type="text/javascript">
   var myChart = echarts.init(document.getElementById('chart-container'), 'dark');
   var option;
@@ -137,12 +141,10 @@
     },
     dataZoom: [
       {
-        {% if data_points.len() > 0 %}
-          {% if data_points.len() < 5 %}
+        {% if data_points.len() < 5 %}
           startValue: '{{ data_points[0].date }}',
-          {% else %}
+        {% else %}
           startValue: '{{ data_points[data_points.len()-5].date }}',
-          {% endif %}
         {% endif %}
       },
       {
@@ -153,4 +155,5 @@
 
   option && myChart.setOption(option);
 </script>
+{% endif %}
 {% endblock %}
