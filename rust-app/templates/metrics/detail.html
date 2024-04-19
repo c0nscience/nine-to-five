@@ -137,10 +137,12 @@
     },
     dataZoom: [
       {
-        {% if data_points.len() < 5 %}
-        startValue: '{{ data_points[0].date }}',
-        {% else %}
-        startValue: '{{ data_points[data_points.len()-5].date }}',
+        {% if data_points.len() > 0 %}
+          {% if data_points.len() < 5 %}
+          startValue: '{{ data_points[0].date }}',
+          {% else %}
+          startValue: '{{ data_points[data_points.len()-5].date }}',
+          {% endif %}
         {% endif %}
       },
       {
