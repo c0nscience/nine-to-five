@@ -131,7 +131,11 @@ async fn detail(
         return Err(errors::AppError::NotFound);
     };
     if let Ok(mt_elapsed) = mt_start.elapsed() {
-        info!("get config took: {}us", mt_elapsed.as_micros());
+        info!(
+            "get config took: {}ms ({}us)",
+            mt_elapsed.as_millis(),
+            mt_elapsed.as_micros()
+        );
     };
 
     let current_week = start_of_week(chrono::Utc::now().with_timezone(&timezone).date_naive());
@@ -141,7 +145,11 @@ async fn detail(
     let mt_start = std::time::SystemTime::now();
     let activities_by_tag = get_by_tags(&state.db, user_id.clone(), &config.tags).await?;
     if let Ok(mt_elapsed) = mt_start.elapsed() {
-        info!("fetching all activities took: {}us", mt_elapsed.as_micros());
+        info!(
+            "fetching all activities took: {}ms ({}us)",
+            mt_elapsed.as_millis(),
+            mt_elapsed.as_micros()
+        );
     };
 
     let mt_start = std::time::SystemTime::now();
@@ -160,7 +168,11 @@ async fn detail(
         },
     );
     if let Ok(mt_elapsed) = mt_start.elapsed() {
-        info!("sort into by_week took: {}us", mt_elapsed.as_micros());
+        info!(
+            "sort into by_week took: {}ms ({}us)",
+            mt_elapsed.as_millis(),
+            mt_elapsed.as_micros()
+        );
     };
 
     let mt_start = std::time::SystemTime::now();
@@ -206,7 +218,8 @@ async fn detail(
 
     if let Ok(mt_elapsed) = mt_start.elapsed() {
         info!(
-            "sort aggregating each week took: {}us",
+            "sort aggregating each week took: {}ms ({}us)",
+            mt_elapsed.as_millis(),
             mt_elapsed.as_micros()
         );
     };
@@ -214,14 +227,18 @@ async fn detail(
     data_points.sort_by_key(|d| d.date);
 
     if let Ok(mt_elapsed) = mt_start.elapsed() {
-        info!("final sort took: {}us", mt_elapsed.as_micros());
+        info!(
+            "final sort took: {}ms ({}us)",
+            mt_elapsed.as_millis(),
+            mt_elapsed.as_micros()
+        );
     }
 
     if let Ok(mt_elapsed) = mt_full_start.elapsed() {
         info!(
-            "full funcion took: {}us -> {}ms",
+            "full funcion took: {}ms ({}us)",
+            mt_elapsed.as_millis(),
             mt_elapsed.as_micros(),
-            mt_elapsed.as_millis()
         );
     }
     Ok(DetailTemplate {
