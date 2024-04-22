@@ -50,6 +50,44 @@
 
 {% block content %}
 <main>
+  <nav class="flex border-b border-gray-700" aria-label="Breadcrumb">
+    <ol role="list" class="mx-auto flex w-full max-w-screen-xl space-x-4 px-4 sm:px-6 lg:px-8">
+      <li class="flex">
+        <div class="flex items-center">
+          <a href="#" class="text-white hover:text-gray-500">
+            <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">Home</span>
+          </a>
+        </div>
+      </li>
+      <li class="flex">
+        <div class="flex items-center">
+          <svg class="h-full w-6 flex-shrink-0 text-gray-800" viewBox="0 0 24 44" preserveAspectRatio="none" fill="currentColor" aria-hidden="true">
+            <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
+          </svg>
+          <a href="/app" class="ml-4 text-sm font-medium text-white hover:text-gray-500">
+            <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 4.75A.75.75 0 0 1 6.75 4h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 4.75ZM6 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 10Zm0 5.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75a.75.75 0 0 1-.75-.75ZM1.99 4.75a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1v-.01ZM1.99 15.25a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1v-.01ZM1.99 10a1 1 0 0 1 1-1H3a1 1 0 0 1 1 1v.01a1 1 0 0 1-1 1h-.01a1 1 0 0 1-1-1V10Z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">Activities</span>
+          </a>
+        </div>
+      </li>
+      <li class="flex">
+        <div class="flex items-center">
+          <svg class="h-full w-6 flex-shrink-0 text-gray-800" viewBox="0 0 24 44" preserveAspectRatio="none" fill="currentColor" aria-hidden="true">
+            <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
+          </svg>
+          <a href="#" class="ml-4 text-sm font-medium text-white hover:text-gray-500" aria-current="page">
+            {{ date }}
+          </a>
+        </div>
+      </li>
+    </ol>
+  </nav>
+
   <div class="mx-auto max-w-7xl h-screen sm:px-12">
     <div class="overflow-y-auto mx-auto max-w-lg min-h-full">
       {% if activities.len() > 0 || running.is_some() %}
@@ -63,16 +101,6 @@
             </time>
 
             <div class="relative inline-block text-left">
-              <button type="button"
-                class="flex items-center rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                aria-expanded="true" aria-haspopup="true" _="on click toggle .hidden on the next <div[role=menu]/>">
-                <span class="sr-only">Open options</span>
-                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path
-                    d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                </svg>
-              </button>
-
               <div
                 class="absolute right-0 z-10 mt-2 w-28 origin-bottom-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
                 role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
@@ -131,68 +159,16 @@
         {% endfor %}
       </ul>
       {% else %}
-      <div class="flex items-center justify-center h-screen">
-        <div class="text-center">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-            aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-semibold text-gray-100">No activities</h3>
-          <p class="mt-1 text-sm text-gray-500">Get started by creating a new activity.</p>
-          <div class="mt-6">
-            <a href="/app/start" type="button"
-              class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-              <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path
-                  d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-              </svg>
-              New Activity
-            </a>
-          </div>
-        </div>
-      </div>
+      {% include "activities/empty.html" %}
       {% endif %}
 
       <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
-        <div class="hidden mx-auto max-w-lg" id="menu">
-          <div class="space-y-1 px-2 pb-3 pt-2">
-            <a href="#" class="bg-gray-900 text-white block rounded-md px-3 py-2 text-base font-medium"
-              aria-current="page">Activities</a>
-            <a href="/app/metrics"
-              class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium">Metrics</a>
-          </div>
-        </div>
         {% match running %}
         {% when Some with (running) %}
         {% include "activities/running.html" %}
         {% when None %}
-        <div class="flex items-center justify-center py-4 px-10 lg:px-0">
-          <a href="/app/start"
-            class="block rounded-full bg-indigo-600 p-1 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-            <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path
-                d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-            </svg>
-          </a>
-        </div>
         {% endmatch %}
-        <div class="flex h-12 mx-auto max-w-lg items-center justify-between px-2">
-          <button _="
-              on click
-                toggle .hidden on #menu
-                toggle .hidden on #menu-icon
-                toggle .hidden on #close-icon
-            " class="rounded-md px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
-            <svg id="menu-icon" fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor"
-              class="w-6 h-6 text-white">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-            <svg id="close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-              stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div class="flex h-12 mx-auto max-w-lg items-center justify-around px-2">
           <div class="flex space-x-4 h-12 items-center">
             <a href="/app/{{ prev }}"
               class="rounded-md px-2.5 py-1 font-semibold text-white shadow-sm hover:bg-white/20">
@@ -200,7 +176,20 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
               </svg>
             </a>
-            <a href="/app" class="text-gray-300 text-md font-semibold min-w-36 text-center">{{ date }}</a>
+            {% match running %}
+            {% when Some with (running) %}
+            <span class="min-w-20">&nbsp;</span>
+            {% when None %}
+            <div class="flex items-center justify-center py-4 px-10 lg:px-0">
+              <a href="/app/start"
+                class="block rounded-full bg-indigo-600 p-1 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                </svg>
+              </a>
+            </div>
+            {% endmatch %}
             <a href="/app/{{ next }}"
               class="rounded-md px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
               <svg fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-6 h-6 text-white">
@@ -208,7 +197,6 @@
               </svg>
             </a>
           </div>
-          <div class="px-2.5"><span class="w-6 h-6 block"></span></div>
         </div>
       </div>
     </div>
