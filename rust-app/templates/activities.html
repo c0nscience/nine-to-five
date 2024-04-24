@@ -178,13 +178,13 @@
       {% include "activities/empty.html" %}
       {% endif %}
 
-      <div class="fixed bottom-0 left-0 right-0 bg-gray-900">
+      <div class="mx-auto max-w-lg fixed bottom-0 left-0 right-0 bg-gray-900">
         {% match running %}
         {% when Some with (running) %}
         {% include "activities/running.html" %}
         {% when None %}
         {% endmatch %}
-        <div class="flex h-12 mx-auto max-w-lg items-center justify-around px-2">
+        <div class="flex h-12 items-center justify-around px-2">
           <div class="flex space-x-4 h-12 items-center">
             <a href="/app/{{ prev }}"
               class="rounded-md px-2.5 py-1 font-semibold text-white shadow-sm hover:bg-white/20">
