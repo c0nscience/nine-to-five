@@ -95,6 +95,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/callback", get(auth::callback))
         .nest("/app", activity::handlers::router(state.clone()))
         .nest("/app/metrics", metrics::handlers::router(state.clone()))
+        .route("/app/menu", get(menu))
         .route("/login", get(auth::login))
         .route("/signup", get(auth::signup))
         .layer(SessionLayer::new(session_store))
@@ -119,14 +120,22 @@ async fn main() -> anyhow::Result<()> {
     .context("failed to start server")
 }
 
+#[derive(Template)]
+#[template(path = "index.html")]
+struct IndexTemplate {}
+
 async fn index() -> impl IntoResponse {
     IndexTemplate {}
+}
+
+#[derive(Template)]
+#[template(path = "menu.html")]
+struct MenuTemplate {}
+
+async fn menu() -> impl IntoResponse {
+    MenuTemplate {}
 }
 
 async fn health() -> (StatusCode, impl IntoResponse) {
     (StatusCode::OK, "OK")
 }
-
-#[derive(Template)]
-#[template(path = "index.html")]
-struct IndexTemplate {}
