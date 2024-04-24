@@ -124,6 +124,7 @@ async fn get_by_tags(
 
 #[derive(Debug)]
 struct MetricConfig {
+    name: String,
     metric_type: MetricType,
     hours_per_week: Option<i16>,
     tags: Vec<sqlx::types::Uuid>,
@@ -138,7 +139,7 @@ async fn get_config(
         MetricConfig,
         r#"
         SELECT 
-            metrics.metric_type as "metric_type: MetricType", metrics.hours_per_week,
+            metrics.name, metrics.metric_type as "metric_type: MetricType", metrics.hours_per_week,
             COALESCE(array_agg((tags.id)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<sqlx::types::Uuid>"
         FROM metrics
         LEFT JOIN metrics_tags

@@ -98,6 +98,7 @@ async fn create_metric(
 #[derive(Template)]
 #[template(path = "metrics/detail.html")]
 struct DetailTemplate {
+    name: String,
     metric_type: MetricType,
     total_time: String,
     total_time_until_last_week: String,
@@ -242,6 +243,7 @@ async fn detail(
         );
     }
     Ok(DetailTemplate {
+        name: config.name,
         metric_type: config.metric_type,
         total_time: format_duration(total_time),
         total_time_until_last_week: format_duration(total_time_until_last_week),
