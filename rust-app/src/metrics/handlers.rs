@@ -11,16 +11,14 @@ use axum::{
 
 use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
 use chrono::{Datelike, NaiveDate};
-use chrono_tz::Tz;
 use serde::Deserialize;
 use tracing::info;
-use urlencoding::decode;
 
 use super::{
     associate_tags, create, delete, delete_associate_tags, get_by_tags, get_config, list_all,
     update, ListMetric, Metric, MetricType, Update,
 };
-use crate::{activity, auth, errors, metrics, states};
+use crate::{activity, auth, errors, func::parse_timezone, metrics, states};
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
@@ -272,14 +270,6 @@ fn format_duration(duration: chrono::Duration) -> String {
 
 fn start_of_week(date: chrono::NaiveDate) -> chrono::NaiveDate {
     date - chrono::Duration::days(i64::from(date.weekday().num_days_from_monday()))
-}
-
-fn parse_timezone(cookie: &Cookie) -> Tz {
-    cookie
-        .get("timezone")
-        .and_then(|d| decode(d).ok())
-        .and_then(|d| d.parse::<Tz>().ok())
-        .unwrap_or(Tz::Europe__Berlin)
 }
 
 trait WithContains {

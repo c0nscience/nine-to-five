@@ -23,6 +23,8 @@ use tracing::info;
 pub mod activity;
 pub mod auth;
 pub mod errors;
+pub mod func;
+pub mod import;
 pub mod metrics;
 pub mod states;
 
@@ -95,7 +97,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/callback", get(auth::callback))
         .nest("/app", activity::handlers::router(state.clone()))
         .nest("/app/metrics", metrics::handlers::router(state.clone()))
-        .route("/app/menu", get(menu))
+        .nest("/app/import", import::router(state.clone()))
         .route("/login", get(auth::login))
         .route("/signup", get(auth::signup))
         .layer(SessionLayer::new(session_store))
@@ -126,14 +128,6 @@ struct IndexTemplate {}
 
 async fn index() -> impl IntoResponse {
     IndexTemplate {}
-}
-
-#[derive(Template)]
-#[template(path = "menu.html")]
-struct MenuTemplate {}
-
-async fn menu() -> impl IntoResponse {
-    MenuTemplate {}
 }
 
 async fn health() -> (StatusCode, impl IntoResponse) {

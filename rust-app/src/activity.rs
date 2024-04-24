@@ -64,21 +64,21 @@ async fn in_range(
     Ok(result)
 }
 
-
+#[derive(Debug)]
 pub struct Create {
-    user_id: String,
-    name: String,
-    start_time: chrono::DateTime<chrono::Utc>,
-    end_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub user_id: String,
+    pub name: String,
+    pub start_time: chrono::DateTime<chrono::Utc>,
+    pub end_time: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[allow(clippy::missing_errors_doc)]
 pub async fn create(db: &PgPool, activity_to_create: Create) -> anyhow::Result<sqlx::types::Uuid> {
     let result = sqlx::query!(
         r#"
-            insert into activities(user_id, name, start_time, end_time)
-            values ($1, $2, $3, $4)
-            returning id
+            INSERT INTO activities(user_id, name, start_time, end_time)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id
         "#,
         activity_to_create.user_id,
         activity_to_create.name,
@@ -154,7 +154,7 @@ pub async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<
     Ok(result)
 }
 
-async fn associate_tags(db: &PgPool, tags: &[sqlx::types::Uuid], activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
+pub async fn associate_tags(db: &PgPool, tags: &[sqlx::types::Uuid], activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
     if tags.is_empty() {
         return Ok(());
     }
@@ -186,16 +186,19 @@ async fn delete_associate_tags(db: &PgPool,user_id: String, activity_id: sqlx::t
     Ok(())
 }
 
-async fn create_tag(db: &PgPool, user_id: String, name: String) -> anyhow::Result<()>{
+pub async fn create_tag(db: &PgPool, user_id: String, name: String) -> anyhow::Result<sqlx::types::Uuid>{
     if name.is_empty() {
-        return Ok(());
+        return Ok(sqlx::types::Uuid::default());
     }
 
-    sqlx::query!(r#"
+    let result = sqlx::query!(r#"
             INSERT INTO tags(user_id, name)
-            VALUES ($1, $2)"#,user_id, name).execute(db).await?;
+            VALUES ($1, $2)
+            RETURNING id"#,user_id, name)
+    .fetch_one(db)
+    .await?;
     
-    Ok(())
+    Ok(result.id)
 }
 
 async fn delete(db: &PgPool, user_id: String, id: sqlx::types::Uuid) -> anyhow::Result<()>{
@@ -262,7 +265,7 @@ async fn update(db: &sqlx::Pool<Postgres>, user_id: String, updated_activity: Up
     Ok(())
 }
 
-async fn tag_exists(db: &sqlx::Pool<Postgres>, user_id: String, name: String) -> anyhow::Result<bool> {
+pub async fn tag_exists(db: &sqlx::Pool<Postgres>, user_id: String, name: String) -> anyhow::Result<bool> {
     let exists = sqlx::query!(r#"
         SELECT EXISTS(SELECT 1 FROM tags WHERE name = $2 AND user_id = $1)
     "#, user_id, name).fetch_one(db).await?.exists.unwrap_or_default();
