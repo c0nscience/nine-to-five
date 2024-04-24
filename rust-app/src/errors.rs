@@ -1,6 +1,8 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use axum_extra::extract::multipart;
 use thiserror::Error;
+use tracing::warn;
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -14,10 +16,19 @@ pub enum AppError {
     InternalError,
 
     #[error("{0}")]
+    MultipartError(#[from] multipart::MultipartError),
+
+    #[error("{0}")]
     HttpRequestError(#[from] reqwest::Error),
 
     #[error("{0}")]
     Sqlx(#[from] sqlx::Error),
+
+    #[error("{0}")]
+    Utf8Error(#[from] std::str::Utf8Error),
+
+    #[error("{0}")]
+    SerdeError(#[from] serde_json::Error),
 
     #[error("{0}")]
     OAuthError(
@@ -41,8 +52,8 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         use AppError::{
-            Anyhow, Chrono, HttpRequestError, InternalError, JwtError, NotFound, OAuthError, Sqlx,
-            Unauthorized,
+            Anyhow, Chrono, HttpRequestError, InternalError, JwtError, MultipartError, NotFound,
+            OAuthError, SerdeError, Sqlx, Unauthorized, Utf8Error,
         };
 
         match self {
@@ -50,7 +61,33 @@ impl IntoResponse for AppError {
             Unauthorized | JwtError(_) | OAuthError(_) => {
                 (StatusCode::UNAUTHORIZED).into_response()
             }
-            InternalError | Anyhow(_) | HttpRequestError(_) | Sqlx(_) | Chrono(_) => {
+            InternalError => (StatusCode::INTERNAL_SERVER_ERROR).into_response(),
+            Anyhow(err) => {
+                warn!("anyhow: {}", err);
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+            HttpRequestError(err) => {
+                warn!("request error: {}", err);
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+            Sqlx(err) => {
+                warn!("sqlx: {}", err);
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+            Chrono(err) => {
+                warn!("chrono: {}", err);
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+            MultipartError(err) => {
+                warn!("multipart: {}", err);
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+            Utf8Error(err) => {
+                warn!("utf8: {}", err);
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+            SerdeError(err) => {
+                warn!("serde: {}", err);
                 (StatusCode::INTERNAL_SERVER_ERROR).into_response()
             }
         }

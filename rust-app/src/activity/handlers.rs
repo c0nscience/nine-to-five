@@ -14,9 +14,7 @@ use chrono::{prelude::*, LocalResult};
 use chrono_tz::Tz;
 use serde::Deserialize;
 
-use urlencoding::decode;
-
-use crate::{activity, auth, errors, states};
+use crate::{activity, auth, errors, func::parse_timezone, states};
 
 use super::{
     associate_tags, available_tags, create, create_tag, delete_associate_tags, in_range, running,
@@ -37,6 +35,7 @@ pub fn router(state: states::AppState) -> Router<states::AppState> {
         .route("/activity/:id/continue", post(continue_activity))
         .route("/activity/:id/stop", post(stop))
         .route("/tags", post(add_tag))
+        .route("/menu", get(menu))
         .route("/", get(today))
         .route_layer(middleware::from_fn_with_state(
             state,
@@ -526,14 +525,6 @@ async fn update_activity(
     Ok(Redirect::to(format!("/app/{}", query.date).as_str()))
 }
 
-fn parse_timezone(cookie: &Cookie) -> Tz {
-    cookie
-        .get("timezone")
-        .and_then(|d| decode(d).ok())
-        .and_then(|d| d.parse::<Tz>().ok())
-        .unwrap_or(Tz::Europe__Berlin)
-}
-
 async fn continue_activity(
     Path(id): Path<sqlx::types::Uuid>,
     State(state): State<states::AppState>,
@@ -611,6 +602,18 @@ impl Adjustable for DateTime<Utc> {
             .and_then(|d| d.with_second(0))
             .and_then(|d| d.with_nanosecond(0))
     }
+}
+
+#[derive(Template)]
+#[template(path = "menu.html")]
+struct MenuTemplate {
+    show_import: bool,
+}
+
+async fn menu(Extension(user_id): Extension<String>) -> impl IntoResponse {
+    let show_import =
+        user_id == "auth0|59ac17508f649c3f85124ec1" || user_id == "auth0|59cc17a23b09c52496036107";
+    MenuTemplate { show_import }
 }
 
 #[cfg(test)]
