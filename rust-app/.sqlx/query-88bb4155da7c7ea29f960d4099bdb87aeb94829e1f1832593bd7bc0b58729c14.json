@@ -22,7 +22,8 @@
             "kind": {
               "Enum": [
                 "sum",
-                "overtime"
+                "overtime",
+                "count"
               ]
             }
           }
