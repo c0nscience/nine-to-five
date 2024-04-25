@@ -14,7 +14,7 @@ use chrono::{prelude::*, LocalResult};
 use chrono_tz::Tz;
 use serde::Deserialize;
 
-use crate::{activity, auth, errors, func::parse_timezone, states};
+use crate::{activity, auth, encrypt, errors, func::parse_timezone, states};
 
 use super::{
     associate_tags, available_tags, create, create_tag, delete_associate_tags, in_range, running,
@@ -108,16 +108,20 @@ async fn list(
         .filter(|a| a.end_time.is_some())
         .map(|a| {
             let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
+
+            let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
             ActivityTemplData {
                 id: a.id,
-                name: a.name.clone(),
+                name,
                 duration,
                 duration_iso,
                 tags: a
                     .tags
                     .iter()
-                    .map(|t| TagTemplData {
-                        name: t.name.clone(),
+                    .map(|t| {
+                        let name =
+                            encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+                        TagTemplData { name }
                     })
                     .collect(),
             }
@@ -127,17 +131,19 @@ async fn list(
     let running = running(&state.db, user_id.clone()).await?.map(|a| {
         let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
         let start_time = a.start_time.timestamp_millis();
+        let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
         RunningActivityTemplData {
             id: a.id,
-            name: a.name.clone(),
+            name,
             start_time,
             duration,
             duration_iso,
             tags: a
                 .tags
                 .iter()
-                .map(|t| TagTemplData {
-                    name: t.name.clone(),
+                .map(|t| {
+                    let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+                    TagTemplData { name }
                 })
                 .collect(),
         }
@@ -205,7 +211,15 @@ async fn start_form(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let available_tags = available_tags(&state.db, user_id).await?;
+    let available_tags = available_tags(&state.db, user_id)
+        .await?
+        .iter()
+        .map(|t| {
+            let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+            AvailableTag { id: t.id, name }
+        })
+        .collect();
+
     Ok(StartForm { available_tags })
 }
 
@@ -285,10 +299,12 @@ async fn start(
             {
                 let start_time = parse_time(start_time, date, timezone)?;
                 let end_time = parse_time(end_time, date, timezone)?;
+                let name = encrypt::encrypt(&create_activity.name, &state.database_key)
+                    .unwrap_or_default();
 
                 let activity = Create {
                     user_id: user_id.clone(),
-                    name: create_activity.name.clone(),
+                    name,
                     start_time,
                     end_time: Some(end_time),
                 };
@@ -301,11 +317,12 @@ async fn start(
     };
 
     if !matches!(create_activity.start_option, StartOption::Repeating) {
+        let name = encrypt::encrypt(&create_activity.name, &state.database_key).unwrap_or_default();
         let activity_id = create(
             &state.db,
             Create {
                 user_id: user_id.clone(),
-                name: create_activity.name,
+                name,
                 start_time: start.adjust().unwrap_or(start),
                 end_time: None,
             },
@@ -377,9 +394,17 @@ async fn add_tag(
 ) -> Result<impl IntoResponse, errors::AppError> {
     let name = new_tag.name.trim();
     if !tag_exists(&state.db, user_id.clone(), name.to_string()).await? {
-        create_tag(&state.db, user_id.clone(), name.to_string()).await?;
+        let name = encrypt::encrypt(&name, &state.database_key)?;
+        create_tag(&state.db, user_id.clone(), name).await?;
     };
-    let available_tags = available_tags(&state.db, user_id.clone()).await?;
+    let available_tags = available_tags(&state.db, user_id)
+        .await?
+        .iter()
+        .map(|t| {
+            let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+            AvailableTag { id: t.id, name }
+        })
+        .collect();
 
     Ok(AvailableTagsTemplate { available_tags })
 }
@@ -441,7 +466,14 @@ async fn edit_form(
         return Err(errors::AppError::NotFound);
     };
 
-    let available_tags = available_tags(&state.db, user_id).await?;
+    let available_tags = available_tags(&state.db, user_id)
+        .await?
+        .iter()
+        .map(|t| {
+            let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+            AvailableTag { id: t.id, name }
+        })
+        .collect();
 
     let start = activity
         .start_time
@@ -452,9 +484,11 @@ async fn edit_form(
             .format(FORM_DATE_TIME_FORMAT)
             .to_string()
     });
+
+    let name = encrypt::decrypt(&activity.name, &state.database_key).unwrap_or_default();
     let activity = EditFormData {
         id: activity.id,
-        name: activity.name,
+        name,
         start_time: start.to_string(),
         end_time: end,
         tags: activity.tags,
@@ -507,12 +541,13 @@ async fn update_activity(
         })
         .map(|d| d.to_utc());
 
+    let name = encrypt::encrypt(&updated_activity.name, &state.database_key).unwrap_or_default();
     update(
         &state.db,
         user_id.clone(),
         Update {
             id,
-            name: updated_activity.name,
+            name,
             start_time,
             end_time,
         },
@@ -548,11 +583,15 @@ async fn continue_activity(
         .await;
     };
 
+    let name = encrypt::decrypt(&activity_to_continue.name, &state.database_key)
+        .and_then(|c| encrypt::encrypt(&c, &state.database_key))
+        .unwrap_or_default();
+
     let new_id = create(
         &state.db,
         Create {
             user_id: user_id.clone(),
-            name: activity_to_continue.name,
+            name,
             start_time: now,
             end_time: None,
         },

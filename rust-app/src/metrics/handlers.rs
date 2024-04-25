@@ -18,7 +18,13 @@ use super::{
     associate_tags, create, delete, delete_associate_tags, get_by_tags, get_config, list_all,
     update, ListMetric, Metric, MetricType, Update,
 };
-use crate::{activity, auth, errors, func::parse_timezone, metrics, states};
+use crate::{
+    activity, auth,
+    encrypt::{decrypt, encrypt},
+    errors,
+    func::parse_timezone,
+    metrics, states,
+};
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
@@ -43,7 +49,14 @@ async fn list(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let metrics = list_all(&state.db, user_id).await?;
+    let metrics = list_all(&state.db, user_id)
+        .await?
+        .iter()
+        .map(|m| {
+            let name = decrypt(&m.name, &state.database_key).unwrap_or_default();
+            ListMetric { id: m.id, name }
+        })
+        .collect();
 
     Ok(MetricsTemplate { metrics })
 }
@@ -58,7 +71,14 @@ async fn new_form(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let available_tags = activity::available_tags(&state.db, user_id).await?;
+    let available_tags = activity::available_tags(&state.db, user_id)
+        .await?
+        .iter()
+        .map(|t| {
+            let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
+            activity::AvailableTag { id: t.id, name }
+        })
+        .collect();
     Ok(NewMetricTemplate { available_tags })
 }
 
@@ -72,23 +92,19 @@ struct CreateMetric {
     tags: Vec<sqlx::types::Uuid>,
 }
 
-impl From<CreateMetric> for Metric {
-    fn from(val: CreateMetric) -> Self {
-        Self {
-            name: val.name,
-            tags: val.tags,
-            metric_type: val.metric_type,
-            hours_per_week: val.hours_per_week,
-        }
-    }
-}
-
 async fn create_metric(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
     Form(updated_activity): Form<CreateMetric>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    create(&state.db, user_id, updated_activity.into()).await?;
+    let name = encrypt(&updated_activity.name, &state.database_key).unwrap_or_default();
+    let cm = Metric {
+        name,
+        metric_type: updated_activity.metric_type,
+        hours_per_week: updated_activity.hours_per_week,
+        tags: updated_activity.tags,
+    };
+    create(&state.db, user_id, cm).await?;
 
     Ok(Redirect::to("/app/metrics"))
 }
@@ -240,8 +256,10 @@ async fn detail(
             mt_elapsed.as_micros(),
         );
     }
+
+    let name = decrypt(&config.name, &state.database_key).unwrap_or_default();
     Ok(DetailTemplate {
-        name: config.name,
+        name,
         metric_type: config.metric_type,
         total_time: format_duration(total_time),
         total_time_until_last_week: format_duration(total_time_until_last_week),
@@ -307,11 +325,19 @@ async fn edit_form(
         return Err(errors::AppError::NotFound);
     };
 
-    let available_tags = activity::available_tags(&state.db, user_id).await?;
+    let available_tags = activity::available_tags(&state.db, user_id)
+        .await?
+        .iter()
+        .map(|t| {
+            let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
+            activity::AvailableTag { id: t.id, name }
+        })
+        .collect();
 
+    let name = decrypt(&metric.name, &state.database_key).unwrap_or_default();
     let metric = EditFormData {
         id: metric.id,
-        name: metric.name,
+        name,
         metric_type: metric.metric_type,
         hours_per_week: metric.hours_per_week,
         tags: metric.tags,
@@ -339,12 +365,13 @@ async fn update_metric(
     Extension(user_id): Extension<String>,
     Form(updated_metric): Form<UpdateMetric>,
 ) -> Result<Redirect, errors::AppError> {
+    let name = encrypt(&updated_metric.name, &state.database_key).unwrap_or_default();
     update(
         &state.db,
         user_id.clone(),
         Update {
             id,
-            name: updated_metric.name,
+            name,
             metric_type: updated_metric.metric_type,
             hours_per_week: updated_metric.hours_per_week,
         },
