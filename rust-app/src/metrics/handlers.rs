@@ -76,7 +76,11 @@ async fn new_form(
         .iter()
         .map(|t| {
             let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
-            activity::AvailableTag { id: t.id, name }
+            activity::AvailableTag {
+                id: t.id,
+                name,
+                search_hash: t.search_hash.clone(),
+            }
         })
         .collect();
     Ok(NewMetricTemplate { available_tags })
@@ -109,6 +113,10 @@ async fn create_metric(
     Ok(Redirect::to("/app/metrics"))
 }
 
+trait WithConversion {
+    fn as_f64(i: i64) -> f64;
+}
+
 #[derive(Template)]
 #[template(path = "metrics/detail.html")]
 struct DetailTemplate {
@@ -117,6 +125,12 @@ struct DetailTemplate {
     total_time: String,
     total_time_until_last_week: String,
     data_points: Vec<DataPoint>,
+}
+
+impl WithConversion for DetailTemplate {
+    fn as_f64(i: i64) -> f64 {
+        return i as f64;
+    }
 }
 
 const DEFAULT_HOURS_PER_WEEK: i16 = 40;
@@ -330,7 +344,11 @@ async fn edit_form(
         .iter()
         .map(|t| {
             let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
-            activity::AvailableTag { id: t.id, name }
+            activity::AvailableTag {
+                id: t.id,
+                name,
+                search_hash: t.search_hash.clone(),
+            }
         })
         .collect();
 

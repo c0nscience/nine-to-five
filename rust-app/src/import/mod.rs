@@ -11,7 +11,7 @@ use axum_extra::extract::Multipart;
 use serde::Deserialize;
 use tracing::info;
 
-use crate::{activity, auth, errors, states};
+use crate::{activity, auth, encrypt, errors, hash, states};
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
@@ -69,10 +69,11 @@ async fn import(
         let data = std::str::from_utf8(&data)?;
         let activities = serde_json::from_str::<Vec<ActivityJson>>(data)?;
 
-        for aj in activities.iter() {
+        for aj in &activities {
+            let name = encrypt::encrypt(&aj.name, &state.database_key)?;
             let act = activity::Create {
                 user_id: user_id.clone(),
-                name: aj.name.clone(),
+                name,
                 start_time: aj.start_time,
                 end_time: Some(aj.end_time),
             };
@@ -82,25 +83,27 @@ async fn import(
                 continue;
             };
             let mut tag_ids: Vec<sqlx::types::Uuid> = vec![];
-            for tag in tags.iter() {
+            for tag in tags {
+                let hashed_name = hash::hash(tag, &state.database_hash_key)?;
                 let exists =
-                    activity::tag_exists(&state.db, user_id.clone(), tag.to_owned()).await?;
+                    activity::tag_exists(&state.db, user_id.clone(), hashed_name.clone()).await?;
 
                 if exists {
                     let existing_tags =
                         activity::available_tags(&state.db, user_id.clone()).await?;
                     existing_tags
                         .iter()
-                        .filter(|t| t.name == *tag)
+                        .filter(|t| t.search_hash == hashed_name)
                         .map(|t| t.id)
                         .for_each(|id| tag_ids.push(id));
                 } else {
+                    let name = encrypt::encrypt(&tag, &state.database_key)?;
                     let tag_id =
-                        activity::create_tag(&state.db, user_id.clone(), tag.to_owned()).await?;
+                        activity::create_tag(&state.db, user_id.clone(), name, hashed_name).await?;
                     tag_ids.push(tag_id);
                 }
             }
-            if tag_ids.len() > 0 {
+            if !tag_ids.is_empty() {
                 activity::associate_tags(&state.db, &tag_ids, activity_id).await?;
             }
         }

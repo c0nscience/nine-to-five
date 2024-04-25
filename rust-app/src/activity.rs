@@ -139,7 +139,8 @@ pub async fn stop(db: &PgPool, user_id: String, id: String, end: DateTime<Utc>) 
 #[derive(Debug)]
 pub struct AvailableTag {
     pub id: sqlx::types::Uuid,
-    pub name: String
+    pub name: String,
+    pub search_hash: String,
 }
 
 #[allow(clippy::missing_errors_doc)]
@@ -147,7 +148,7 @@ pub async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<
     let result = sqlx::query_as!(
         AvailableTag, 
         r#"
-            SELECT id, name FROM tags WHERE user_id = $1 ORDER BY name
+            SELECT id, name, search_hash FROM tags WHERE user_id = $1
         "#,
         user_id).fetch_all(db).await?;
 
@@ -186,15 +187,15 @@ async fn delete_associate_tags(db: &PgPool,user_id: String, activity_id: sqlx::t
     Ok(())
 }
 
-pub async fn create_tag(db: &PgPool, user_id: String, name: String) -> anyhow::Result<sqlx::types::Uuid>{
+pub async fn create_tag(db: &PgPool, user_id: String, name: String, hashed_name: String) -> anyhow::Result<sqlx::types::Uuid>{
     if name.is_empty() {
         return Ok(sqlx::types::Uuid::default());
     }
 
     let result = sqlx::query!(r#"
-            INSERT INTO tags(user_id, name)
-            VALUES ($1, $2)
-            RETURNING id"#,user_id, name)
+            INSERT INTO tags(user_id, name, search_hash)
+            VALUES ($1, $2, $3)
+            RETURNING id"#,user_id, name, hashed_name)
     .fetch_one(db)
     .await?;
     
@@ -265,10 +266,10 @@ async fn update(db: &sqlx::Pool<Postgres>, user_id: String, updated_activity: Up
     Ok(())
 }
 
-pub async fn tag_exists(db: &sqlx::Pool<Postgres>, user_id: String, name: String) -> anyhow::Result<bool> {
+pub async fn tag_exists(db: &sqlx::Pool<Postgres>, user_id: String, hashed_name: String) -> anyhow::Result<bool> {
     let exists = sqlx::query!(r#"
-        SELECT EXISTS(SELECT 1 FROM tags WHERE name = $2 AND user_id = $1)
-    "#, user_id, name).fetch_one(db).await?.exists.unwrap_or_default();
+        SELECT EXISTS(SELECT 1 FROM tags WHERE search_hash = $2 AND user_id = $1)
+    "#, user_id, hashed_name).fetch_one(db).await?.exists.unwrap_or_default();
     Ok(exists)
 }
 

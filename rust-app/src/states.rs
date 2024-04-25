@@ -20,4 +20,5 @@ pub struct AppState {
     pub verifiers: Arc<Mutex<HashMap<String, String>>>,
     pub oauth_config: OAuthConfig,
     pub database_key: Key<Aes256Gcm>,
+    pub database_hash_key: String,
 }

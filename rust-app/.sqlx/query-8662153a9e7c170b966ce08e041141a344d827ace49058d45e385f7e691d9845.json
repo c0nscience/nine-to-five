@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, name FROM tags WHERE user_id = $1 ORDER BY name\n        ",
+  "query": "\n            SELECT id, name, search_hash FROM tags WHERE user_id = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -12,6 +12,11 @@
         "ordinal": 1,
         "name": "name",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "search_hash",
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -21,8 +26,9 @@
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "d4ab7febc6c6f53f4f22d2c2e85cf955053eeb98993b558e69787a7318987891"
+  "hash": "8662153a9e7c170b966ce08e041141a344d827ace49058d45e385f7e691d9845"
 }

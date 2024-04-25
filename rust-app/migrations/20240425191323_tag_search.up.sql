@@ -1,0 +1,2 @@
+ALTER TABLE tags
+ADD COLUMN search_hash TEXT NOT NULL;
