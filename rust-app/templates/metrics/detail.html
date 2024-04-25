@@ -60,8 +60,8 @@
   </nav>
 
   <div class="mx-auto max-w-lg">
-    <div class="bg-gray-900 py-10">
-      <div class="my-8 px-4 sm:mt-0 sm:mb-8 sm:px-6 lg:px-8">
+    <div class="bg-gray-900">
+      <div class="my-4 px-4 sm:mt-0 sm:mb-8 sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 gap-px bg-white/5">
           {% match metric_type %}
           {% when metrics::MetricType::Overtime %}
@@ -137,7 +137,7 @@
       {
         data: [
           {% for dp in data_points %}
-      ['{{dp.date}}', {{dp.duration.num_minutes() / 60}}],
+      ['{{dp.date}}', {{Self:: as_f64(dp.duration.num_minutes()) / 60.0_f64}}],
   {% endfor %}
         ],
   type: 'line'

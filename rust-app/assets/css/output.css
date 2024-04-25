@@ -850,6 +850,11 @@ select {
   margin-bottom: 2rem;
 }
 
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 .-ml-0 {
   margin-left: -0px;
 }

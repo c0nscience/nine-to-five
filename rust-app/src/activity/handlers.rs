@@ -14,7 +14,12 @@ use chrono::{prelude::*, LocalResult};
 use chrono_tz::Tz;
 use serde::Deserialize;
 
-use crate::{activity, auth, encrypt, errors, func::parse_timezone, states};
+use crate::{
+    activity, auth, encrypt, errors,
+    func::parse_timezone,
+    hash::{self},
+    states,
+};
 
 use super::{
     associate_tags, available_tags, create, create_tag, delete_associate_tags, in_range, running,
@@ -216,7 +221,11 @@ async fn start_form(
         .iter()
         .map(|t| {
             let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
-            AvailableTag { id: t.id, name }
+            AvailableTag {
+                id: t.id,
+                name,
+                search_hash: t.search_hash.clone(),
+            }
         })
         .collect();
 
@@ -393,16 +402,21 @@ async fn add_tag(
     Form(new_tag): Form<AddTagForm>,
 ) -> Result<impl IntoResponse, errors::AppError> {
     let name = new_tag.name.trim();
-    if !tag_exists(&state.db, user_id.clone(), name.to_string()).await? {
-        let name = encrypt::encrypt(&name, &state.database_key)?;
-        create_tag(&state.db, user_id.clone(), name).await?;
+    let hashed_name = hash::hash(name, &state.database_hash_key)?;
+    if !tag_exists(&state.db, user_id.clone(), hashed_name.clone()).await? {
+        let enc_name = encrypt::encrypt(name, &state.database_key)?;
+        create_tag(&state.db, user_id.clone(), enc_name, hashed_name).await?;
     };
     let available_tags = available_tags(&state.db, user_id)
         .await?
         .iter()
         .map(|t| {
             let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
-            AvailableTag { id: t.id, name }
+            AvailableTag {
+                id: t.id,
+                name,
+                search_hash: t.search_hash.clone(),
+            }
         })
         .collect();
 
@@ -471,7 +485,11 @@ async fn edit_form(
         .iter()
         .map(|t| {
             let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
-            AvailableTag { id: t.id, name }
+            AvailableTag {
+                id: t.id,
+                name,
+                search_hash: t.search_hash.clone(),
+            }
         })
         .collect();
 

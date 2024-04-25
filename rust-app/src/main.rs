@@ -11,6 +11,7 @@ use axum_session::{Key, SessionConfig, SessionLayer, SessionPgPool, SessionStore
 
 use base64::{engine::general_purpose, Engine};
 use chrono::Duration;
+use hash::hash;
 use jsonwebtoken::jwk;
 
 use aes_gcm::{Aes256Gcm, Key as AesKey};
@@ -27,6 +28,7 @@ pub mod auth;
 pub mod encrypt;
 pub mod errors;
 pub mod func;
+pub mod hash;
 pub mod import;
 pub mod metrics;
 pub mod states;
@@ -49,6 +51,8 @@ async fn main() -> anyhow::Result<()> {
     let database_url =
         dotenvy::var("DATABASE_URL").context("no postgres connection url provided")?;
     let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
+    let database_hash_key =
+        dotenvy::var("DATABASE_HASH_KEY").context("database hash key not provided")?;
 
     // let rnd_key = Aes256Gcm::generate_key(OsRng);
     // let rnd_key = general_purpose::STANDARD.encode(rnd_key);
@@ -105,6 +109,7 @@ async fn main() -> anyhow::Result<()> {
         verifiers: Arc::new(Mutex::new(HashMap::new())),
         oauth_config,
         database_key: *key,
+        database_hash_key,
     };
 
     let app = Router::new()
