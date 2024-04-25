@@ -9,9 +9,11 @@ use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
 
 use axum_session::{Key, SessionConfig, SessionLayer, SessionPgPool, SessionStore};
 
+use base64::{engine::general_purpose, Engine};
 use chrono::Duration;
 use jsonwebtoken::jwk;
 
+use aes_gcm::{Aes256Gcm, Key as AesKey};
 use sqlx::postgres::PgPoolOptions;
 use states::OAuthConfig;
 use std::net::SocketAddr;
@@ -22,6 +24,7 @@ use tracing::info;
 
 pub mod activity;
 pub mod auth;
+pub mod encrypt;
 pub mod errors;
 pub mod func;
 pub mod import;
@@ -40,10 +43,16 @@ async fn main() -> anyhow::Result<()> {
     let client_secret = dotenvy::var("CLIENT_SECRET").context("oauth2 secret not provided")?;
     let idp_domain = dotenvy::var("IDP_DOMAIN").context("idp domain not provided")?;
     let cookie_key = dotenvy::var("COOKIE_KEY").context("cookie key not provided")?;
-    let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
+    let session_database_key =
+        dotenvy::var("SESSION_DATABASE_KEY").context("session database key not provided")?;
     let audience = dotenvy::var("OAUTH_AUDIENCE").context("audience not provided")?;
     let database_url =
         dotenvy::var("DATABASE_URL").context("no postgres connection url provided")?;
+    let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
+
+    // let rnd_key = Aes256Gcm::generate_key(OsRng);
+    // let rnd_key = general_purpose::STANDARD.encode(rnd_key);
+    // info!("rnd key: {}", rnd_key);
 
     let jwk_set = reqwest::get(format!("https://{idp_domain}/.well-known/jwks.json"))
         .await
@@ -65,7 +74,7 @@ async fn main() -> anyhow::Result<()> {
     let session_config = SessionConfig::default()
         .with_table_name("sessions")
         .with_key(Key::from(cookie_key.as_bytes()))
-        .with_database_key(Key::from(database_key.as_bytes()))
+        .with_database_key(Key::from(session_database_key.as_bytes()))
         .with_http_only(true)
         .with_secure(secure)
         .with_ip_and_user_agent(true)
@@ -85,12 +94,17 @@ async fn main() -> anyhow::Result<()> {
         audience,
         idp_domain,
     };
+
+    let key = general_purpose::STANDARD.decode(database_key.as_str())?;
+    let key = AesKey::<Aes256Gcm>::from_slice(&key);
+
     let state = states::AppState {
         db,
         jwk_set,
         oauth_client,
         verifiers: Arc::new(Mutex::new(HashMap::new())),
         oauth_config,
+        database_key: *key,
     };
 
     let app = Router::new()

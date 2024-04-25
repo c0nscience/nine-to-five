@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+use aes_gcm::{Aes256Gcm, Key};
 use jsonwebtoken::jwk;
 use oauth2::basic::BasicClient;
 use sqlx::PgPool;
@@ -18,4 +19,5 @@ pub struct AppState {
     pub oauth_client: BasicClient,
     pub verifiers: Arc<Mutex<HashMap<String, String>>>,
     pub oauth_config: OAuthConfig,
+    pub database_key: Key<Aes256Gcm>,
 }
