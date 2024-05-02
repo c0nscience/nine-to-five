@@ -148,8 +148,7 @@
                 <span class="sr-only">Edit</span>
               </a>
 
-              <button hx-post="/app/activity/{{ activity.id }}/continue?date={{ curr }}" id="cont-btn-{{ activity.id }}"
-                hx-select="main" hx-target="main" hx-swap="outerHTML" class="text-white hover:text-gray-500">
+              <a href="/app/activity/{{ activity.id }}/continue" class="text-white hover:text-gray-500">
                 {% if running.is_some() %}
                 <span class="sr-only">Switch</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
@@ -165,7 +164,7 @@
                     clip-rule="evenodd" />
                 </svg>
                 {% endif %}
-              </button>
+              </a>
             </div>
           </div>
         </li>

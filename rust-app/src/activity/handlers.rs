@@ -37,7 +37,7 @@ pub fn router(state: states::AppState) -> Router<states::AppState> {
             "/activity/:id",
             delete(delete_activity).get(edit_form).post(update_activity),
         )
-        .route("/activity/:id/continue", post(continue_activity))
+        .route("/activity/:id/continue", get(continue_activity))
         .route("/activity/:id/stop", post(stop))
         .route("/tags", post(add_tag))
         .route("/menu", get(menu))
@@ -582,9 +582,7 @@ async fn continue_activity(
     Path(id): Path<sqlx::types::Uuid>,
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
-    Query(query): Query<DateQuery>,
-    TypedHeader(cookie): TypedHeader<Cookie>,
-) -> Result<impl IntoResponse, errors::AppError> {
+) -> Result<Redirect, errors::AppError> {
     let now = Utc::now();
     let now = now.adjust().unwrap_or(now);
     if let Some(running) = running(&state.db, user_id.clone()).await? {
@@ -592,13 +590,7 @@ async fn continue_activity(
     }
 
     let Some(activity_to_continue) = activity::get(&state.db, user_id.clone(), id).await? else {
-        return list(
-            Path(query.date),
-            State(state.clone()),
-            Extension(user_id.clone()),
-            TypedHeader(cookie.clone()),
-        )
-        .await;
+        return Ok(Redirect::to("/app"));
     };
 
     let name = encrypt::decrypt(&activity_to_continue.name, &state.database_key)
@@ -627,13 +619,7 @@ async fn continue_activity(
     )
     .await?;
 
-    list(
-        Path(query.date),
-        State(state.clone()),
-        Extension(user_id.clone()),
-        TypedHeader(cookie.clone()),
-    )
-    .await
+    Ok(Redirect::to("/app"))
 }
 
 trait Adjustable
