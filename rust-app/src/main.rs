@@ -83,7 +83,6 @@ async fn main() -> anyhow::Result<()> {
         .with_secure(secure)
         .with_ip_and_user_agent(true)
         .with_hashed_ip(false)
-        .with_hashed_forward(true)
         .with_hashed_xforward(true)
         .with_lifetime(Duration::days(31))
         .with_max_age(Some(Duration::days(31)));
