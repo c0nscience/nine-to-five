@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use askama::Template;
 use axum::{
     extract::{Path, Query, State},
+    http::HeaderMap,
     middleware,
     response::{IntoResponse, Redirect},
     routing::{delete, get, post},
@@ -13,6 +14,7 @@ use chrono::{prelude::*, LocalResult};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
+use tracing::warn;
 
 use crate::{
     activity, auth, encrypt, errors,
@@ -198,7 +200,11 @@ fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, errors
     Ok(dt.to_utc())
 }
 
-async fn today(TypedHeader(cookie): TypedHeader<Cookie>) -> Result<Redirect, errors::AppError> {
+async fn today(
+    TypedHeader(cookie): TypedHeader<Cookie>,
+    headers: HeaderMap,
+) -> Result<Redirect, errors::AppError> {
+    warn!("headers: {:#?}", headers);
     let timezone = parse_timezone(&cookie);
     let now = Utc::now().with_timezone(&timezone).date_naive();
     let now = now.format("%Y-%m-%d");
