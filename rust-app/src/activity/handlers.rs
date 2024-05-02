@@ -200,11 +200,7 @@ fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, errors
     Ok(dt.to_utc())
 }
 
-async fn today(
-    TypedHeader(cookie): TypedHeader<Cookie>,
-    headers: HeaderMap,
-) -> Result<Redirect, errors::AppError> {
-    warn!("headers: {:#?}", headers);
+async fn today(TypedHeader(cookie): TypedHeader<Cookie>) -> Result<Redirect, errors::AppError> {
     let timezone = parse_timezone(&cookie);
     let now = Utc::now().with_timezone(&timezone).date_naive();
     let now = now.format("%Y-%m-%d");
