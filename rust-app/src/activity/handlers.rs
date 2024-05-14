@@ -10,7 +10,7 @@ use axum::{
 };
 
 use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
-use chrono::{prelude::*, LocalResult};
+use chrono::{prelude::*, Duration, LocalResult};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
@@ -641,9 +641,8 @@ impl Adjustable for DateTime<Utc> {
         } else {
             ACCURACY - remainder
         };
-        let result = minute + adjust_by;
-        let result = result.try_into().ok()?;
-        self.with_minute(result)
+
+        self.checked_add_signed(Duration::minutes(adjust_by.try_into().ok()?))
             .and_then(|d| d.with_second(0))
             .and_then(|d| d.with_nanosecond(0))
     }
@@ -682,6 +681,18 @@ mod tests {
         assert_eq!(
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 15, 0).unwrap(),
             Utc.with_ymd_and_hms(2024, 3, 18, 10, 13, 0)
+                .unwrap()
+                .adjust()
+                .ok_or("could not adjust the time")?
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_adjust_at_the_edge_of_an_hour() -> Result<(), String> {
+        assert_eq!(
+            Utc.with_ymd_and_hms(2024, 3, 18, 11, 00, 0).unwrap(),
+            Utc.with_ymd_and_hms(2024, 3, 18, 10, 59, 0)
                 .unwrap()
                 .adjust()
                 .ok_or("could not adjust the time")?
