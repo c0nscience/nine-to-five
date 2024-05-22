@@ -71,18 +71,20 @@ async fn new_form(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let available_tags = activity::available_tags(&state.db, user_id)
-        .await?
-        .iter()
-        .map(|t| {
-            let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
-            activity::AvailableTag {
-                id: t.id,
-                name,
-                search_hash: t.search_hash.clone(),
-            }
-        })
-        .collect();
+    let mut available_tags: Vec<activity::AvailableTag> =
+        activity::available_tags(&state.db, user_id)
+            .await?
+            .iter()
+            .map(|t| {
+                let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
+                activity::AvailableTag {
+                    id: t.id,
+                    name,
+                    search_hash: t.search_hash.clone(),
+                }
+            })
+            .collect();
+    available_tags.sort_by_key(|t| t.name.to_lowercase());
     Ok(NewMetricTemplate { available_tags })
 }
 
@@ -339,18 +341,21 @@ async fn edit_form(
         return Err(errors::AppError::NotFound);
     };
 
-    let available_tags = activity::available_tags(&state.db, user_id)
-        .await?
-        .iter()
-        .map(|t| {
-            let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
-            activity::AvailableTag {
-                id: t.id,
-                name,
-                search_hash: t.search_hash.clone(),
-            }
-        })
-        .collect();
+    let mut available_tags: Vec<activity::AvailableTag> =
+        activity::available_tags(&state.db, user_id)
+            .await?
+            .iter()
+            .map(|t| {
+                let name = decrypt(&t.name, &state.database_key).unwrap_or_default();
+                activity::AvailableTag {
+                    id: t.id,
+                    name,
+                    search_hash: t.search_hash.clone(),
+                }
+            })
+            .collect();
+
+    available_tags.sort_by_key(|t| t.name.to_lowercase());
 
     let name = decrypt(&metric.name, &state.database_key).unwrap_or_default();
     let metric = EditFormData {

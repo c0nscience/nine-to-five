@@ -113,22 +113,24 @@ async fn list(
         .filter(|a| a.end_time.is_some())
         .map(|a| {
             let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
-
             let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
+            let mut tags: Vec<TagTemplData> = a
+                .tags
+                .iter()
+                .map(|t| {
+                    let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+                    TagTemplData { name }
+                })
+                .collect();
+
+            tags.sort_by_key(|t| t.name.to_lowercase());
+
             ActivityTemplData {
                 id: a.id,
                 name,
                 duration,
                 duration_iso,
-                tags: a
-                    .tags
-                    .iter()
-                    .map(|t| {
-                        let name =
-                            encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
-                        TagTemplData { name }
-                    })
-                    .collect(),
+                tags,
             }
         })
         .collect();
@@ -137,20 +139,23 @@ async fn list(
         let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
         let start_time = a.start_time.timestamp_millis();
         let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
+        let mut tags: Vec<TagTemplData> = a
+            .tags
+            .iter()
+            .map(|t| {
+                let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+                TagTemplData { name }
+            })
+            .collect();
+
+        tags.sort_by_key(|t| t.name.to_lowercase());
         RunningActivityTemplData {
             id: a.id,
             name,
             start_time,
             duration,
             duration_iso,
-            tags: a
-                .tags
-                .iter()
-                .map(|t| {
-                    let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
-                    TagTemplData { name }
-                })
-                .collect(),
+            tags,
         }
     });
 
@@ -216,7 +221,7 @@ async fn start_form(
     State(state): State<states::AppState>,
     Extension(user_id): Extension<String>,
 ) -> Result<impl IntoResponse, errors::AppError> {
-    let available_tags = available_tags(&state.db, user_id)
+    let mut available_tags: Vec<AvailableTag> = available_tags(&state.db, user_id)
         .await?
         .iter()
         .map(|t| {
@@ -228,6 +233,7 @@ async fn start_form(
             }
         })
         .collect();
+    available_tags.sort_by_key(|t| t.name.to_lowercase());
 
     Ok(StartForm { available_tags })
 }
@@ -407,7 +413,7 @@ async fn add_tag(
         let enc_name = encrypt::encrypt(name, &state.database_key)?;
         create_tag(&state.db, user_id.clone(), enc_name, hashed_name).await?;
     };
-    let available_tags = available_tags(&state.db, user_id)
+    let mut available_tags: Vec<AvailableTag> = available_tags(&state.db, user_id)
         .await?
         .iter()
         .map(|t| {
@@ -419,6 +425,7 @@ async fn add_tag(
             }
         })
         .collect();
+    available_tags.sort_by_key(|t| t.name.to_lowercase());
 
     Ok(AvailableTagsTemplate { available_tags })
 }
@@ -480,7 +487,7 @@ async fn edit_form(
         return Err(errors::AppError::NotFound);
     };
 
-    let available_tags = available_tags(&state.db, user_id)
+    let mut available_tags: Vec<AvailableTag> = available_tags(&state.db, user_id)
         .await?
         .iter()
         .map(|t| {
@@ -492,6 +499,8 @@ async fn edit_form(
             }
         })
         .collect();
+
+    available_tags.sort_by_key(|t| t.name.to_lowercase());
 
     let start = activity
         .start_time
