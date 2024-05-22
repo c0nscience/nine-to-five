@@ -22,6 +22,8 @@ pub fn router(state: states::AppState) -> Router<states::AppState> {
             auth::check_authorized,
         ))
 }
+
+#[allow(clippy::missing_errors_doc)]
 pub async fn check_allowed_user(
     Extension(user_id): Extension<String>,
     req: Request,
@@ -97,7 +99,7 @@ async fn import(
                         .map(|t| t.id)
                         .for_each(|id| tag_ids.push(id));
                 } else {
-                    let name = encrypt::encrypt(&tag, &state.database_key)?;
+                    let name = encrypt::encrypt(tag, &state.database_key)?;
                     let tag_id =
                         activity::create_tag(&state.db, user_id.clone(), name, hashed_name).await?;
                     tag_ids.push(tag_id);

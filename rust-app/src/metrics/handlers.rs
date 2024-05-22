@@ -129,7 +129,7 @@ struct DetailTemplate {
 
 impl WithConversion for DetailTemplate {
     fn as_f64(i: i64) -> f64 {
-        return i as f64;
+        i as f64
     }
 }
 

@@ -2,7 +2,6 @@ use anyhow::anyhow;
 use askama::Template;
 use axum::{
     extract::{Path, Query, State},
-    http::HeaderMap,
     middleware,
     response::{IntoResponse, Redirect},
     routing::{delete, get, post},
@@ -14,7 +13,6 @@ use chrono::{prelude::*, Duration, LocalResult};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
-use tracing::warn;
 
 use crate::{
     activity, auth, encrypt, errors,
@@ -642,7 +640,7 @@ impl Adjustable for DateTime<Utc> {
             ACCURACY - remainder
         };
 
-        self.checked_add_signed(Duration::minutes(adjust_by.try_into().ok()?))
+        self.checked_add_signed(Duration::minutes(adjust_by.into()))
             .and_then(|d| d.with_second(0))
             .and_then(|d| d.with_nanosecond(0))
     }

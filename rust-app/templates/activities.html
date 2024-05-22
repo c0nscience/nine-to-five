@@ -4,12 +4,19 @@
 
 {% block head %}
 <link rel="manifest" href="/assets/manifest.json">
-<script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
-<script src="https://unpkg.com/hyperscript.org@0.9.12/dist/_hyperscript.min.js"></script>
-<script src="https://unpkg.com/sweetalert2@11.10.6/dist/sweetalert2.all.min.js"></script>
-<script src="https://unpkg.com/@floating-ui/core@1.6.0/dist/floating-ui.core.umd.min.js"></script>
-<script src="https://unpkg.com/@floating-ui/dom@1.6.3/dist/floating-ui.dom.umd.min.js"></script>
+<script src="/assets/js/htmx.min.js"></script>
+<script src="/assets/js/_hyperscript.min.js"></script>
+<script src="/assets/js/sweetalert2.all.min.js"></script>
 <script type="text/javascript">
+  function adjustMargin() {
+    const height = parseFloat(window.getComputedStyle(document.getElementById('bottom-block')).getPropertyValue('height'), 10);
+    const margin = 5;
+    console.log('height', height);
+    const list = document.getElementById('activities-list');
+    console.log('list', list);
+    list.style.marginBottom = height + margin + 'px';
+    console.log('total', height + margin + 'px');
+  }
   function format(timestamp) {
     const start = new Date(parseInt(timestamp));
     let durr = Date.now() - start;
@@ -44,6 +51,10 @@
     }
 
   }
+
+  document.addEventListener('htmx:afterSettle', function (evt) {
+    adjustMargin();
+  });
 </script>
 {% endblock %}
 
@@ -96,7 +107,7 @@
   <div class="mx-auto max-w-7xl sm:px-12">
     <div class="overflow-y-auto mx-auto max-w-lg">
       {% if activities.len() > 0 || running.is_some() %}
-      <ul role="list" class="divide-y divide-white/5 mb-36">
+      <ul id="activities-list" role="list" class="divide-y divide-white/5">
         {% for activity in activities %}
         <li class="py-4 px-10 lg:px-0">
           <div class="flex items-center gap-x-3">
@@ -107,7 +118,7 @@
           </div>
           <div class="flex items-center gap-x-3">
             <div class="flex-auto">
-              <div class="mt-3 truncate text-sm text-gray-500">
+              <div class="mt-3 text-sm text-gray-500">
                 {% for tag in activity.tags %}
                 <span
                   class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20">
@@ -174,7 +185,7 @@
       {% include "activities/empty.html" %}
       {% endif %}
 
-      <div class="mx-auto max-w-lg fixed bottom-0 left-0 right-0 bg-gray-900">
+      <div id="bottom-block" class="mx-auto max-w-lg fixed bottom-0 left-0 right-0 bg-gray-900">
         {% match running %}
         {% when Some with (running) %}
         {% include "activities/running.html" %}
@@ -214,4 +225,10 @@
     </div>
   </div>
 </main>
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript">
+  adjustMargin();
+</script>
+
 {% endblock %}

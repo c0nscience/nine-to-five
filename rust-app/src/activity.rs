@@ -155,6 +155,7 @@ pub async fn available_tags(db: &PgPool, user_id: String) -> anyhow::Result<Vec<
     Ok(result)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn associate_tags(db: &PgPool, tags: &[sqlx::types::Uuid], activity_id: sqlx::types::Uuid) -> anyhow::Result<()> {
     if tags.is_empty() {
         return Ok(());
@@ -187,6 +188,7 @@ async fn delete_associate_tags(db: &PgPool,user_id: String, activity_id: sqlx::t
     Ok(())
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn create_tag(db: &PgPool, user_id: String, name: String, hashed_name: String) -> anyhow::Result<sqlx::types::Uuid>{
     if name.is_empty() {
         return Ok(sqlx::types::Uuid::default());
@@ -266,6 +268,7 @@ async fn update(db: &sqlx::Pool<Postgres>, user_id: String, updated_activity: Up
     Ok(())
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn tag_exists(db: &sqlx::Pool<Postgres>, user_id: String, hashed_name: String) -> anyhow::Result<bool> {
     let exists = sqlx::query!(r#"
         SELECT EXISTS(SELECT 1 FROM tags WHERE search_hash = $2 AND user_id = $1)

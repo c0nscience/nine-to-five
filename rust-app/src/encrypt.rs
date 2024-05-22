@@ -5,6 +5,7 @@ use aes_gcm::{
 use anyhow::anyhow;
 use base64::{engine::general_purpose, Engine};
 
+#[allow(clippy::missing_errors_doc)]
 pub fn encrypt(value: &str, key: &Key<Aes256Gcm>) -> anyhow::Result<String> {
     let aead = Aes256Gcm::new(key);
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
@@ -18,6 +19,7 @@ pub fn encrypt(value: &str, key: &Key<Aes256Gcm>) -> anyhow::Result<String> {
     Ok(general_purpose::STANDARD.encode(encrypted_data))
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub fn decrypt(cyphertext: &str, key: &Key<Aes256Gcm>) -> anyhow::Result<String> {
     let cyphertext = general_purpose::STANDARD.decode(cyphertext)?;
     let (nonce_arr, ciphered_data) = cyphertext.split_at(12);
