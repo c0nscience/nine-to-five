@@ -329,7 +329,7 @@ async fn start(
             }
         }
         StartOption::Normal => {}
-    };
+    }
 
     if !matches!(create_activity.start_option, StartOption::Repeating) {
         let name = encrypt::encrypt(&create_activity.name, &state.database_key).unwrap_or_default();
@@ -412,7 +412,7 @@ async fn add_tag(
     if !tag_exists(&state.db, user_id.clone(), hashed_name.clone()).await? {
         let enc_name = encrypt::encrypt(name, &state.database_key)?;
         create_tag(&state.db, user_id.clone(), enc_name, hashed_name).await?;
-    };
+    }
     let mut available_tags: Vec<AvailableTag> = available_tags(&state.db, user_id)
         .await?
         .iter()

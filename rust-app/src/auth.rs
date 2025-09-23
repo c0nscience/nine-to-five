@@ -45,7 +45,7 @@ pub async fn login(
     } else {
         error!("could not lock the verifiers store in login handler");
         return Err(errors::AppError::InternalError);
-    };
+    }
 
     Ok(Redirect::temporary(auth_url.as_str()))
 }
@@ -75,7 +75,7 @@ pub async fn signup(
     } else {
         error!("could not lock the verifiers store in login handler");
         return Err(errors::AppError::InternalError);
-    };
+    }
 
     Ok(Redirect::temporary(auth_url.as_str()))
 }

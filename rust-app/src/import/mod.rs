@@ -117,7 +117,7 @@ async fn import(
             mt_elapsed.as_millis(),
             mt_elapsed.as_micros()
         );
-    };
+    }
 
     Ok(Redirect::to("/app"))
 }

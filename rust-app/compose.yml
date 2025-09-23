@@ -1,11 +1,9 @@
-version: '3.1'
-
 services:
   db:
     container_name: db
-    image: postgres:16.1
+    image: postgres:17
     restart: always
     environment:
       POSTGRES_PASSWORD: rust
     ports:
-      - "5432:5432"
+      - "5433:5432"

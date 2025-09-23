@@ -167,7 +167,7 @@ async fn detail(
             mt_elapsed.as_millis(),
             mt_elapsed.as_micros()
         );
-    };
+    }
 
     let current_week = start_of_week(chrono::Utc::now().with_timezone(&timezone).date_naive());
     let mut total_time = chrono::Duration::hours(0);
@@ -181,7 +181,7 @@ async fn detail(
             mt_elapsed.as_millis(),
             mt_elapsed.as_micros()
         );
-    };
+    }
 
     let mt_start = std::time::SystemTime::now();
     let mut start = chrono::NaiveDate::MAX;
@@ -204,7 +204,7 @@ async fn detail(
             mt_elapsed.as_millis(),
             mt_elapsed.as_micros()
         );
-    };
+    }
 
     let mt_start = std::time::SystemTime::now();
     let mut data_points =
@@ -253,7 +253,7 @@ async fn detail(
             mt_elapsed.as_millis(),
             mt_elapsed.as_micros()
         );
-    };
+    }
 
     data_points.sort_by_key(|d| d.date);
 
