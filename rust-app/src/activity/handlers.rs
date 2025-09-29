@@ -51,6 +51,8 @@ pub fn router(state: states::AppState) -> Router<states::AppState> {
 struct ActivityTemplData {
     id: sqlx::types::Uuid,
     name: String,
+    start_time: String,
+    end_time: String,
     duration: String,
     duration_iso: String,
     tags: Vec<TagTemplData>,
@@ -125,9 +127,24 @@ async fn list(
 
             tags.sort_by_key(|t| t.name.to_lowercase());
 
+            let start = a
+                .start_time
+                .with_timezone(&timezone)
+                .format(FORM_TIME_FORMAT)
+                .to_string();
+            let end = match a
+                .end_time
+                .map(|d| d.with_timezone(&timezone).format(FORM_TIME_FORMAT))
+            {
+                Some(s) => s.to_string(),
+                None => "".to_string(),
+            };
+
             ActivityTemplData {
                 id: a.id,
                 name,
+                start_time: start,
+                end_time: end,
                 duration,
                 duration_iso,
                 tags,
