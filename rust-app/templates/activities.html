@@ -11,11 +11,8 @@
   function adjustMargin() {
     const height = parseFloat(window.getComputedStyle(document.getElementById('bottom-block')).getPropertyValue('height'), 10);
     const margin = 5;
-    console.log('height', height);
     const list = document.getElementById('activities-list');
-    console.log('list', list);
     list.style.marginBottom = height + margin + 'px';
-    console.log('total', height + margin + 'px');
   }
   function format(timestamp) {
     const start = new Date(parseInt(timestamp));
@@ -55,6 +52,23 @@
   document.addEventListener('htmx:afterSettle', function (evt) {
     adjustMargin();
   });
+
+  function onSelectDay() {
+    Swal.fire({
+      title: 'Select Day', 
+      input: 'date',
+      didOpen: () => {
+        let today = (new Date()).toISOString();
+        Swal.getInput().value = today.split("T")[0];
+      }
+    })
+    .then(function(result){
+      console.log(result);
+      if(result.isConfirmed) {
+        window.location.assign('/app/' + result.value);
+      } 
+    });
+  }
 </script>
 {% endblock %}
 
@@ -96,9 +110,9 @@
             fill="currentColor" aria-hidden="true">
             <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
           </svg>
-          <a href="#" class="ml-4 text-sm font-medium text-white hover:text-gray-500" aria-current="page">
+          <button class="ml-4 text-sm font-medium text-white hover:text-gray-500" aria-current="page" onClick="onSelectDay()">
             {{ date }}
-          </a>
+          </button>
         </div>
       </li>
     </ol>
