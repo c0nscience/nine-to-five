@@ -1,13 +1,11 @@
 [package]
 name = "nine-to-five"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 publish = false
-
 
 [dependencies]
 askama = { version = "0.14" }
-
 axum = "0.8"
 axum-macros = "0.5.0"
 axum-extra = { version = "0.10.3", features = [
@@ -33,7 +31,6 @@ tower-http = { version = "0.6.6", features = [
 ] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-
 sqlx = { version = "0.8", features = [
   "runtime-tokio",
   "tls-native-tls",
@@ -44,7 +41,6 @@ sqlx = { version = "0.8", features = [
 oauth2 = "5.0.0"
 chrono = { version = "0.4.34", features = ["clock"] }
 dotenvy = "0.15.7"
-
 anyhow = "1.0.79"
 thiserror = "2.0.17"
 jsonwebtoken = { version = "9.3.1" }
