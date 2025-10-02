@@ -95,6 +95,10 @@ async fn main() -> anyhow::Result<()> {
     let oauth_client = auth::build_oauth_client(&app_url, client_id, client_secret, &idp_domain)
         .context("could not create oauth client")?;
 
+    let http_client = reqwest::ClientBuilder::new()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()?;
+
     let oauth_config = OAuthConfig {
         audience,
         idp_domain,
@@ -107,6 +111,7 @@ async fn main() -> anyhow::Result<()> {
         db,
         jwk_set,
         oauth_client,
+        http_client,
         verifiers: Arc::new(Mutex::new(HashMap::new())),
         oauth_config,
         database_key: *key,

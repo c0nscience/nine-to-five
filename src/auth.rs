@@ -12,8 +12,8 @@ use axum_session_sqlx::SessionPgSession;
 use jsonwebtoken::jwk::AlgorithmParameters;
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use oauth2::{
-    basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
-    ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, TokenResponse,
+    basic::BasicClient, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken,
+    EndpointNotSet, EndpointSet, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, TokenResponse,
     TokenUrl,
 };
 use serde::Deserialize;
@@ -86,18 +86,21 @@ pub fn build_oauth_client(
     client_id: String,
     client_secret: String,
     idp_domain: &str,
-) -> Result<BasicClient, oauth2::url::ParseError> {
+) -> Result<
+    BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>,
+    oauth2::url::ParseError,
+> {
     let redirect_url = RedirectUrl::new(format!("{app_url}/callback"))?;
 
     let auth_url = AuthUrl::new(format!("https://{idp_domain}/authorize"))?;
     let token_url = TokenUrl::new(format!("https://{idp_domain}/oauth/token"))?;
-    Ok(BasicClient::new(
-        ClientId::new(client_id),
-        Some(ClientSecret::new(client_secret)),
-        auth_url,
-        Some(token_url),
-    )
-    .set_redirect_uri(redirect_url))
+
+    let client = BasicClient::new(ClientId::new(client_id))
+        .set_client_secret(ClientSecret::new(client_secret))
+        .set_auth_uri(auth_url)
+        .set_token_uri(token_url)
+        .set_redirect_uri(redirect_url);
+    Ok(client)
 }
 
 #[derive(Debug, Deserialize)]
@@ -106,7 +109,7 @@ pub struct CodeResponse {
     state: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 struct Claims {
     sub: String,
 }
@@ -134,7 +137,7 @@ pub async fn callback(
         .oauth_client
         .exchange_code(AuthorizationCode::new(code_response.code))
         .set_pkce_verifier(pkce_verifier)
-        .request_async(async_http_client)
+        .request_async(&state.http_client)
         .await?;
 
     let header = decode_header(token.access_token().secret())?;
