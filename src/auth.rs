@@ -7,7 +7,7 @@ use axum::{
     response::{IntoResponse, Redirect, Response},
 };
 
-use axum_session::SessionPgSession;
+use axum_session_sqlx::SessionPgSession;
 
 use jsonwebtoken::jwk::AlgorithmParameters;
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};

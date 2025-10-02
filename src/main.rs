@@ -7,8 +7,9 @@ use askama::Template;
 
 use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
 
-use axum_session::{Key, SessionConfig, SessionLayer, SessionPgPool, SessionStore};
+use axum_session::{Key, SessionConfig, SessionLayer, SessionStore};
 
+use axum_session_sqlx::SessionPgPool;
 use base64::{engine::general_purpose, Engine};
 use chrono::Duration;
 use hash::hash;
