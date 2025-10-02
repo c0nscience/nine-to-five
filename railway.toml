@@ -1,3 +1,6 @@
+[build]
+builder = "RAILPACK"
+
 [deploy]
 multiRegionConfig = { "europe-west4-drams3a" = { numReplicas = 1 } }
 limitOverride = { containers = { cpu = 4, memoryBytes = 4000000000 } }
