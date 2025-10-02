@@ -5,8 +5,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-askama = { version = "0.14" }
-axum = "0.8"
+askama = "0.14"
+axum = "0.8.6"
 axum-macros = "0.5.0"
 axum-extra = { version = "0.10.3", features = [
   "cookie",
@@ -23,15 +23,15 @@ axum_session_sqlx = { version = "0.5.1", features = [
   "tls-native-tls",
 ] }
 serde = "1.0.196"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.47.1", features = ["full"] }
 tower-http = { version = "0.6.6", features = [
   "fs",
   "trace",
   "compression-full",
 ] }
-tracing = "0.1"
+tracing = "0.1.41"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-sqlx = { version = "0.8", features = [
+sqlx = { version = "0.8.6", features = [
   "runtime-tokio",
   "tls-native-tls",
   "any",
@@ -43,7 +43,7 @@ chrono = { version = "0.4.34", features = ["clock"] }
 dotenvy = "0.15.7"
 anyhow = "1.0.79"
 thiserror = "2.0.17"
-jsonwebtoken = { version = "9.3.1" }
+jsonwebtoken = { version = "10.0.0" }
 reqwest = { version = "0.12.23", features = ["json"] }
 percent-encoding = "2.3.1"
 chrono-tz = "0.10.4"
