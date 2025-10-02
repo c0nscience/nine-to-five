@@ -47,13 +47,16 @@ pub enum AppError {
 
     #[error("{0}")]
     Chrono(#[from] chrono::ParseError),
+
+    #[error("{0}")]
+    Askama(#[from] askama::Error),
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         use AppError::{
-            Anyhow, Chrono, HttpRequestError, InternalError, JwtError, MultipartError, NotFound,
-            OAuthError, SerdeError, Sqlx, Unauthorized, Utf8Error,
+            Anyhow, Askama, Chrono, HttpRequestError, InternalError, JwtError, MultipartError,
+            NotFound, OAuthError, SerdeError, Sqlx, Unauthorized, Utf8Error,
         };
 
         match self {
@@ -88,6 +91,10 @@ impl IntoResponse for AppError {
             }
             SerdeError(err) => {
                 warn!("serde: {}", err);
+                (StatusCode::INTERNAL_SERVER_ERROR).into_response()
+            }
+            Askama(err) => {
+                warn!("askama: {}", err);
                 (StatusCode::INTERNAL_SERVER_ERROR).into_response()
             }
         }

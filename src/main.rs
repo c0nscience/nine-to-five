@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::Context;
 use askama::Template;
 
+use axum::response::Html;
 use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
 
 use axum_session::{Key, SessionConfig, SessionLayer, SessionStore};
@@ -145,8 +146,8 @@ async fn main() -> anyhow::Result<()> {
 #[template(path = "index.html")]
 struct IndexTemplate {}
 
-async fn index() -> impl IntoResponse {
-    IndexTemplate {}
+async fn index() -> Result<impl IntoResponse, errors::AppError> {
+    Ok(Html(IndexTemplate {}.render()?))
 }
 
 async fn health() -> (StatusCode, impl IntoResponse) {

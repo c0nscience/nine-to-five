@@ -1,9 +1,8 @@
 use askama::Template;
-use askama_axum::IntoResponse;
 use axum::{
     extract::{Request, State},
     middleware::{self, Next},
-    response::{Redirect, Response},
+    response::{Html, IntoResponse, Redirect, Response},
     routing::get,
     Extension, Router,
 };
@@ -42,8 +41,8 @@ pub async fn check_allowed_user(
 #[template(path = "import.html")]
 struct ImportTemplate {}
 
-async fn import_form() -> impl IntoResponse {
-    ImportTemplate {}
+async fn import_form() -> Result<impl IntoResponse, errors::AppError> {
+    Ok(Html(ImportTemplate {}.render()?))
 }
 
 #[derive(Deserialize)]

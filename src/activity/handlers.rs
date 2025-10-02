@@ -3,7 +3,7 @@ use askama::Template;
 use axum::{
     extract::{Path, Query, State},
     middleware,
-    response::{IntoResponse, Redirect},
+    response::{Html, IntoResponse, Redirect},
     routing::{delete, get, post},
     Extension, Router,
 };
@@ -31,14 +31,14 @@ const FORM_TIME_FORMAT: &str = "%H:%M";
 
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
-        .route("/:date", get(list))
+        .route("/{date}", get(list))
         .route("/start", get(start_form).post(start))
         .route(
-            "/activity/:id",
+            "/activity/{id}",
             delete(delete_activity).get(edit_form).post(update_activity),
         )
-        .route("/activity/:id/continue", get(continue_activity))
-        .route("/activity/:id/stop", post(stop))
+        .route("/activity/{id}/continue", get(continue_activity))
+        .route("/activity/{id}/stop", post(stop))
         .route("/tags", post(add_tag))
         .route("/menu", get(menu))
         .route("/", get(today))
@@ -100,10 +100,11 @@ async fn list(
     };
 
     let now = Utc::now().with_timezone(&timezone).date_naive();
+    let start_fmt = start.format("%a, %b %d %Y").to_string();
     let date = if now == start {
-        "Today".to_string()
+        format!("Today ({start_fmt})")
     } else {
-        start.format("%a, %b %d %Y").to_string()
+        start_fmt
     };
 
     let from = to_utc(start, timezone)?;
@@ -176,14 +177,17 @@ async fn list(
         }
     });
 
-    Ok(ActivitiesTemplate {
-        activities,
-        running,
-        date,
-        curr: start,
-        prev,
-        next: end,
-    })
+    Ok(Html(
+        ActivitiesTemplate {
+            activities,
+            running,
+            date,
+            curr: start,
+            prev,
+            next: end,
+        }
+        .render()?,
+    ))
 }
 
 fn format_duration(start: DateTime<Utc>, end: Option<DateTime<Utc>>) -> (String, String) {
@@ -252,7 +256,7 @@ async fn start_form(
         .collect();
     available_tags.sort_by_key(|t| t.name.to_lowercase());
 
-    Ok(StartForm { available_tags })
+    Ok(Html(StartForm { available_tags }.render()?))
 }
 
 #[derive(Debug, Deserialize)]
@@ -444,7 +448,7 @@ async fn add_tag(
         .collect();
     available_tags.sort_by_key(|t| t.name.to_lowercase());
 
-    Ok(AvailableTagsTemplate { available_tags })
+    Ok(Html(AvailableTagsTemplate { available_tags }.render()?))
 }
 
 async fn delete_activity(
@@ -538,11 +542,14 @@ async fn edit_form(
         tags: activity.tags,
     };
 
-    Ok(EditFormTemplate {
-        activity,
-        available_tags,
-        redirect_to: query.date,
-    })
+    Ok(Html(
+        EditFormTemplate {
+            activity,
+            available_tags,
+            redirect_to: query.date,
+        }
+        .render()?,
+    ))
 }
 
 #[derive(Debug, Deserialize)]
@@ -678,10 +685,12 @@ struct MenuTemplate {
     show_import: bool,
 }
 
-async fn menu(Extension(user_id): Extension<String>) -> impl IntoResponse {
+async fn menu(
+    Extension(user_id): Extension<String>,
+) -> Result<impl IntoResponse, errors::AppError> {
     let show_import =
         user_id == "auth0|59ac17508f649c3f85124ec1" || user_id == "auth0|59cc17a23b09c52496036107";
-    MenuTemplate { show_import }
+    Ok(Html(MenuTemplate { show_import }.render()?))
 }
 
 #[cfg(test)]

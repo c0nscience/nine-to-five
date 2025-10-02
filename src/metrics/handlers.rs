@@ -4,7 +4,7 @@ use askama::Template;
 use axum::{
     extract::{Path, State},
     middleware,
-    response::{IntoResponse, Redirect},
+    response::{Html, IntoResponse, Redirect},
     routing::get,
     Extension, Router,
 };
@@ -29,9 +29,9 @@ use crate::{
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
         .route("/", get(list).post(create_metric))
-        .route("/:id", get(detail))
-        .route("/:id/edit", get(edit_form).post(update_metric))
-        .route("/:id/delete", get(delete_metric))
+        .route("/{id}", get(detail))
+        .route("/{id}/edit", get(edit_form).post(update_metric))
+        .route("/{id}/delete", get(delete_metric))
         .route("/new", get(new_form))
         .route_layer(middleware::from_fn_with_state(
             state,
@@ -58,7 +58,7 @@ async fn list(
         })
         .collect();
 
-    Ok(MetricsTemplate { metrics })
+    Ok(Html(MetricsTemplate { metrics }.render()?))
 }
 
 #[derive(Template)]
@@ -85,7 +85,7 @@ async fn new_form(
             })
             .collect();
     available_tags.sort_by_key(|t| t.name.to_lowercase());
-    Ok(NewMetricTemplate { available_tags })
+    Ok(Html(NewMetricTemplate { available_tags }.render()?))
 }
 
 #[derive(Debug, Deserialize)]
@@ -274,13 +274,16 @@ async fn detail(
     }
 
     let name = decrypt(&config.name, &state.database_key).unwrap_or_default();
-    Ok(DetailTemplate {
-        name,
-        metric_type: config.metric_type,
-        total_time: format_duration(total_time),
-        total_time_until_last_week: format_duration(total_time_until_last_week),
-        data_points,
-    })
+    Ok(Html(
+        DetailTemplate {
+            name,
+            metric_type: config.metric_type,
+            total_time: format_duration(total_time),
+            total_time_until_last_week: format_duration(total_time_until_last_week),
+            data_points,
+        }
+        .render()?,
+    ))
 }
 
 fn format_duration(duration: chrono::Duration) -> String {
@@ -366,10 +369,13 @@ async fn edit_form(
         tags: metric.tags,
     };
 
-    Ok(EditFormTemplate {
-        metric,
-        available_tags,
-    })
+    Ok(Html(
+        EditFormTemplate {
+            metric,
+            available_tags,
+        }
+        .render()?,
+    ))
 }
 
 #[derive(Debug, Deserialize)]

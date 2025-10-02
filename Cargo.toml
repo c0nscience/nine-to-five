@@ -6,7 +6,7 @@ publish = false
 
 
 [dependencies]
-askama = { version = "0.14", features = ["with-axum"] }
+askama = { version = "0.14" }
 
 axum = "0.8"
 axum-macros = "0.5.0"
