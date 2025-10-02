@@ -43,7 +43,7 @@ chrono = { version = "0.4.34", features = ["clock"] }
 dotenvy = "0.15.7"
 anyhow = "1.0.79"
 thiserror = "2.0.17"
-jsonwebtoken = { version = "10.0.0" }
+jsonwebtoken = { version = "10.0.0", features = ["rust_crypto"] }
 reqwest = { version = "0.12.23", features = ["json"] }
 percent-encoding = "2.3.1"
 chrono-tz = "0.10.4"
