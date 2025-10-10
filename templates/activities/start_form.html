@@ -12,7 +12,7 @@
 <main>
   <div class="mx-auto max-w-lg h-screen px-12 grid items-center">
     <form action="/app/start" method="post">
-      <div class="border-b border-white/10 pb-12">
+      <div class="border-b border-white/10 pb-12 mt-6">
         <div class="grid grid-cols-1 gap-x-6 gap-y-8">
           <div class="">
             <label for="name" class="block text-sm font-medium leading-6 text-white">Name</label>
@@ -55,9 +55,6 @@
               </select>
             </div>
           </div>
-          <!--
-
--->
           <div _="
               on change from <input[type=radio][name=start_option]/>
                 if the event's target's value is 'normal'
@@ -228,7 +225,7 @@
         </div>
       </div>
 
-      <div class="mt-6 flex items-center justify-end gap-x-6">
+      <div class="mt-6 mb-6 flex items-center justify-end gap-x-6">
         <button type="button" onclick="history.back()"
           class="text-sm font-semibold leading-6 text-white">Cancel</button>
         <button type="submit"

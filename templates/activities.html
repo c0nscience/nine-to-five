@@ -10,7 +10,7 @@
 <script type="text/javascript">
   function adjustMargin() {
     const height = parseFloat(window.getComputedStyle(document.getElementById('bottom-block')).getPropertyValue('height'), 10);
-    const margin = 5;
+    const margin = 15;
     const list = document.getElementById('activities-list');
     list.style.marginBottom = height + margin + 'px';
   }
@@ -74,7 +74,7 @@
 
 {% block content %}
 <main class="h-screen">
-  <nav class="flex border-b border-gray-700" aria-label="Breadcrumb">
+  <nav class="flex border-b border-t border-gray-700 bg-gray-900 z-50 sticky top-0" aria-label="Breadcrumb">
     <ol role="list" class="mx-auto flex w-full max-w-(--breakpoint-xl) space-x-4 px-4 sm:px-6 lg:px-8">
       <li class="flex">
         <div class="flex items-center">
@@ -145,7 +145,9 @@
         </li>
         <div class="relative flex items-center justify-between">
           <div aria-hidden="true" class="w-1/6 border-t border-gray-300 dark:border-white/15"></div>
-          <span class="bg-white pr-2 text-sm text-gray-500 whitespace-nowrap dark:bg-gray-900 dark:text-gray-400">{{ activity.start_time }}&nbsp;-&nbsp;{{ activity.end_time }}</span>
+          <span class="bg-white pr-2 text-sm text-gray-500 whitespace-nowrap dark:bg-gray-900 dark:text-gray-400">
+            {{ activity.start_time }}&nbsp;-&nbsp;{{ activity.end_time }}
+          </span>
           <div class="flex w-full items-center">
             <div aria-hidden="true" class="w-full border-t border-gray-300 dark:border-white/15"></div>
             <span class="isolate inline-flex -space-x-px rounded-md shadow-xs dark:shadow-none">
@@ -205,7 +207,7 @@
         {% include "activities/running.html" %}
         {% when None %}
         {% endmatch %}
-        <div class="flex h-12 items-center justify-around px-2 mb-6">
+        <div class="flex h-12 items-center justify-around px-2 mb-6 mt-2">
           <div class="flex space-x-4 h-12 items-center">
             <a href="/app/{{ prev }}"
               class="rounded-md px-2.5 py-1 font-semibold text-white shadow-xs hover:bg-white/20">
