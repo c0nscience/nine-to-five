@@ -19,7 +19,7 @@ axum-extra = { version = "0.10.3", features = [
 axum_session = { version = "0.17.1", default-features = false, features = [
   "key-store",
 ] }
-axum_session_sqlx = { version = "0.5.1", features = [
+axum_session_sqlx = { version = "0.6.0", features = [
   "postgres",
   "tls-native-tls",
 ] }
