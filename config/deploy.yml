@@ -47,9 +47,9 @@ builder:
 
 env:
   clear:
-    - DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@nine-to-five-db:5432/postgres
-    - OAUTH_AUDIENCE: https://api.ntf.io
-    - IDP_DOMAIN: ninetofive.eu.auth0.com
+    DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@nine-to-five-db:5432/postgres
+    OAUTH_AUDIENCE: https://api.ntf.io
+    IDP_DOMAIN: ninetofive.eu.auth0.com
   secret:
     - CLIENT_ID
     - CLIENT_SECRET
