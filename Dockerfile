@@ -19,10 +19,13 @@ RUN mkdir src && \
   rm -rf src target/release/deps/*nine-to-five*
 
 # Copy source code
+COPY .sqlx ./.sqlx
 COPY src ./src
 COPY migrations ./migrations
 COPY templates ./templates
 COPY assets ./assets
+
+ENV SQLX_OFFLINE=true
 
 # Build for release
 RUN cargo build --release

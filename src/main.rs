@@ -54,8 +54,10 @@ async fn main() -> anyhow::Result<()> {
     let db_password = dotenvy::var("POSTGRES_PASSWORD").context("no db password")?;
     let db_port = dotenvy::var("DB_PORT").context("no db port")?;
     let db_name = dotenvy::var("DB_NAME").context("no db name")?;
+    let db_host = dotenvy::var("DB_HOST").context("no db host")?;
 
-    let database_url = format!("postgresql://{db_user}:{db_password}@db_host:{db_port}/{db_name}");
+    let database_url =
+        format!("postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}");
     let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
     let database_hash_key =
         dotenvy::var("DATABASE_HASH_KEY").context("database hash key not provided")?;
