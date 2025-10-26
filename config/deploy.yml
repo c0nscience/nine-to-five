@@ -2,7 +2,7 @@
 service: nine-to-five
 
 # Name of the container image.
-image: c0nscienc3/nine-to-five
+image: c0nscience/nine-to-five
 
 # Deploy to these servers.
 servers:
