@@ -6,12 +6,12 @@ use anyhow::Context;
 use askama::Template;
 
 use axum::response::Html;
-use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
+use axum::{Router, http::StatusCode, response::IntoResponse, routing::get};
 
 use axum_session::{Key, SessionConfig, SessionLayer, SessionStore};
 
 use axum_session_sqlx::SessionPgPool;
-use base64::{engine::general_purpose, Engine};
+use base64::{Engine, engine::general_purpose};
 use chrono::Duration;
 use hash::hash;
 use jsonwebtoken::jwk;
@@ -50,8 +50,12 @@ async fn main() -> anyhow::Result<()> {
     let session_database_key =
         dotenvy::var("SESSION_DATABASE_KEY").context("session database key not provided")?;
     let audience = dotenvy::var("OAUTH_AUDIENCE").context("audience not provided")?;
-    let database_url =
-        dotenvy::var("DATABASE_URL").context("no postgres connection url provided")?;
+    let db_user = dotenvy::var("DB_USER").context("no db user")?;
+    let db_password = dotenvy::var("POSTGRES_PASSWORD").context("no db password")?;
+    let db_port = dotenvy::var("DB_PORT").context("no db port")?;
+    let db_name = dotenvy::var("DB_NAME").context("no db name")?;
+
+    let database_url = format!("postgresql://{db_user}:{db_password}@db_host:{db_port}/{db_name}");
     let database_key = dotenvy::var("DATABASE_KEY").context("database key not provided")?;
     let database_hash_key =
         dotenvy::var("DATABASE_HASH_KEY").context("database hash key not provided")?;
