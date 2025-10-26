@@ -9,8 +9,20 @@ RUN apt-get update && \
 # Create app directory
 WORKDIR /app
 
+# Copy manifests
+COPY Cargo.toml Cargo.lock ./
+
+# Create dummy source to cache dependencies
+RUN mkdir src && \
+  echo "fn main() {}" > src/main.rs && \
+  cargo build --release && \
+  rm -rf src target/release/deps/*nine-to-five*
+
 # Copy source code
-COPY . .
+COPY src ./src
+COPY migrations ./migrations
+COPY templates ./templates
+COPY assets ./assets
 
 # Build for release
 RUN cargo build --release
