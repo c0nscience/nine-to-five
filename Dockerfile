@@ -44,6 +44,8 @@ RUN useradd -m -u 1001 appuser
 WORKDIR /app
 
 # Copy binary from builder
+COPY --from=builder /app/assets ./assets
+COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/target/release/nine-to-five ./
 
 # Change ownership

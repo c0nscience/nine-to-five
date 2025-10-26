@@ -308,4 +308,4 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node
 pg
 !mise.toml
-!.sqlx/
+!./.sqlx/
