@@ -44,11 +44,20 @@ builder:
   #   RUBY_VERSION: <%= ENV["RBENV_VERSION"] || ENV["rvm_ruby_string"] || "#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}" %>
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 #
-# env:
-#   clear:
-#     DB_HOST: 192.168.0.2
-#   secret:
-#     - RAILS_MASTER_KEY
+
+env:
+  clear:
+    - DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@nine-to-five-db:5432/postgres
+    - OAUTH_AUDIENCE: https://api.ntf.io
+    - IDP_DOMAIN: ninetofive.eu.auth0.com
+  secret:
+    - CLIENT_ID
+    - CLIENT_SECRET
+    - COOKIE_KEY
+    - SESSION_DATABASE_KEY
+    - POSTGRES_PASSWORD
+    - DATABASE_KEY
+    - DATABASE_HASH_KEY
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal app logs -r job" will tail logs from the first server in the job section.
@@ -83,7 +92,7 @@ accessories:
   db:
     image: postgres:17
     host: brpi.local
-    port: 5433
+    port: 5432
     env:
       secret:
         - POSTGRES_PASSWORD
