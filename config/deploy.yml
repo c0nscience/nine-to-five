@@ -22,6 +22,8 @@ proxy:
   host: 9to5.hrzg.org
   # Proxy connects to your container on port 80 by default.
   app_port: 3000
+  healthcheck:
+    path: /health
 
 # Credentials for your image host.
 registry:
