@@ -1,20 +1,44 @@
-# Use the official Rust image as a base
-FROM rust:1.90
+# Build stage
+FROM rust:1.90-slim AS builder
 
-# Set the working directory to /app
+# Install build dependencies
+RUN apt-get update && \
+  apt-get install -y pkg-config libssl-dev && \
+  rm -rf /var/lib/apt/lists/*
+
+# Create app directory
 WORKDIR /app
 
-# Copy the Cargo.toml file into the working directory
-COPY Cargo.toml .
+# Copy source code
+COPY . .
 
-# Build the Rust application
+# Build for release
 RUN cargo build --release
 
-# Copy the built application into the working directory
-COPY target/release/* .
+# Runtime stage
+FROM debian:bookworm-slim
 
-# Expose the port that the application will listen on
+# Install runtime dependencies
+RUN apt-get update && \
+  apt-get install -y ca-certificates libssl3 && \
+  rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1001 appuser
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/target/release/nine-to-five ./
+
+# Change ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port (adjust as needed)
 EXPOSE 3000
 
-# Run the command to start the application when the container is launched
-CMD ["./main"]
+# Run the binary
+CMD ["./nine-to-five"]
