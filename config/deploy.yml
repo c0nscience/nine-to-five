@@ -19,7 +19,7 @@ servers:
 # Note: If using Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
 proxy:
   ssl: false
-  host: 9to5.hrzg.org
+  host: 9to5.app
   # Proxy connects to your container on port 80 by default.
   app_port: 3000
   healthcheck:
@@ -53,7 +53,7 @@ env:
     DB_USER: postgres
     OAUTH_AUDIENCE: https://api.ntf.io
     IDP_DOMAIN: ninetofive.eu.auth0.com
-    APP_URL: https://9to5.hrzg.org
+    APP_URL: https://9to5.app
   secret:
     - CLIENT_ID
     - CLIENT_SECRET
