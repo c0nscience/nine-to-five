@@ -53,6 +53,7 @@ env:
     DB_USER: postgres
     OAUTH_AUDIENCE: https://api.ntf.io
     IDP_DOMAIN: ninetofive.eu.auth0.com
+    APP_URL: https://9to5.hrzg.org
   secret:
     - CLIENT_ID
     - CLIENT_SECRET
@@ -95,12 +96,13 @@ accessories:
   db:
     image: postgres:17
     host: brpi.local
-    port: 5432
+    port: 5433
     env:
       secret:
         - POSTGRES_PASSWORD
     directories:
-      - data:/data
+      - data:/var/lib/postgresql/data
+      - backups:/backups
 #   db:
 #     image: mysql:8.0
 #     host: 192.168.0.2
