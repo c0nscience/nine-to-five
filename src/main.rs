@@ -89,9 +89,9 @@ async fn main() -> anyhow::Result<()> {
         .with_database_key(Key::from(session_database_key.as_bytes()))
         .with_http_only(true)
         .with_secure(secure)
-        .with_ip_and_user_agent(true)
-        .with_hashed_ip(false)
-        .with_hashed_xforward(true)
+        // .with_ip_and_user_agent(true)
+        // .with_hashed_ip(false)
+        // .with_hashed_xforward(true)
         .with_lifetime(Duration::days(31))
         .with_max_age(Some(Duration::days(31)));
     let session_store = SessionStore::<SessionPgPool>::new(Some(db.clone().into()), session_config)
