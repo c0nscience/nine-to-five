@@ -111,7 +111,7 @@
             <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
           </svg>
           <button class="ml-4 text-sm font-medium text-white hover:text-gray-500" aria-current="page" onClick="onSelectDay()">
-            {{ date }}
+            {{ date }} [{{ total_duration }}]
           </button>
         </div>
       </li>
@@ -127,7 +127,7 @@
           <div class="flex items-center gap-x-3">
             <h3 class="flex-auto text-lg font-semibold leading-6 text-white">{{ activity.name }}</h3>
             <time datetime="{{ activity.duration_iso }}" class="flex-none text-sm text-gray-500">
-              {{ activity.duration }}
+              {{ activity.duration_human }}
             </time>
           </div>
           <div class="flex items-center gap-x-3">

@@ -9,7 +9,7 @@ use axum::{
 };
 
 use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
-use chrono::{prelude::*, Duration, LocalResult};
+use chrono::{prelude::*, Duration, LocalResult, TimeDelta};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
@@ -53,7 +53,8 @@ struct ActivityTemplData {
     name: String,
     start_time: String,
     end_time: String,
-    duration: String,
+    duration: TimeDelta,
+    duration_human: String,
     duration_iso: String,
     tags: Vec<TagTemplData>,
 }
@@ -62,7 +63,8 @@ struct RunningActivityTemplData {
     id: sqlx::types::Uuid,
     name: String,
     start_time: i64,
-    duration: String,
+    duration: TimeDelta,
+    duration_human: String,
     duration_iso: String,
     tags: Vec<TagTemplData>,
 }
@@ -75,6 +77,7 @@ pub struct TagTemplData {
 #[template(path = "activities.html")]
 struct ActivitiesTemplate {
     activities: Vec<ActivityTemplData>,
+    total_duration: String,
     running: Option<RunningActivityTemplData>,
     date: String,
     curr: chrono::NaiveDate,
@@ -111,11 +114,11 @@ async fn list(
     let to = to_utc(end, timezone)?;
 
     let activities = in_range(&state.db, user_id.clone(), from, to).await?;
-    let activities = activities
+    let activities:Vec<ActivityTemplData> = activities
         .iter()
         .filter(|a| a.end_time.is_some())
         .map(|a| {
-            let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
+            let (duration_human, duration_iso, duration) = format_duration(a.start_time, a.end_time);
             let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
             let mut tags: Vec<TagTemplData> = a
                 .tags
@@ -147,14 +150,15 @@ async fn list(
                 start_time: start,
                 end_time: end,
                 duration,
+                duration_human,
                 duration_iso,
                 tags,
             }
         })
         .collect();
-
+    
     let running = running(&state.db, user_id.clone()).await?.map(|a| {
-        let (duration, duration_iso) = format_duration(a.start_time, a.end_time);
+        let (duration_human, duration_iso, duration) = format_duration(a.start_time, a.end_time);
         let start_time = a.start_time.timestamp_millis();
         let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
         let mut tags: Vec<TagTemplData> = a
@@ -172,14 +176,20 @@ async fn list(
             name,
             start_time,
             duration,
+            duration_human,
             duration_iso,
             tags,
         }
     });
-
+    
+    let total_duration: TimeDelta = activities.iter().map(|a| a.duration).sum();
+    let total_duration = total_duration + running.as_ref().map_or(TimeDelta::zero(), |r| r.duration);
+    let total_duration = duration_human(total_duration);
+    
     Ok(Html(
         ActivitiesTemplate {
             activities,
+            total_duration,
             running,
             date,
             curr: start,
@@ -190,27 +200,31 @@ async fn list(
     ))
 }
 
-fn format_duration(start: DateTime<Utc>, end: Option<DateTime<Utc>>) -> (String, String) {
-    let duration = end.unwrap_or_else(Utc::now) - start;
-    let duration_iso = format!("{duration}");
+fn duration_human(duration: TimeDelta) -> String {
     let is_negative = duration.num_seconds() < 0;
     let seconds = duration.num_seconds().abs();
     let minutes = (seconds / 60) % 60;
     let hours = (seconds / 60) / 60;
 
-    let duration = if hours.abs() > 0 {
+    let duration_human = if hours.abs() > 0 {
         format!("{hours}h {minutes}m")
     } else {
         format!("{minutes}m")
     };
 
-    let duration = if is_negative {
-        format!("-{duration}")
+    if is_negative {
+        format!("-{duration_human}")
     } else {
-        duration
-    };
+        duration_human
+    }
+}
 
-    (duration, duration_iso)
+fn format_duration(start: DateTime<Utc>, end: Option<DateTime<Utc>>) -> (String, String, TimeDelta) {
+    let duration = end.unwrap_or_else(Utc::now) - start;
+    let duration_iso = format!("{duration}");
+    let duration_human = duration_human(duration);
+
+    (duration_human, duration_iso, duration)
 }
 
 fn to_utc(nd: chrono::NaiveDate, tz: Tz) -> Result<chrono::DateTime<Utc>, errors::AppError> {
