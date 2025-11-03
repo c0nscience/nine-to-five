@@ -1,15 +1,15 @@
 use anyhow::anyhow;
 use askama::Template;
 use axum::{
+    Extension, Router,
     extract::{Path, Query, State},
     middleware,
     response::{Html, IntoResponse, Redirect},
     routing::{delete, get, post},
-    Extension, Router,
 };
 
-use axum_extra::{extract::Form, headers::Cookie, TypedHeader};
-use chrono::{prelude::*, Duration, LocalResult, TimeDelta};
+use axum_extra::{TypedHeader, extract::Form, headers::Cookie};
+use chrono::{Duration, LocalResult, TimeDelta, prelude::*};
 
 use chrono_tz::Tz;
 use serde::Deserialize;
@@ -22,8 +22,8 @@ use crate::{
 };
 
 use super::{
-    associate_tags, available_tags, create, create_tag, delete_associate_tags, in_range, running,
-    tag_exists, update, AvailableTag, Create, Tag, Update,
+    AvailableTag, Create, Tag, Update, associate_tags, available_tags, create, create_tag,
+    delete_associate_tags, in_range, running, tag_exists, update,
 };
 
 const FORM_DATE_TIME_FORMAT: &str = "%Y-%m-%dT%H:%M";
@@ -62,7 +62,8 @@ struct ActivityTemplData {
 struct RunningActivityTemplData {
     id: sqlx::types::Uuid,
     name: String,
-    start_time: i64,
+    start_time: DateTime<Utc>,
+    start_time_timestamp: i64,
     duration: TimeDelta,
     duration_human: String,
     duration_iso: String,
@@ -114,11 +115,12 @@ async fn list(
     let to = to_utc(end, timezone)?;
 
     let activities = in_range(&state.db, user_id.clone(), from, to).await?;
-    let activities:Vec<ActivityTemplData> = activities
+    let activities: Vec<ActivityTemplData> = activities
         .iter()
         .filter(|a| a.end_time.is_some())
         .map(|a| {
-            let (duration_human, duration_iso, duration) = format_duration(a.start_time, a.end_time);
+            let (duration_human, duration_iso, duration) =
+                format_duration(a.start_time, a.end_time);
             let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
             let mut tags: Vec<TagTemplData> = a
                 .tags
@@ -156,10 +158,11 @@ async fn list(
             }
         })
         .collect();
-    
+
     let running = running(&state.db, user_id.clone()).await?.map(|a| {
         let (duration_human, duration_iso, duration) = format_duration(a.start_time, a.end_time);
-        let start_time = a.start_time.timestamp_millis();
+        let start_time_timestamp = a.start_time.timestamp_millis();
+        let start_time = a.start_time;
         let name = encrypt::decrypt(&a.name, &state.database_key).unwrap_or_default();
         let mut tags: Vec<TagTemplData> = a
             .tags
@@ -175,17 +178,22 @@ async fn list(
             id: a.id,
             name,
             start_time,
+            start_time_timestamp,
             duration,
             duration_human,
             duration_iso,
             tags,
         }
     });
-    
+
     let total_duration: TimeDelta = activities.iter().map(|a| a.duration).sum();
-    let total_duration = total_duration + running.as_ref().map_or(TimeDelta::zero(), |r| r.duration);
+    let total_duration = total_duration
+        + running
+            .as_ref()
+            .filter(|r| r.start_time.date_naive() == now)
+            .map_or(TimeDelta::zero(), |r| r.duration);
     let total_duration = duration_human(total_duration);
-    
+
     Ok(Html(
         ActivitiesTemplate {
             activities,
@@ -219,7 +227,10 @@ fn duration_human(duration: TimeDelta) -> String {
     }
 }
 
-fn format_duration(start: DateTime<Utc>, end: Option<DateTime<Utc>>) -> (String, String, TimeDelta) {
+fn format_duration(
+    start: DateTime<Utc>,
+    end: Option<DateTime<Utc>>,
+) -> (String, String, TimeDelta) {
     let duration = end.unwrap_or_else(Utc::now) - start;
     let duration_iso = format!("{duration}");
     let duration_human = duration_human(duration);
@@ -765,7 +776,7 @@ mod tests {
     fn test_format_duration() {
         let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 5, 0).unwrap();
-        let (duration, _) = format_duration(start, Some(end));
+        let (duration, _, _) = format_duration(start, Some(end));
         assert_eq!("5m", duration);
     }
 
@@ -773,7 +784,7 @@ mod tests {
     fn test_format_duration_with_negative_duration() {
         let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 5, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
-        let (duration, _) = format_duration(start, Some(end));
+        let (duration, _, _) = format_duration(start, Some(end));
         assert_eq!("-5m", duration);
     }
 
@@ -781,7 +792,7 @@ mod tests {
     fn test_format_duration_with_long_duration() {
         let start = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2024, 3, 18, 11, 5, 0).unwrap();
-        let (duration, _) = format_duration(start, Some(end));
+        let (duration, _, _) = format_duration(start, Some(end));
         assert_eq!("1h 5m", duration);
     }
 
@@ -789,7 +800,7 @@ mod tests {
     fn test_format_duration_with_negative_long_duration() {
         let start = Utc.with_ymd_and_hms(2024, 3, 18, 11, 5, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2024, 3, 18, 10, 0, 0).unwrap();
-        let (duration, _) = format_duration(start, Some(end));
+        let (duration, _, _) = format_duration(start, Some(end));
         assert_eq!("-1h 5m", duration);
     }
 }

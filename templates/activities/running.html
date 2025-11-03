@@ -8,7 +8,7 @@
                 call format(@x-start-time) then put it into my.innerHTML
                 wait 20s
               end
-            " datetime="{{ running.duration_iso }}" x-start-time="{{ running.start_time }}"
+            " datetime="{{ running.duration_iso }}" x-start-time="{{ running.start_time_timestamp }}"
       class="flex-none text-sm text-gray-500">
       {{ running.duration_human }}
     </time>
