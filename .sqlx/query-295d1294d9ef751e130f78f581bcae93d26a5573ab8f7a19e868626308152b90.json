@@ -1,0 +1,49 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT \n            activities.id, activities.name, activities.start_time, activities.end_time,\n            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS \"tags!: Vec<Tag>\"\n        FROM activities\n        LEFT JOIN activities_tags\n            ON activities.id = activities_tags.activity_id\n        LEFT JOIN tags\n            ON activities_tags.tag_id = tags.id\n        WHERE activities.user_id = $1 AND activities.start_time BETWEEN $2 AND $3\n        GROUP BY activities.id\n        HAVING array_agg(tags.id) @> $4\n        ORDER BY activities.start_time ASC\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "start_time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "end_time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "tags!: Vec<Tag>",
+        "type_info": "RecordArray"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "295d1294d9ef751e130f78f581bcae93d26a5573ab8f7a19e868626308152b90"
+}

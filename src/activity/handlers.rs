@@ -15,7 +15,7 @@ use chrono_tz::Tz;
 use serde::Deserialize;
 
 use crate::{
-    activity, auth, encrypt, errors,
+    activity::{self, summary_in_range, RangeSummary}, auth, encrypt, errors,
     func::parse_timezone,
     hash::{self},
     states,
@@ -32,6 +32,7 @@ const FORM_TIME_FORMAT: &str = "%H:%M";
 pub fn router(state: states::AppState) -> Router<states::AppState> {
     Router::new()
         .route("/{date}", get(list))
+        .route("/{date}/summary", get(summary))
         .route("/start", get(start_form).post(start))
         .route(
             "/activity/{id}",
@@ -255,6 +256,87 @@ async fn today(TypedHeader(cookie): TypedHeader<Cookie>) -> Result<Redirect, err
     let now = now.format("%Y-%m-%d");
 
     Ok(Redirect::temporary(format!("/app/{now}").as_str()))
+}
+
+pub struct RangeSummaryTemplate {
+    duration: TimeDelta,
+    duration_human: String,
+    duration_iso: String,
+    labels: Vec<String>,
+    tags: Vec<Tag>,
+}
+
+#[derive(Template)]
+#[template(path = "activities/summary.html")]
+struct ActivitiesSummaryTemplate {
+    range_summary: Vec<RangeSummaryTemplate>,
+    total_duration: String,
+    date: String,
+    curr: chrono::NaiveDate,
+    prev: chrono::NaiveDate,
+    next: chrono::NaiveDate,
+}
+
+async fn summary(
+    Path(date): Path<String>,
+    State(state): State<states::AppState>,
+    Extension(user_id): Extension<String>,
+    TypedHeader(cookie): TypedHeader<Cookie>,
+) -> Result<impl IntoResponse, errors::AppError> {
+    let timezone = parse_timezone(&cookie);
+
+    let start = date.parse::<NaiveDate>()?;
+    let Some(end) = start.succ_opt() else {
+        return Err(errors::AppError::InternalError);
+    };
+
+    let Some(prev) = start.pred_opt() else {
+        return Err(errors::AppError::InternalError);
+    };
+
+    let now = Utc::now().with_timezone(&timezone).date_naive();
+    let start_fmt = start.format("%a, %b %d %Y").to_string();
+    let date = if now == start {
+        format!("Today ({start_fmt})")
+    } else {
+        start_fmt
+    };
+
+    let from = to_utc(start, timezone)?;
+    let to = to_utc(end, timezone)?;
+
+    // TODO:
+    // I want to select all activities with given tags ie. current company/project
+    // then I want to provide a list of tags to group the gathered data
+    // meaning select tags & grouping tags
+    let range_summary = summary_in_range(&state.db, user_id.clone(), from, to).await?;
+    let range_summary = range_summary.iter().map(|rs | {
+        let duration = rs.duration;
+        let duration_human = duration_human(rs.duration);
+        let duration_iso = format!("{duration}");
+        RangeSummaryTemplate{
+            duration,
+            duration_human,
+            duration_iso,
+            labels: rs.labels.clone(),
+            tags: rs.tags.clone(),
+        }
+    }).collect::<Vec<_>>();
+
+    let total_duration: TimeDelta = range_summary.iter().map(|rs| rs.duration).sum();
+    let total_duration = duration_human(total_duration);
+
+    Ok(Html(
+        ActivitiesSummaryTemplate {
+            range_summary,
+            total_duration,
+            date,
+            curr: start,
+            prev,
+            next: end,
+        }
+        .render()?,
+    ))
 }
 
 #[derive(Template)]

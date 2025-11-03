@@ -1,16 +1,20 @@
 #![allow(clippy::missing_panics_doc)]
 use core::fmt;
 
+use std::collections::HashMap;
 
 use chrono::prelude::*;
+use chrono::TimeDelta;
 use sqlx::prelude::*;
 use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
+use tracing::info;
 
 use crate::errors;
 pub mod handlers;
 
+#[derive(Clone)]
 pub struct Range {
     id: sqlx::types::Uuid,
     name: String,
@@ -19,7 +23,7 @@ pub struct Range {
     tags: Vec<Tag>,
 }
 
-#[derive(Type, Debug)]
+#[derive(Type, Debug, Clone, PartialEq, Eq, Hash)]
 #[sqlx(type_name = "tags")]
 pub struct Tag {
     pub id: sqlx::types::Uuid,
@@ -60,6 +64,92 @@ async fn in_range(
     )
     .fetch_all(db)
     .await?;
+
+    Ok(result)
+}
+
+#[derive(Debug)]
+pub struct Summary {
+    id: sqlx::types::Uuid,
+    selection_tags: Vec<Tag>,
+    group_tags: Vec<Tag>,
+}
+
+pub struct RangeSummary {
+    duration: TimeDelta,
+    labels: Vec<String>,
+    tags: Vec<Tag>,
+}
+
+async fn summary_in_range(
+    db: &PgPool,
+    user_id: String,
+    from: chrono::DateTime<Utc>,
+    to: chrono::DateTime<Utc>,
+) -> Result<Vec<RangeSummary>, errors::AppError> {
+    let summary = sqlx::query_as!(
+        Summary,
+        r#"
+        SELECT summary.id,
+            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "selection_tags!: Vec<Tag>",
+            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "group_tags!: Vec<Tag>"
+        FROM summary
+        LEFT JOIN summary_selection_tags
+            ON summary.id = summary_selection_tags.summary_id
+        LEFT JOIN summary_group_tags
+            ON summary.id = summary_group_tags.summary_id
+        LEFT JOIN tags
+            ON summary_selection_tags.tag_id = tags.id OR summary_group_tags.tag_id = tags.id
+        WHERE summary.user_id = $1
+        GROUP BY summary.id
+        "#,
+        user_id
+    )
+    .fetch_all(db)
+    .await?;
+    
+    let result = sqlx::query_as!(
+        Range,
+        r#"
+        SELECT 
+            activities.id, activities.name, activities.start_time, activities.end_time,
+            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "tags!: Vec<Tag>"
+        FROM activities
+        LEFT JOIN activities_tags
+            ON activities.id = activities_tags.activity_id
+        LEFT JOIN tags
+            ON activities_tags.tag_id = tags.id
+        WHERE activities.user_id = $1 AND activities.start_time BETWEEN $2 AND $3
+        GROUP BY activities.id
+        HAVING array_agg(tags.id) @> $4
+        ORDER BY activities.start_time ASC
+        "#,
+        user_id,
+        from,
+        to,
+        &summary.first().iter().flat_map(|s| s.selection_tags.clone()).map(|t|t.id).collect::<Vec<sqlx::types::Uuid>>()
+    )
+    .fetch_all(db)
+    .await?;
+
+    let group_by: Vec<Tag> = summary.first().iter().flat_map(|s| s.group_tags.clone()).collect();
+    
+    let result = result.iter().fold(HashMap::new(), | mut acc:HashMap<Tag, Vec<Range>> , r | {
+        for t in  group_by.iter() {
+            if r.tags.contains(t) {
+                acc.entry(t.clone()).or_default().push(r.clone());
+            }
+        }
+        acc
+    });
+
+    let result = result.iter().fold(Vec::new(), |mut acc: Vec<RangeSummary>, e| {
+        let duration: TimeDelta = e.1.iter().map(|r| r.end_time.unwrap_or_else(Utc::now) - r.start_time).sum();
+        let labels = e.1.iter().map(|r| r.name.clone()).collect::<Vec<String>>();
+        let tags = vec![e.0.clone()];
+        acc.push(RangeSummary { duration, labels, tags });
+        acc
+    });
 
     Ok(result)
 }
