@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::anyhow;
 use askama::Template;
 use axum::{
@@ -329,7 +331,9 @@ async fn summary(
                 .labels
                 .iter()
                 .map(|l| encrypt::decrypt(l, &state.database_key).unwrap_or_default())
-                .collect();
+                .collect::<HashSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
 
             RangeSummaryTemplate {
                 duration,
