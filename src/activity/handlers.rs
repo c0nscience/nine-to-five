@@ -15,7 +15,8 @@ use chrono_tz::Tz;
 use serde::Deserialize;
 
 use crate::{
-    activity::{self, summary_in_range, RangeSummary}, auth, encrypt, errors,
+    activity::{self, summary_in_range},
+    auth, encrypt, errors,
     func::parse_timezone,
     hash::{self},
     states,
@@ -305,23 +306,40 @@ async fn summary(
     let from = to_utc(start, timezone)?;
     let to = to_utc(end, timezone)?;
 
-    // TODO:
-    // I want to select all activities with given tags ie. current company/project
-    // then I want to provide a list of tags to group the gathered data
-    // meaning select tags & grouping tags
     let range_summary = summary_in_range(&state.db, user_id.clone(), from, to).await?;
-    let range_summary = range_summary.iter().map(|rs | {
-        let duration = rs.duration;
-        let duration_human = duration_human(rs.duration);
-        let duration_iso = format!("{duration}");
-        RangeSummaryTemplate{
-            duration,
-            duration_human,
-            duration_iso,
-            labels: rs.labels.clone(),
-            tags: rs.tags.clone(),
-        }
-    }).collect::<Vec<_>>();
+    let range_summary = range_summary
+        .iter()
+        .map(|rs| {
+            let duration = rs.duration;
+            let duration_human = duration_human(rs.duration);
+            let duration_iso = format!("{duration}");
+            let tags = rs
+                .tags
+                .iter()
+                .map(|t| {
+                    let name = encrypt::decrypt(&t.name, &state.database_key).unwrap_or_default();
+                    Tag {
+                        id: t.id,
+                        user_id: t.user_id.clone(),
+                        name,
+                    }
+                })
+                .collect();
+            let labels = rs
+                .labels
+                .iter()
+                .map(|l| encrypt::decrypt(l, &state.database_key).unwrap_or_default())
+                .collect();
+
+            RangeSummaryTemplate {
+                duration,
+                duration_human,
+                duration_iso,
+                labels,
+                tags,
+            }
+        })
+        .collect::<Vec<_>>();
 
     let total_duration: TimeDelta = range_summary.iter().map(|rs| rs.duration).sum();
     let total_duration = duration_human(total_duration);

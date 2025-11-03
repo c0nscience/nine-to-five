@@ -33,6 +33,7 @@ pub mod func;
 pub mod hash;
 pub mod import;
 pub mod metrics;
+pub mod summaries;
 pub mod states;
 
 #[tokio::main]
@@ -128,6 +129,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/callback", get(auth::callback))
         .nest("/app", activity::handlers::router(state.clone()))
         .nest("/app/metrics", metrics::handlers::router(state.clone()))
+        .nest("/app/summaries", summaries::handlers::router(state.clone()))
         .nest("/app/import", import::router(state.clone()))
         .route("/login", get(auth::login))
         .route("/signup", get(auth::signup))

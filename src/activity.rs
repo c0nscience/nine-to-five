@@ -9,9 +9,9 @@ use sqlx::prelude::*;
 use sqlx::PgPool;
 use sqlx::Postgres;
 use sqlx::QueryBuilder;
-use tracing::info;
 
 use crate::errors;
+use crate::summaries;
 pub mod handlers;
 
 #[derive(Clone)]
@@ -68,13 +68,6 @@ async fn in_range(
     Ok(result)
 }
 
-#[derive(Debug)]
-pub struct Summary {
-    id: sqlx::types::Uuid,
-    selection_tags: Vec<Tag>,
-    group_tags: Vec<Tag>,
-}
-
 pub struct RangeSummary {
     duration: TimeDelta,
     labels: Vec<String>,
@@ -87,27 +80,24 @@ async fn summary_in_range(
     from: chrono::DateTime<Utc>,
     to: chrono::DateTime<Utc>,
 ) -> Result<Vec<RangeSummary>, errors::AppError> {
-    let summary = sqlx::query_as!(
-        Summary,
+    let Some(summary) = summaries::get(db, user_id.clone()).await? else {
+        return Err(errors::AppError::NotFound);
+    };
+    
+    let selection_tags = sqlx::query_as!(
+        Tag,
         r#"
-        SELECT summary.id,
-            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "selection_tags!: Vec<Tag>",
-            COALESCE(array_agg((tags.id, tags.user_id, tags.name)) filter (WHERE tags.id IS NOT NULL), '{}') AS "group_tags!: Vec<Tag>"
-        FROM summary
-        LEFT JOIN summary_selection_tags
-            ON summary.id = summary_selection_tags.summary_id
-        LEFT JOIN summary_group_tags
-            ON summary.id = summary_group_tags.summary_id
-        LEFT JOIN tags
-            ON summary_selection_tags.tag_id = tags.id OR summary_group_tags.tag_id = tags.id
-        WHERE summary.user_id = $1
-        GROUP BY summary.id
+        SELECT tags.id, tags.user_id, tags.name
+        FROM tags
+        LEFT JOIN summary_selection_tags sst
+            ON sst.tag_id = tags.id
+        WHERE sst.summary_id = $1
         "#,
-        user_id
+        summary.id
     )
     .fetch_all(db)
     .await?;
-    
+
     let result = sqlx::query_as!(
         Range,
         r#"
@@ -127,15 +117,27 @@ async fn summary_in_range(
         user_id,
         from,
         to,
-        &summary.first().iter().flat_map(|s| s.selection_tags.clone()).map(|t|t.id).collect::<Vec<sqlx::types::Uuid>>()
+        &selection_tags.iter().map(|t| t.id).collect::<Vec<_>>()
     )
     .fetch_all(db)
     .await?;
 
-    let group_by: Vec<Tag> = summary.first().iter().flat_map(|s| s.group_tags.clone()).collect();
+    let group_tags = sqlx::query_as!(
+        Tag,
+        r#"
+        SELECT tags.id, tags.user_id, tags.name
+        FROM tags
+        LEFT JOIN summary_group_tags sgt
+            ON sgt.tag_id = tags.id
+        WHERE sgt.summary_id = $1
+        "#,
+        summary.id
+    )
+    .fetch_all(db)
+    .await?;
     
     let result = result.iter().fold(HashMap::new(), | mut acc:HashMap<Tag, Vec<Range>> , r | {
-        for t in  group_by.iter() {
+        for t in  group_tags.iter() {
             if r.tags.contains(t) {
                 acc.entry(t.clone()).or_default().push(r.clone());
             }

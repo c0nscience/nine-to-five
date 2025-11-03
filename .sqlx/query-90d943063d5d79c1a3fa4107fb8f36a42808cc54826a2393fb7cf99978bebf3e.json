@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT tags.id, tags.user_id, tags.name\n        FROM tags\n        LEFT JOIN summary_group_tags sgt\n            ON sgt.tag_id = tags.id\n        WHERE sgt.summary_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "90d943063d5d79c1a3fa4107fb8f36a42808cc54826a2393fb7cf99978bebf3e"
+}

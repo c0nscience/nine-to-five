@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM summary_group_tags \n            USING summary\n        WHERE summary_id = summary.id AND summary.id = $1 AND summary.user_id = $2\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c5d1771b165c0c35cf44991799305dd3ab745e49be7ae21f319036a5d95013aa"
+}
