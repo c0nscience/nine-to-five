@@ -190,7 +190,7 @@ async fn list(
     let total_duration = total_duration
         + running
             .as_ref()
-            .filter(|r| r.start_time.date_naive() == now)
+            .filter(|r| r.start_time.date_naive() == start)
             .map_or(TimeDelta::zero(), |r| r.duration);
     let total_duration = duration_human(total_duration);
 
