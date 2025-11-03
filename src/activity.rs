@@ -27,8 +27,8 @@ pub struct Range {
 #[sqlx(type_name = "tags")]
 pub struct Tag {
     pub id: sqlx::types::Uuid,
-    user_id: String,
-    name: String,
+    pub user_id: String,
+    pub name: String,
 }
 
 impl fmt::Display for Tag {

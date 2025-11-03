@@ -110,6 +110,34 @@ async fn edit_form(
     let Some(summary) = summaries::get(&state.db, user_id.clone()).await? else {
         return Err(errors::AppError::NotFound);
     };
+    
+    let selection_tags = sqlx::query_as!(
+        activity::Tag,
+        r#"
+        SELECT tags.id, tags.user_id, tags.name
+        FROM tags
+        LEFT JOIN summary_selection_tags sst
+            ON sst.tag_id = tags.id
+        WHERE sst.summary_id = $1
+        "#,
+        summary.id
+    )
+    .fetch_all(&state.db)
+    .await?;
+    
+    let group_tags = sqlx::query_as!(
+        activity::Tag,
+        r#"
+        SELECT tags.id, tags.user_id, tags.name
+        FROM tags
+        LEFT JOIN summary_group_tags sgt
+            ON sgt.tag_id = tags.id
+        WHERE sgt.summary_id = $1
+        "#,
+        summary.id
+    )
+    .fetch_all(&state.db)
+    .await?;
 
     let mut available_tags: Vec<activity::AvailableTag> =
         activity::available_tags(&state.db, user_id)
@@ -128,8 +156,8 @@ async fn edit_form(
     available_tags.sort_by_key(|t| t.name.to_lowercase());
 
     let summary = EditFormData {
-        selection_tags: summary.selection_tags,
-        group_tags: summary.group_tags,
+        selection_tags,
+        group_tags,
     };
 
     Ok(Html(
