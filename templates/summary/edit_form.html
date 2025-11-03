@@ -15,7 +15,7 @@
       <div class="border-b border-white/10 pb-12">
         <div class="grid grid-cols-1 gap-x-6 gap-y-8">
           <div class="">
-            <label for="tags" class="block text-sm font-medium leading-6 text-white">Selection Tags</label>
+            <label for="selection_tags" class="block text-sm font-medium leading-6 text-white">Selection Tags</label>
             <div class="relative mt-2 grid grid-cols-1 gap-2">
               <div class="flex rounded-md">
                 <div class="relative w-full focus-within:z-10">
@@ -25,15 +25,15 @@
                                   set my value to ''
                                   trigger keyup
                                 else
-                                  show <option/> in #tags when its textContent contains my value
-                            " type="text" name="tags-search" id="tags-search"
+                                  show <option/> in #selection_tags when its textContent contains my value
+                            " type="text" name="tags-search-st" id="tags-search-st"
                     class="block w-full rounded-none bg-white/5 rounded-l-md border-0 py-1.5 text-white ring-1 ring-inset ring-white/10 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
                     placeholder="Search or add tags">
                 </div>
                 <button _="
                           on click toggle @disabled until htmx:afterOnLoad
-                            then set value of #tags-search to ''
-                        " hx-post="/app/tags" hx-include="[id='tags-search']" hx-target="#tags" type="button"
+                            then set value of #tags-search-st to ''
+                        " hx-post="/app/tags" hx-include="[id='tags-search-st']" hx-target="#selection_tags" type="button"
                   class="relative bg-indigo-500 -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/10 hover:bg-indigo-400">
                   Add
                 </button>
@@ -45,7 +45,7 @@
             </div>
           </div>
           <div class="">
-            <label for="tags" class="block text-sm font-medium leading-6 text-white">Group Tags</label>
+            <label for="group_tags" class="block text-sm font-medium leading-6 text-white">Group Tags</label>
             <div class="relative mt-2 grid grid-cols-1 gap-2">
               <div class="flex rounded-md">
                 <div class="relative w-full focus-within:z-10">
@@ -55,15 +55,15 @@
                                   set my value to ''
                                   trigger keyup
                                 else
-                                  show <option/> in #tags when its textContent contains my value
-                            " type="text" name="tags-search" id="tags-search"
+                                  show <option/> in #group_tags when its textContent contains my value
+                            " type="text" name="tags-search-gt" id="tags-search-gt"
                     class="block w-full rounded-none bg-white/5 rounded-l-md border-0 py-1.5 text-white ring-1 ring-inset ring-white/10 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
                     placeholder="Search or add tags">
                 </div>
                 <button _="
                           on click toggle @disabled until htmx:afterOnLoad
-                            then set value of #tags-search to ''
-                        " hx-post="/app/tags" hx-include="[id='tags-search']" hx-target="#tags" type="button"
+                            then set value of #tags-search-gt to ''
+                        " hx-post="/app/tags" hx-include="[id='tags-search-gt']" hx-target="#group_tags" type="button"
                   class="relative bg-indigo-500 -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/10 hover:bg-indigo-400">
                   Add
                 </button>
