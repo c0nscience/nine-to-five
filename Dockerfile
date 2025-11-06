@@ -1,9 +1,9 @@
 # Build stage
-FROM rust:1.90-slim AS builder
+FROM rust:1.90-bookworm AS builder
 
 # Install build dependencies
 RUN apt-get update && \
-  apt-get install -y pkg-config libssl-dev && \
+  apt-get install --no-install-recommends -y pkg-config=1.8.1-1 libssl-dev=3.0.17-1~deb12u3 && \
   rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -14,9 +14,10 @@ COPY Cargo.toml Cargo.lock ./
 
 # Create dummy source to cache dependencies
 RUN mkdir src && \
-  echo "fn main() {}" > src/main.rs && \
+  echo 'fn main() {println!("dummy");}' > src/main.rs && \
   cargo build --release && \
-  rm -rf src target/release/deps/*nine-to-five*
+  cargo clean --release -p nine-to-five && \
+  rm -rf src
 
 # Copy source code
 COPY .sqlx ./.sqlx
@@ -35,7 +36,7 @@ FROM debian:bookworm-slim
 
 # Install runtime dependencies
 RUN apt-get update && \
-  apt-get install -y ca-certificates libssl3 && \
+  apt-get install --no-install-recommends -y ca-certificates=20230311+deb12u1 libssl3=3.0.17-1~deb12u3 && \
   rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
